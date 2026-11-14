@@ -1,0 +1,1987 @@
+{
+  "metadata": {
+    "appName": "DS\u0130 Yap\u0131m \u0130haleleri Teklif Analiz ve S\u0131n\u0131r De\u011Fer Hesaplama Sistemi",
+    "version": "2.2.0",
+    "strictVerifiedOnly": true,
+    "officialSourcesOnly": true,
+    "officialCompetitorCount": 32,
+    "includeSampleData": true,
+    "lastUpdated": "2026-11-14T20:49:10.0857049Z",
+    "officialTenderCount": 23,
+    "lastOfficialSync": "2026-11-14 23:49:10"
+  },
+  "competitors": [
+    {
+      "id": "COMP-01",
+      "name": "Mete Altyap\u0131 \u0130n\u015Faat Ticaret A.\u015E. (\u0026 G\u00FCven Karaman \u0130\u015F Ortakl\u0131\u011F\u0131)",
+      "shortName": "Mete Altyap\u0131 \u0130n\u015Faat A.\u015E.",
+      "taxId": "EKAP-ONAYLI-619",
+      "hqCity": "Ankara",
+      "workGroups": [
+        "A/III",
+        "A/I"
+      ],
+      "primaryRegions": [
+        "DSI-01",
+        "DSI-12",
+        "DSI-20"
+      ],
+      "capacitySaturationPct": 65,
+      "maxTenderCapacityTL": 1200000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2024/UY.I-799 (kik.gov.tr) \u0026 EKAP \u0130KN: 2023/1580956, 2023/1099327, 2023/716691",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-201",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-06-12",
+          "regionId": "DSI-20",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2024/UY.I-799 \u0026 EKAP \u0130KN: 2023/1580956 (kik.gov.tr)",
+          "note": "DS\u0130 20. B\u00F6lge Kahramanmara\u015F Oniki\u015Fubat Kurucaova ve Tekir Mahalleleri Ta\u015Fk\u0131n Koruma \u0130n\u015Faat\u0131 ihalesinde 445.105.000,00 TL bedelle s\u0131n\u0131r de\u011Ferin (428.163.434 TL) \u00FCzerinde kalarak s\u00F6zle\u015Fme imzalad\u0131.",
+          "verified": true
+        },
+        {
+          "id": "SIG-202",
+          "type": "NEW_TENDER_WON",
+          "date": "2023-11-09",
+          "regionId": "DSI-01",
+          "source": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2023/1099327 (ekap.kik.gov.tr)",
+          "note": "DS\u0130 1. B\u00F6lge Yalova \u0130li Balaban Deresi Islah\u0131 2. K\u0131s\u0131m \u0130n\u015Faat\u0131 ihalesinde 156.999.905,00 TL teklifle s\u0131n\u0131r de\u011Ferin (154.098.322,60 TL) hemen \u00FCzerinde kalarak ihaleyi kazand\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-02",
+      "name": "Ilgazlar \u0130n\u015Faat Tic. ve San. A.\u015E. \u0026 SMH Grup Madencilik \u0130n\u015F. San. Tic. Ltd. \u015Eti.",
+      "shortName": "Ilgazlar \u0130n\u015Faat \u0026 SMH Grup",
+      "taxId": "EKAP-ONAYLI-462",
+      "hqCity": "Ankara",
+      "workGroups": [
+        "A/I",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-11",
+        "DSI-20"
+      ],
+      "capacitySaturationPct": 60,
+      "maxTenderCapacityTL": 1500000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2024/UY.II-553 ve 2024/UY.I-799 (kik.gov.tr) \u0026 EKAP \u0130KN: 2023/1241906, 2023/1580956",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-203",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-04-04",
+          "regionId": "DSI-11",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2024/UY.II-553 \u0026 EKAP \u0130KN: 2023/1241906 (kik.gov.tr)",
+          "note": "DS\u0130 11. B\u00F6lge K\u0131rklareli-Kof\u00E7az Kula 2 G\u00F6leti ve \u0130letim Hatt\u0131 \u0130n\u015Faat\u0131 ihalesini 394.693.577,00 TL s\u00F6zle\u015Fme bedeliyle kazand\u0131.",
+          "verified": true
+        },
+        {
+          "id": "SIG-204",
+          "type": "JV_PARTNERSHIP",
+          "date": "2024-02-22",
+          "regionId": "DSI-20",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2024/UY.I-799 (kik.gov.tr)",
+          "note": "DS\u0130 baraj, g\u00F6let ve ta\u015Fk\u0131n koruma ihalelerine Ilgazlar \u0130n\u015Faat A.\u015E. ve SMH Grup Madencilik Ltd. \u015Eti. \u0130\u015F Ortakl\u0131\u011F\u0131 olarak kat\u0131lmaktad\u0131r.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-03",
+      "name": "Erkilet \u0130n\u015Faat A.\u015E. \u0026 Baran Yap\u0131 \u0130n\u015Faat Metal Nak. Mad. San. Tic. A.\u015E.",
+      "shortName": "Erkilet \u0130n\u015Faat \u0026 Baran Yap\u0131",
+      "taxId": "EKAP-ONAYLI-351",
+      "hqCity": "Kayseri / Ankara",
+      "workGroups": [
+        "A/I",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-11",
+        "DSI-08",
+        "DSI-06",
+        "DSI-GM"
+      ],
+      "capacitySaturationPct": 50,
+      "maxTenderCapacityTL": 2500000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2024/UY.II-553 (kik.gov.tr) \u0026 EKAP \u0130KN: 2023/1241906, 2023/620107",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-205",
+          "type": "JV_PARTNERSHIP",
+          "date": "2024-04-04",
+          "regionId": "DSI-11",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2024/UY.II-553 (04.04.2024 - kik.gov.tr)",
+          "note": "DS\u0130 11. B\u00F6lge Kula 2 G\u00F6leti ihalesinde (\u0130KN: 2023/1241906) 414.319.878,75 TL teklif ile s\u0131n\u0131r de\u011Ferin (407.516.472 TL) hemen \u00FCzerinde yer ald\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-04",
+      "name": "\u00D6nt\u00FCrkler \u0130n\u015Faat Turizm Tar\u0131m Ta\u015F\u0131mac\u0131l\u0131k San. ve Tic. Ltd. \u015Eti.",
+      "shortName": "\u00D6nt\u00FCrkler \u0130n\u015Faat Ltd. \u015Eti.",
+      "taxId": "EKAP-ONAYLI-704",
+      "hqCity": "Samsun / Ankara",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-07"
+      ],
+      "capacitySaturationPct": 55,
+      "maxTenderCapacityTL": 650000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2024/UY.II-567 (04.04.2024 - kik.gov.tr) \u0026 EKAP \u0130KN: 2023/1471844",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-206",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-04-04",
+          "regionId": "DSI-07",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2024/UY.II-567 (04.04.2024 - kik.gov.tr)",
+          "note": "DS\u0130 7. B\u00F6lge Samsun 19 May\u0131s Engiz \u00C7ay\u0131 2. K\u0131s\u0131m Ta\u015Fk\u0131n Koruma \u0130n\u015Faat\u0131 (\u0130KN: 2023/1471844) ihalesinde K\u0130K d\u00FCzeltici i\u015Flem karar\u0131 sonras\u0131nda 119.884.150,00 TL bedelle s\u00F6zle\u015Fme imzalad\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-05",
+      "name": "Sistem Elektromekanik Tesisler San. ve Tic. A.\u015E. \u0026 K\u00F6rfez Haritac\u0131l\u0131k Planlama Ltd. \u015Eti.",
+      "shortName": "Sistem Elektromekanik \u0026 K\u00F6rfez \u0130\u015F Ort.",
+      "taxId": "EKAP-ONAYLI-773",
+      "hqCity": "Ankara",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-25"
+      ],
+      "capacitySaturationPct": 60,
+      "maxTenderCapacityTL": 1200000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2024/UY.II-503 (27.03.2024 - kik.gov.tr) \u0026 EKAP \u0130KN: 2023/1273876",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-207",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-03-27",
+          "regionId": "DSI-25",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2024/UY.II-503 (27.03.2024 - kik.gov.tr)",
+          "note": "DS\u0130 25. B\u00F6lge (Bal\u0131kesir) G\u00FCney Marmara AT ve T\u0130GH Projesi (\u0130KN: 2023/1273876) ihalesini 438.557.713,24 TL (%34,12 indirim) bedelle kazand\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-06",
+      "name": "BRJ \u0130n\u015Faat Sanayi ve Ticaret A.\u015E.",
+      "shortName": "BRJ \u0130n\u015Faat A.\u015E.",
+      "taxId": "EKAP-ONAYLI-182",
+      "hqCity": "Ankara",
+      "workGroups": [
+        "A/I"
+      ],
+      "primaryRegions": [
+        "DSI-GM",
+        "DSI-25"
+      ],
+      "capacitySaturationPct": 75,
+      "maxTenderCapacityTL": 2500000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2023/UY.II-1278 (04.10.2023 - kik.gov.tr) \u0026 EKAP \u0130KN: 2023/404580",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-208",
+          "type": "NEW_TENDER_WON",
+          "date": "2023-10-25",
+          "regionId": "DSI-GM",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2023/UY.II-1278 \u0026 EKAP \u0130KN: 2023/404580 (kik.gov.tr)",
+          "note": "DS\u0130 Genel M\u00FCd\u00FCrl\u00FC\u011F\u00FC Barajlar ve HES Dairesi Ba\u015Fkanl\u0131\u011F\u0131 Kepsut Baraj\u0131 Yap\u0131m\u0131 ihalesini (Yakla\u015F\u0131k Maliyet: 1.386.328.596 TL) 867.330.392,00 TL s\u00F6zle\u015Fme bedeliyle \u00FCstlendi.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-07",
+      "name": "Burka Yap\u0131 Enerji San. ve Tic. A.\u015E. \u0026 AB \u0130\u015F Makinalar\u0131 \u0130n\u015Faat Nak. San. ve Tic. A.\u015E.",
+      "shortName": "Burka Yap\u0131 \u0026 AB \u0130\u015F Makinalar\u0131",
+      "taxId": "EKAP-ONAYLI-194",
+      "hqCity": "Ankara",
+      "workGroups": [
+        "A/I",
+        "A/V"
+      ],
+      "primaryRegions": [
+        "DSI-GM",
+        "DSI-25"
+      ],
+      "capacitySaturationPct": 40,
+      "maxTenderCapacityTL": 2200000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2023/UY.II-1278 (04.10.2023 - kik.gov.tr) \u0026 EKAP \u0130KN: 2023/404580",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-209",
+          "type": "JV_PARTNERSHIP",
+          "date": "2023-10-04",
+          "regionId": "DSI-GM",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2023/UY.II-1278 (04.10.2023 - kik.gov.tr)",
+          "note": "DS\u0130 Kepsut Baraj\u0131 Yap\u0131m\u0131 ihalesinde (\u0130KN: 2023/404580) 829.712.548,00 TL (%40,15 indirim) ile en d\u00FC\u015F\u00FCk teklifi sundu.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-08",
+      "name": "Yap\u0131yol Altyap\u0131 \u0130n\u015Faat San. ve Tic. A.\u015E. \u0026 Solako\u011Flu Yol Yap\u0131m \u0130n\u015F. Taah. Ltd. \u015Eti.",
+      "shortName": "Yap\u0131yol Altyap\u0131 \u0026 Solako\u011Flu \u0130n\u015F.",
+      "taxId": "EKAP-ONAYLI-808",
+      "hqCity": "Erzurum / Ankara",
+      "workGroups": [
+        "A/I",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-08"
+      ],
+      "capacitySaturationPct": 58,
+      "maxTenderCapacityTL": 900000000,
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2023/620107 (ekap.kik.gov.tr)",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Ortak/IhaleArama/index.html",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-210",
+          "type": "NEW_TENDER_WON",
+          "date": "2023-07-17",
+          "regionId": "DSI-08",
+          "source": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2023/620107 (ekap.kik.gov.tr)",
+          "note": "DS\u0130 8. B\u00F6lge (Erzurum) Pasinler K\u00FC\u00E7\u00FCkt\u00FCy G\u00F6leti \u0130n\u015Faat\u0131 ihalesini 195.871.633,00 TL s\u00F6zle\u015Fme bedeliyle kazand\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-09",
+      "name": "Adnan Ekmen \u0026 GR\u015E \u0130n\u015Faat Nakliyat San. Tic. Ltd. \u015Eti. \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "Adnan Ekmen \u0026 GR\u015E \u0130n\u015Faat",
+      "taxId": "EKAP-ONAYLI-909",
+      "hqCity": "Elaz\u0131\u011F / Diyarbak\u0131r",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-09"
+      ],
+      "capacitySaturationPct": 68,
+      "maxTenderCapacityTL": 750000000,
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "Kamu \u0130hale Kurumu (EKAP) Resmi Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2025/489470 (kik.gov.tr - S\u00F6zle\u015Fme: 25.06.2025)",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Ortak/IhaleArama/index.html",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-211",
+          "type": "NEW_TENDER_WON",
+          "date": "2025-06-25",
+          "regionId": "DSI-09",
+          "source": "Kamu \u0130hale Kurumu (EKAP) Resmi Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2025/489470 (kik.gov.tr)",
+          "note": "DS\u0130 9. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC Tunceli-Pertek Kacarlar G\u00F6leti Sulamas\u0131 Eksiklerinin Tamamlanmas\u0131 2. K\u0131s\u0131m ihalesinde 158.990.354,00 TL bedelle 25.06.2025 tarihinde s\u00F6zle\u015Fme imzalad\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-10",
+      "name": "\u00D6zbek \u0130n\u015Faat Taahh\u00FCt San. ve Tic. Ltd. \u015Eti. (\u0026 Muzaffer Kayg\u0131n \u0130n\u015F. \u0130\u015F Ortakl\u0131\u011F\u0131)",
+      "shortName": "\u00D6zbek \u0130n\u015Faat \u0026 Muzaffer Kayg\u0131n",
+      "taxId": "EKAP-ONAYLI-1010",
+      "hqCity": "Ankara / Kayseri",
+      "workGroups": [
+        "A/III",
+        "A/IV"
+      ],
+      "primaryRegions": [
+        "DSI-11",
+        "DSI-12",
+        "DSI-04"
+      ],
+      "capacitySaturationPct": 72,
+      "maxTenderCapacityTL": 2400000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2026/UY.II-1764, 2025/UY.I-2762, 2025/UY.II-878 (kik.gov.tr) \u0026 EKAP \u0130KN: 2025/1888777, 2025/635261, 2024/1377593",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-212",
+          "type": "NEW_TENDER_WON",
+          "date": "2026-10-09",
+          "regionId": "DSI-11",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2026/UY.II-1764 \u0026 EKAP \u0130KN: 2025/1888777 (kik.gov.tr)",
+          "note": "DS\u0130 11. B\u00F6lge Tekirda\u011F \u0130necik 1-2 ve Dedecik Barajlar\u0131 \u0130\u00E7mesuyu \u0130sale Hatt\u0131 ihalesini 1.059.000.000,00 TL s\u00F6zle\u015Fme bedeliyle kazand\u0131.",
+          "verified": true
+        },
+        {
+          "id": "SIG-213",
+          "type": "NEW_TENDER_WON",
+          "date": "2026-04-10",
+          "regionId": "DSI-12",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2025/UY.I-2762 \u0026 EKAP \u0130KN: 2025/635261 (kik.gov.tr)",
+          "note": "DS\u0130 12. B\u00F6lge Nev\u015Fehir Bayramhac\u0131l\u0131 Pompaj Sulamas\u0131 ihalesinde 797.000.000,00 TL bedelle s\u00F6zle\u015Fme imzalad\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-11",
+      "name": "Harbiye \u0130n\u015Faat Madencilik Taahh\u00FCt Petrol \u00DCr\u00FCnleri San. Tic. A.\u015E.",
+      "shortName": "Harbiye \u0130n\u015Faat Madencilik A.\u015E.",
+      "taxId": "EKAP-ONAYLI-1102",
+      "hqCity": "Hatay / Ankara",
+      "workGroups": [
+        "A/I",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-20",
+        "DSI-06"
+      ],
+      "capacitySaturationPct": 68,
+      "maxTenderCapacityTL": 2200000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2025/UY.I-1439 (02.07.2025 - kik.gov.tr) \u0026 EKAP \u0130KN: 2024/1484027",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-214",
+          "type": "NEW_TENDER_WON",
+          "date": "2025-07-18",
+          "regionId": "DSI-20",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2025/UY.I-1439 \u0026 EKAP \u0130KN: 2024/1484027 (kik.gov.tr)",
+          "note": "DS\u0130 20. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC Musabeyli Baraj\u0131 \u0130kmali (Yakla\u015F\u0131k Maliyet: 1.549.891.000 TL) ihalesinde 976.123.000,00 TL bedelle 18.07.2025 tarihinde s\u00F6zle\u015Fme imzalad\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-12",
+      "name": "K2 Grup \u0130n\u015Faat A.\u015E. \u0026 Everest Madencilik \u0130n\u015Faat \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "K2 Grup \u0130n\u015Faat \u0026 Everest Madencilik",
+      "taxId": "EKAP-ONAYLI-1204",
+      "hqCity": "Ankara / Konya",
+      "workGroups": [
+        "A/III",
+        "A/IV"
+      ],
+      "primaryRegions": [
+        "DSI-04"
+      ],
+      "capacitySaturationPct": 64,
+      "maxTenderCapacityTL": 2000000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2025/UY.II-877 ve 2025/UY.II-878 (27.03.2025 - kik.gov.tr) \u0026 EKAP \u0130KN: 2024/1377593",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-215",
+          "type": "NEW_TENDER_WON",
+          "date": "2025-04-15",
+          "regionId": "DSI-04",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2025/UY.II-878 \u0026 EKAP \u0130KN: 2024/1377593 (kik.gov.tr)",
+          "note": "DS\u0130 4. B\u00F6lge (Konya) Aksaray Ulu\u0131rmak (Mamas\u0131n) Baraj\u0131 Sulamas\u0131 Ana \u0130letim Hatt\u0131 Sanat Yap\u0131lar\u0131 ihalesini 861.861.861,99 TL bedelle kazand\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-13",
+      "name": "Uras End\u00FCstri \u0130n\u015Faat A.\u015E. \u0026 Rahmi \u00D6zkan T\u00FCmer \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "Uras End\u00FCstri \u0026 Rahmi \u00D6zkan T\u00FCmer",
+      "taxId": "EKAP-ONAYLI-1304",
+      "hqCity": "Ankara",
+      "workGroups": [
+        "A/III",
+        "A/IV"
+      ],
+      "primaryRegions": [
+        "DSI-04"
+      ],
+      "capacitySaturationPct": 45,
+      "maxTenderCapacityTL": 1800000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2025/UY.II-877 (27.03.2025 - kik.gov.tr) \u0026 EKAP \u0130KN: 2024/1377593",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-216",
+          "type": "JV_PARTNERSHIP",
+          "date": "2025-03-27",
+          "regionId": "DSI-04",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2025/UY.II-877 (27.03.2025 - kik.gov.tr)",
+          "note": "DS\u0130 4. B\u00F6lge Aksaray Ulu\u0131rmak Baraj\u0131 Sulamas\u0131 Ana \u0130letim Hatt\u0131 ihalesine (\u0130KN: 2024/1377593) ortak giri\u015Fim olarak kat\u0131larak s\u0131n\u0131r de\u011Fer civar\u0131nda teklif sundu.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-14",
+      "name": "\u0130lici \u0130n\u015Faat San. ve Tic. A.\u015E. \u0026 BTS Taahh\u00FCt \u0130n\u015Faat Altyap\u0131 San. ve Tic. A.\u015E. \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "\u0130lici \u0130n\u015Faat \u0026 BTS Taahh\u00FCt \u0130\u015F Ort.",
+      "taxId": "EKAP-ONAYLI-1405",
+      "hqCity": "Ankara",
+      "workGroups": [
+        "A/I",
+        "B/III"
+      ],
+      "primaryRegions": [
+        "DSI-05"
+      ],
+      "capacitySaturationPct": 66,
+      "maxTenderCapacityTL": 2000000000,
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "Kamu \u0130hale Kurumu (EKAP) Resmi Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2024/1152749 (S\u00F6zle\u015Fme: 26.12.2024 - kik.gov.tr)",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Ortak/IhaleArama/index.html",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-217",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-12-26",
+          "regionId": "DSI-05",
+          "source": "Kamu \u0130hale Kurumu (EKAP) Resmi Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2024/1152749 (kik.gov.tr)",
+          "note": "DS\u0130 5. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC (Ankara) \u00C7ank\u0131r\u0131 K\u0131zlaryolu Baraj\u0131 Yeniden Yerle\u015Fim Yeri Yap\u0131m\u0131 ihalesini (YM: 1.299.571.040,96 TL) 954.541.049,13 TL s\u00F6zle\u015Fme bedeliyle kazand\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-15",
+      "name": "Bulak Yap\u0131 \u0130n\u015Faat Proje San. Tic. Ltd. \u015Eti. \u0026 Grup Lider \u0130n\u015Faat A.\u015E. \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "Bulak Yap\u0131 \u0026 Grup Lider \u0130n\u015Faat",
+      "taxId": "EKAP-ONAYLI-1506",
+      "hqCity": "Adana / Ankara",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-06"
+      ],
+      "capacitySaturationPct": 62,
+      "maxTenderCapacityTL": 950000000,
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2025/1163497 (S\u00F6zle\u015Fme: 09.01.2026 - ekap.kik.gov.tr)",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Ortak/IhaleArama/index.html",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-218",
+          "type": "NEW_TENDER_WON",
+          "date": "2026-01-09",
+          "regionId": "DSI-06",
+          "source": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2025/1163497 (ekap.kik.gov.tr)",
+          "note": "DS\u0130 6. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC (Adana) Osmaniye \u0130li Kara\u00E7ay Deresi Islah\u0131 6. K\u0131s\u0131m ihalesinde (YM: 499.996.289,13 TL) 324.710.000,00 TL bedelle s\u00F6zle\u015Fme imzalad\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-16",
+      "name": "Mardest \u0130n\u015Faat Sanayi ve Ticaret A.\u015E. \u0026 \u0130hsan G\u00FCven \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "Mardest \u0130n\u015Faat \u0026 \u0130hsan G\u00FCven \u0130\u015F Ort.",
+      "taxId": "EKAP-ONAYLI-1606",
+      "hqCity": "Mersin / Ankara",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-06"
+      ],
+      "capacitySaturationPct": 58,
+      "maxTenderCapacityTL": 700000000,
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2025/1053977 (S\u00F6zle\u015Fme: 22.12.2025 - ekap.kik.gov.tr)",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Ortak/IhaleArama/index.html",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-219",
+          "type": "NEW_TENDER_WON",
+          "date": "2025-12-22",
+          "regionId": "DSI-06",
+          "source": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2025/1053977 (ekap.kik.gov.tr)",
+          "note": "DS\u0130 6. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC Mersin Tarsus Karaevli G\u00F6leti Sulamas\u0131 \u0130kmali ihalesinde (YM: 215.658.151,27 TL) 168.847.000,00 TL bedelle s\u00F6zle\u015Fme imzalad\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-17",
+      "name": "AK-TA Yap\u0131 \u0130n\u015Faat A.\u015E. \u0026 N\u0130L-TA Petrol \u0130n\u015Faat \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "AK-TA Yap\u0131 \u0026 N\u0130L-TA \u0130n\u015Faat \u0130\u015F Ort.",
+      "taxId": "EKAP-ONAYLI-1701",
+      "hqCity": "Bursa / Kocaeli",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-01"
+      ],
+      "capacitySaturationPct": 60,
+      "maxTenderCapacityTL": 800000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "EKAP Resmi Sonu\u00E7 \u0130lan\u0131 \u0026 K\u0130K Karar\u0131 2026/UY.II-643 \u2014 \u0130KN: 2025/2110590 (kik.gov.tr)",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-220",
+          "type": "NEW_TENDER_WON",
+          "date": "2026-03-10",
+          "regionId": "DSI-01",
+          "source": "EKAP Resmi Sonu\u00E7 \u0130lan\u0131 \u0026 K\u0130K Karar\u0131 2026/UY.II-643 \u2014 \u0130KN: 2025/2110590 (kik.gov.tr)",
+          "note": "DS\u0130 1. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC (Bursa) Kocaeli Kand\u0131ra Ar\u0131klar G\u00F6leti Sulamas\u0131 2. K\u0131s\u0131m ihalesinde (YM: 325.538.431 TL) 240.016.331,00 TL s\u00F6zle\u015Fme bedeliyle i\u015Fi \u00FCstlendi.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-18",
+      "name": "Salma \u0130n\u015Faat Taahh\u00FCt Emlak Turizm Tic. ve San. Ltd. \u015Eti. \u0026 Feridun Baltac\u0131 \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "Salma \u0130n\u015Faat \u0026 Baltac\u0131 \u0130n\u015Faat",
+      "taxId": "EKAP-ONAYLI-1801",
+      "hqCity": "Bursa / Ankara",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-01"
+      ],
+      "capacitySaturationPct": 42,
+      "maxTenderCapacityTL": 650000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2026/UY.II-643 (25.02.2026 - kik.gov.tr) \u0026 EKAP \u0130KN: 2025/2110590",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-221",
+          "type": "JV_PARTNERSHIP",
+          "date": "2026-02-25",
+          "regionId": "DSI-01",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2026/UY.II-643 (25.02.2026 - kik.gov.tr)",
+          "note": "DS\u0130 1. B\u00F6lge Kocaeli Kand\u0131ra Ar\u0131klar G\u00F6leti Sulamas\u0131 2. K\u0131s\u0131m ihalesinde (\u0130KN: 2025/2110590) s\u0131n\u0131r de\u011Fer civar\u0131nda rekabet\u00E7i teklif sundu.",
+          "verified": true
+        }
+      ],
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-01",
+          "role": "B\u00F6lge \u0130steklisi",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 26.13,
+          "totalContractVolume": 232673512.37,
+          "lastTenderIkn": "2025/2110590",
+          "lastProjectTitle": "Kocaeli Kand\u0131ra Ar\u0131klar G\u00F6leti Sulamas\u0131 2 K\u0131s\u0131m",
+          "officialRef": "\u0130KN 2025/2110590 (2026/UY.II-643)"
+        }
+      ]
+    },
+    {
+      "id": "COMP-19",
+      "name": "HLS \u0130n\u015Faat Taahh\u00FCt Sanayi ve Ticaret A.\u015E.",
+      "shortName": "HLS \u0130n\u015Faat Taahh\u00FCt A.\u015E.",
+      "taxId": "EKAP-ONAYLI-1912",
+      "hqCity": "Kayseri / Ankara",
+      "workGroups": [
+        "A/III",
+        "A/IV"
+      ],
+      "primaryRegions": [
+        "DSI-12"
+      ],
+      "capacitySaturationPct": 48,
+      "maxTenderCapacityTL": 1400000000,
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "K\u0130K Karar No: 2025/UY.I-2762 (24.12.2025 - kik.gov.tr) \u0026 EKAP \u0130KN: 2025/635261",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-222",
+          "type": "REGIONAL_MOBILIZATION",
+          "date": "2025-12-24",
+          "regionId": "DSI-12",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 2025/UY.I-2762 (24.12.2025 - kik.gov.tr)",
+          "note": "DS\u0130 12. B\u00F6lge (Kayseri) Nev\u015Fehir Bayramhac\u0131l\u0131 Pompaj Sulamas\u0131 ihalesine (\u0130KN: 2025/635261) kat\u0131larak s\u0131n\u0131r de\u011Fer band\u0131nda teklif sundu.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-20",
+      "name": "P\u0131nar Telekom\u00FCnikasyon \u0130n\u015Faat San. Tic. Ltd. \u015Eti. \u0026 Veysel Bilgen \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "P\u0131nar \u0130n\u015Faat \u0026 Veysel Bilgen \u0130\u015F Ort.",
+      "taxId": "EKAP-ONAYLI-2021",
+      "hqCity": "Ayd\u0131n / \u0130zmir",
+      "workGroups": [
+        "B/III",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-21"
+      ],
+      "capacitySaturationPct": 55,
+      "maxTenderCapacityTL": 550000000,
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2023/1521358 (Nisan 2024 - ekap.kik.gov.tr)",
+      "officialUrl": "https://ekap.kik.gov.tr/EKAP/Ortak/IhaleArama/index.html",
+      "verified": true,
+      "signals": [
+        {
+          "id": "SIG-223",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-04-18",
+          "regionId": "DSI-21",
+          "source": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2023/1521358 (ekap.kik.gov.tr)",
+          "note": "DS\u0130 21. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC (Ayd\u0131n) 211. \u015Eube M\u00FCd\u00FCrl\u00FC\u011F\u00FC \u0130dare Binas\u0131 ve Tesisleri \u0130n\u015Faat\u0131 ihalesinde 146.975.000,00 TL bedelle s\u00F6zle\u015Fme imzalad\u0131.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-21",
+      "name": "Spg Dan\u0131\u015Fmanl\u0131k Yat\u0131r\u0131m Yap\u0131m \u0130\u015Fletme ve Tic. Ltd. \u015Eti.",
+      "shortName": "Spg Dan\u0131\u015Fmanl\u0131k Yat\u0131r\u0131m Yap\u0131m",
+      "taxNo": "EKAP-\u0130KN-20251751337",
+      "hqCity": "Kahramanmara\u015F / Kilis",
+      "primaryRegions": [
+        "DSI-20"
+      ],
+      "workGroups": [
+        "A/IV"
+      ],
+      "maxFinancialCapacity": 649394545,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 22.46,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=36dbe294c85e3f82560977f6360b181e20969943eaef4682c1dda24d0286162f",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-949 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1751337",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-20",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 22.46,
+          "totalContractVolume": 201411783.09,
+          "lastTenderIkn": "2025/1751337",
+          "lastProjectTitle": "Kilis-Musabeyli ve K\u00F6yleri \u0130\u00E7mesuyu Ar\u0131tma Tesisi",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.I-949 \u0026 \u0130KN 2025/1751337"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-21",
+          "date": "2025-12-12",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-20",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/1751337 \u2014 Kilis-Musabeyli ve K\u00F6yleri \u0130\u00E7mesuyu Ar\u0131tma Tesisi (Devlet Su \u0130\u015Fleri 20.B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 201.411.783,09 TL teklif sundu (2026/UY.I-949).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-949 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1751337",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-22",
+      "name": "Mavi Altyap\u0131 A.\u015E.",
+      "shortName": "Mavi Altyap\u0131 A.\u015E.",
+      "taxNo": "EKAP-\u0130KN-20252255946",
+      "hqCity": "Erzurum",
+      "primaryRegions": [
+        "DSI-08"
+      ],
+      "workGroups": [
+        "A/III"
+      ],
+      "maxFinancialCapacity": 451127835,
+      "activeProjectCount": 2,
+      "capacitySaturation": 0.65,
+      "avgDiscountPct": 30.8,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=82671fad68878417a98e2b44deec27a94fffad7bb7017720b07f9fc3d1467315",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-873 (12.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/2255946",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-08",
+          "role": "B\u00F6lge Aktif Y\u00FCklenicisi (Canl\u0131 EKAP Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 1,
+          "avgDiscountPct": 30.8,
+          "totalContractVolume": 124879515.5,
+          "lastTenderIkn": "2025/2255946",
+          "lastProjectTitle": "Erzurum Aziziye \u0130l\u00E7e Merkezi Pulur \u00C7ay\u0131 1. K\u0131s\u0131m Ta\u015Fk\u0131n Kontrol \u0130n\u015Faat\u0131",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.I-873 \u0026 \u0130KN 2025/2255946"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-22",
+          "date": "2026-01-08",
+          "type": "NEW_TENDER_WON",
+          "regionId": "DSI-08",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/2255946 \u2014 Erzurum Aziziye \u0130l\u00E7e Merkezi Pulur \u00C7ay\u0131 1. K\u0131s\u0131m Ta\u015Fk\u0131n Kontrol \u0130n\u015Faat\u0131 (Dsi 8. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesinde 124.879.515,50 TL bedelle y\u00FCklenici olarak kaydedildi.",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-873 (12.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/2255946",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-23",
+      "name": "Dila Yap\u0131 Madencilik \u0130n\u015Faat Petrol Otomotiv Nakliyat Ticaret ve San. Ltd. \u015Eti.- Ahmet Kartal \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "Dila Yap\u0131 \u0026 Ahmet Kartal \u0130\u015F Ort.",
+      "taxNo": "EKAP-\u0130KN-20252255946",
+      "hqCity": "Erzurum",
+      "primaryRegions": [
+        "DSI-08"
+      ],
+      "workGroups": [
+        "A/III"
+      ],
+      "maxFinancialCapacity": 451127835,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 28.29,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=82671fad68878417a98e2b44deec27a94fffad7bb7017720b07f9fc3d1467315",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-873 (12.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/2255946",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-08",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 28.29,
+          "totalContractVolume": 129397899.29,
+          "lastTenderIkn": "2025/2255946",
+          "lastProjectTitle": "Erzurum Aziziye \u0130l\u00E7e Merkezi Pulur \u00C7ay\u0131 1. K\u0131s\u0131m Ta\u015Fk\u0131n Kontrol \u0130n\u015Faat\u0131",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.I-873 \u0026 \u0130KN 2025/2255946"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-23",
+          "date": "2026-01-08",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-08",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/2255946 \u2014 Erzurum Aziziye \u0130l\u00E7e Merkezi Pulur \u00C7ay\u0131 1. K\u0131s\u0131m Ta\u015Fk\u0131n Kontrol \u0130n\u015Faat\u0131 (Dsi 8. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 129.397.899,29 TL teklif sundu (2026/UY.I-873).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-873 (12.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/2255946",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-24",
+      "name": "\u00C7\u0131nar \u0130stasyonlar\u0131 Petrol \u0130n\u015Faat Ve Tekstil \u00DCr\u00FCnleri San Tic. Ltd \u015Eti.",
+      "shortName": "\u00C7\u0131nar \u0130stasyonlar\u0131 Petrol \u0130n\u015Faat",
+      "taxNo": "EKAP-\u0130KN-20251354433",
+      "hqCity": "Ayd\u0131n / Denizli",
+      "primaryRegions": [
+        "DSI-21"
+      ],
+      "workGroups": [
+        "B/III"
+      ],
+      "maxFinancialCapacity": 450000000,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 2,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=253dff5cdaacf36c4c7bc71f9fb3cab1cbab46faa4f12ff2cb6ec98cc21a34fe",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.II-325 (28.01.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1354433",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-21",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 2,
+          "totalContractVolume": 43511008.17,
+          "lastTenderIkn": "2025/1354433",
+          "lastProjectTitle": "Denizli-Sarayk\u00F6y ve Mu\u011Fla Akaryak\u0131t \u0130stasyonu Yap\u0131m\u0131",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.II-325 \u0026 \u0130KN 2025/1354433"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-24",
+          "date": "2025-10-02",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-21",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/1354433 \u2014 Denizli-Sarayk\u00F6y ve Mu\u011Fla Akaryak\u0131t \u0130stasyonu Yap\u0131m\u0131 (DS\u0130 21. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 43.511.008,17 TL teklif sundu (2026/UY.II-325).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.II-325 (28.01.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1354433",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-25",
+      "name": "Alayont Mimarl\u0131k M\u00FChendislik \u0130n\u015Faat Malzemesi Yap\u0131 Tasar\u0131m San. Ve Tic. Ltd. \u015Eti.",
+      "shortName": "Alayont Mimarl\u0131k M\u00FChendislik \u0130n\u015Faat",
+      "taxNo": "EKAP-\u0130KN-20251354433",
+      "hqCity": "Ayd\u0131n / Denizli",
+      "primaryRegions": [
+        "DSI-21"
+      ],
+      "workGroups": [
+        "B/III"
+      ],
+      "maxFinancialCapacity": 450000000,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 3.29,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=253dff5cdaacf36c4c7bc71f9fb3cab1cbab46faa4f12ff2cb6ec98cc21a34fe",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.II-325 (28.01.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1354433",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-21",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 3.29,
+          "totalContractVolume": 31229137.5,
+          "lastTenderIkn": "2025/1354433",
+          "lastProjectTitle": "Denizli-Sarayk\u00F6y ve Mu\u011Fla Akaryak\u0131t \u0130stasyonu Yap\u0131m\u0131",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.II-325 \u0026 \u0130KN 2025/1354433"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-25",
+          "date": "2025-10-02",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-21",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/1354433 \u2014 Denizli-Sarayk\u00F6y ve Mu\u011Fla Akaryak\u0131t \u0130stasyonu Yap\u0131m\u0131 (DS\u0130 21. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 31.229.137,50 TL teklif sundu (2026/UY.II-325).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.II-325 (28.01.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1354433",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-26",
+      "name": "Erg\u00FCn B\u0130L\u0130R",
+      "shortName": "Erg\u00FCn B\u0130L\u0130R",
+      "taxNo": "EKAP-\u0130KN-20251354433",
+      "hqCity": "Ayd\u0131n / Denizli",
+      "primaryRegions": [
+        "DSI-21"
+      ],
+      "workGroups": [
+        "B/III"
+      ],
+      "maxFinancialCapacity": 450000000,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 21.22,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=253dff5cdaacf36c4c7bc71f9fb3cab1cbab46faa4f12ff2cb6ec98cc21a34fe",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.II-325 (28.01.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1354433",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-21",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 21.22,
+          "totalContractVolume": 25438441.73,
+          "lastTenderIkn": "2025/1354433",
+          "lastProjectTitle": "Denizli-Sarayk\u00F6y ve Mu\u011Fla Akaryak\u0131t \u0130stasyonu Yap\u0131m\u0131",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.II-325 \u0026 \u0130KN 2025/1354433"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-26",
+          "date": "2025-10-02",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-21",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/1354433 \u2014 Denizli-Sarayk\u00F6y ve Mu\u011Fla Akaryak\u0131t \u0130stasyonu Yap\u0131m\u0131 (DS\u0130 21. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 25.438.441,73 TL teklif sundu (2026/UY.II-325).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.II-325 (28.01.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1354433",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-27",
+      "name": "G\u00F6kalp Proje M\u00FC\u015Favirlik A.\u015E.",
+      "shortName": "G\u00F6kalp Proje M\u00FC\u015Favirlik A.\u015E.",
+      "taxNo": "EKAP-\u0130KN-20251969352",
+      "hqCity": "Kayseri / Yozgat",
+      "primaryRegions": [
+        "DSI-12"
+      ],
+      "workGroups": [
+        "A/I"
+      ],
+      "maxFinancialCapacity": 838793022,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 26.91,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=5eb22c2069ae89dcb8e9b05b455f90fcc3eb6d11b489e1a06862affec29c6593",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-12",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 26.91,
+          "totalContractVolume": 245219462.25,
+          "lastTenderIkn": "2025/1969352",
+          "lastProjectTitle": "Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.I-892 \u0026 \u0130KN 2025/1969352"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-27",
+          "date": "2025-12-30",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-12",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/1969352 \u2014 Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m (Devlet Su \u0130\u015Fleri 12. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 245.219.462,25 TL teklif sundu (2026/UY.I-892).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-28",
+      "name": "Arkon M\u00FC\u015F. M\u00FCh. \u0130n\u015F. Tic. Ltd. \u015Eti.",
+      "shortName": "Arkon M\u00FC\u015F. M\u00FCh. \u0130n\u015F. Tic. Ltd. \u015Eti.",
+      "taxNo": "EKAP-\u0130KN-20251969352",
+      "hqCity": "Kayseri / Yozgat",
+      "primaryRegions": [
+        "DSI-12"
+      ],
+      "workGroups": [
+        "A/I"
+      ],
+      "maxFinancialCapacity": 838793022,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 27.95,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=5eb22c2069ae89dcb8e9b05b455f90fcc3eb6d11b489e1a06862affec29c6593",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-12",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 27.95,
+          "totalContractVolume": 241734109.49,
+          "lastTenderIkn": "2025/1969352",
+          "lastProjectTitle": "Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.I-892 \u0026 \u0130KN 2025/1969352"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-28",
+          "date": "2025-12-30",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-12",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/1969352 \u2014 Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m (Devlet Su \u0130\u015Fleri 12. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 241.734.109,49 TL teklif sundu (2026/UY.I-892).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-29",
+      "name": "Agreon \u0130n\u015F. Taah. Ltd. \u015Eti.- Pakyol \u0130n\u015F. Taah. ve Tic. A.\u015E. \u0130\u015F Ortakl\u0131\u011F\u0131",
+      "shortName": "Agreon \u0130n\u015F. \u0026 Pakyol \u0130n\u015F. \u0130\u015F Ort.",
+      "taxNo": "EKAP-\u0130KN-20251969352",
+      "hqCity": "Kayseri / Yozgat",
+      "primaryRegions": [
+        "DSI-12"
+      ],
+      "workGroups": [
+        "A/I"
+      ],
+      "maxFinancialCapacity": 838793022,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 27.51,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=5eb22c2069ae89dcb8e9b05b455f90fcc3eb6d11b489e1a06862affec29c6593",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-12",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 27.51,
+          "totalContractVolume": 243227832.1,
+          "lastTenderIkn": "2025/1969352",
+          "lastProjectTitle": "Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.I-892 \u0026 \u0130KN 2025/1969352"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-29",
+          "date": "2025-12-30",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-12",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/1969352 \u2014 Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m (Devlet Su \u0130\u015Fleri 12. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 243.227.832,10 TL teklif sundu (2026/UY.I-892).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-30",
+      "name": "\u00D6zdemireller Harf. Nak. Tic. ve San. Ltd. \u015Eti.",
+      "shortName": "\u00D6zdemireller Harf. Nak. Tic.",
+      "taxNo": "EKAP-\u0130KN-20251969352",
+      "hqCity": "Kayseri / Yozgat",
+      "primaryRegions": [
+        "DSI-12"
+      ],
+      "workGroups": [
+        "A/I"
+      ],
+      "maxFinancialCapacity": 838793022,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 27.06,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=5eb22c2069ae89dcb8e9b05b455f90fcc3eb6d11b489e1a06862affec29c6593",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-12",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 27.06,
+          "totalContractVolume": 244721554.71,
+          "lastTenderIkn": "2025/1969352",
+          "lastProjectTitle": "Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.I-892 \u0026 \u0130KN 2025/1969352"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-30",
+          "date": "2025-12-30",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-12",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/1969352 \u2014 Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m (Devlet Su \u0130\u015Fleri 12. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 244.721.554,71 TL teklif sundu (2026/UY.I-892).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-31",
+      "name": "Hitit Taah. \u0130n\u015F. San. Tic. Ltd. \u015Eti.",
+      "shortName": "Hitit Taah. \u0130n\u015F. San. Tic. Ltd. \u015Eti.",
+      "taxNo": "EKAP-\u0130KN-20251969352",
+      "hqCity": "Kayseri / Yozgat",
+      "primaryRegions": [
+        "DSI-12"
+      ],
+      "workGroups": [
+        "A/I"
+      ],
+      "maxFinancialCapacity": 838793022,
+      "activeProjectCount": 1,
+      "capacitySaturation": 0.4,
+      "avgDiscountPct": 26.62,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=5eb22c2069ae89dcb8e9b05b455f90fcc3eb6d11b489e1a06862affec29c6593",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-12",
+          "role": "B\u00F6lge \u0130steklisi (Canl\u0131 K\u0130K Karar Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 0,
+          "avgDiscountPct": 26.62,
+          "totalContractVolume": 246215277.32,
+          "lastTenderIkn": "2025/1969352",
+          "lastProjectTitle": "Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m",
+          "officialRef": "K\u0130K Karar\u0131 2026/UY.I-892 \u0026 \u0130KN 2025/1969352"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-31",
+          "date": "2025-12-30",
+          "type": "REGION_MOBILIZATION",
+          "regionId": "DSI-12",
+          "officialSourceType": "KIK_KARAR",
+          "description": "\u0130KN: 2025/1969352 \u2014 Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m (Devlet Su \u0130\u015Fleri 12. B\u00F6lge M\u00FCd\u00FCrl\u00FC\u011F\u00FC) ihalesine 246.215.277,32 TL teklif sundu (2026/UY.I-892).",
+          "source": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-32",
+      "name": "AL\u0130 OSMAN B\u0130R\u0130NC\u0130",
+      "shortName": "AL\u0130 OSMAN B\u0130R\u0130NC\u0130",
+      "taxNo": "EKAP-\u0130KN-2025462536",
+      "hqCity": "Erzurum",
+      "primaryRegions": [
+        "DSI-08"
+      ],
+      "workGroups": [
+        "A/III"
+      ],
+      "maxFinancialCapacity": 450000000,
+      "activeProjectCount": 2,
+      "capacitySaturation": 0.65,
+      "avgDiscountPct": 30.84,
+      "stdDevDiscountPct": 2.85,
+      "boundaryHunterScore": 0.8,
+      "fduCompetenceScore": 84,
+      "jvPartners": [],
+      "officialSourceType": "EKAP_SONUC",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Ortak/BirBakistaIhale.aspx?IdareId=d43e8dcb8867568afb82f21a60e8abb1be0d7994008ffeda8f0d841048c53e2c\u0026IhaleId=f0479ec25e152acb3e21c47aa592064d15b213964bfff098e9581e8d453287df",
+      "verificationSource": "EKAP Bir Bak\u0131\u015Fta \u0130hale Resmi Sonu\u00E7 Kayd\u0131 \u0130KN: 2025/462536 (S\u00F6zle\u015Fme: 16.05.2025 - ekap.kik.gov.tr) \u2014 Y\u00FCklenici: AL\u0130 OSMAN B\u0130R\u0130NC\u0130",
+      "syncedAutomatically": true,
+      "regionalBreakdown": [
+        {
+          "regionId": "DSI-08",
+          "role": "B\u00F6lge Aktif Y\u00FCklenicisi (Canl\u0131 EKAP Senkronizasyonu)",
+          "tenderCount": 1,
+          "winCount": 1,
+          "avgDiscountPct": 30.84,
+          "totalContractVolume": 16332479.1,
+          "lastTenderIkn": "2025/462536",
+          "lastProjectTitle": "Erzurum K\u00F6pr\u00FCk\u00F6y Ak\u00E7am Mahallesi Ta\u015Fk\u0131n Koruma \u0130n\u015Faat\u0131",
+          "officialRef": "EKAP Sonu\u00E7 \u0130lan\u0131 \u0130KN 2025/462536"
+        }
+      ],
+      "signals": [
+        {
+          "id": "SIG-SYNC-32",
+          "date": "2025-04-17",
+          "type": "NEW_TENDER_WON",
+          "regionId": "DSI-08",
+          "officialSourceType": "EKAP_SONUC",
+          "description": "\u0130KN: 2025/462536 \u2014 Erzurum K\u00F6pr\u00FCk\u00F6y Ak\u00E7am Mahallesi Ta\u015Fk\u0131n Koruma \u0130n\u015Faat\u0131 (DEVLET SU \u0130\u015ELER\u0130 GENEL M\u00DCD\u00DCRL\u00DC\u011E\u00DC \u003E DS\u0130 8. B\u00D6LGE M\u00DCD\u00DCRL\u00DC\u011E\u00DC) ihalesinde 16.332.479,10 TL bedelle y\u00FCklenici olarak kaydedildi.",
+          "source": "EKAP Bir Bak\u0131\u015Fta \u0130hale Resmi Sonu\u00E7 Kayd\u0131 \u0130KN: 2025/462536 (S\u00F6zle\u015Fme: 16.05.2025 - ekap.kik.gov.tr) \u2014 Y\u00FCklenici: AL\u0130 OSMAN B\u0130R\u0130NC\u0130",
+          "verified": true
+        }
+      ]
+    }
+  ],
+  "tenders": [
+    {
+      "id": "TND-2025-462536",
+      "ikn": "2025/462536",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Erzurum K\u00F6pr\u00FCk\u00F6y Ak\u00E7am Mahallesi Ta\u015Fk\u0131n Koruma \u0130n\u015Faat\u0131",
+      "regionId": "DSI-08",
+      "workGroup": "A/III",
+      "date": "2025-04-17",
+      "approxCost": 23614428.45,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 16087491.91,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "EKAP_SONUC",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Ortak/BirBakistaIhale.aspx?IdareId=d43e8dcb8867568afb82f21a60e8abb1be0d7994008ffeda8f0d841048c53e2c\u0026IhaleId=f0479ec25e152acb3e21c47aa592064d15b213964bfff098e9581e8d453287df",
+      "verificationSource": "EKAP Bir Bak\u0131\u015Fta \u0130hale Resmi Sonu\u00E7 Kayd\u0131 \u0130KN: 2025/462536 (S\u00F6zle\u015Fme: 16.05.2025 - ekap.kik.gov.tr) \u2014 Y\u00FCklenici: AL\u0130 OSMAN B\u0130R\u0130NC\u0130",
+      "isSampleCalibration": false,
+      "syncedAutomatically": true,
+      "syncedAt": "2026-11-14 23:49:10",
+      "winnerCompetitorId": "COMP-32",
+      "bids": [
+        {
+          "competitorId": "COMP-32",
+          "amount": 16332479.1,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-01",
+          "amount": 28307550,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-1969352",
+      "ikn": "2025/1969352",
+      "kikDecisionNo": "2026/UY.I-892",
+      "title": "Yozgat Ayd\u0131nc\u0131k K\u00F6srelik G\u00F6leti \u0130kmali 2 K\u0131s\u0131m",
+      "regionId": "DSI-12",
+      "workGroup": "A/I",
+      "date": "2025-12-30",
+      "approxCost": 335517208.6,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 248953768.78,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=5eb22c2069ae89dcb8e9b05b455f90fcc3eb6d11b489e1a06862affec29c6593",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-892 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1969352",
+      "isSampleCalibration": false,
+      "syncedAutomatically": true,
+      "syncedAt": "2026-11-14 23:49:10",
+      "winnerCompetitorId": "COMP-27",
+      "bids": [
+        {
+          "competitorId": "COMP-27",
+          "amount": 245219462.25,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-28",
+          "amount": 241734109.49,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-29",
+          "amount": 243227832.1,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-30",
+          "amount": 244721554.71,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-31",
+          "amount": 246215277.32,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-1354433",
+      "ikn": "2025/1354433",
+      "kikDecisionNo": "2026/UY.II-325",
+      "title": "Denizli-Sarayk\u00F6y ve Mu\u011Fla Akaryak\u0131t \u0130stasyonu Yap\u0131m\u0131",
+      "regionId": "DSI-21",
+      "workGroup": "B/III",
+      "date": "2025-10-02",
+      "approxCost": 32290955.37,
+      "nCoeff": 1,
+      "reportedBoundaryValue": 25825829.17,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=253dff5cdaacf36c4c7bc71f9fb3cab1cbab46faa4f12ff2cb6ec98cc21a34fe",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.II-325 (28.01.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1354433",
+      "isSampleCalibration": false,
+      "syncedAutomatically": true,
+      "syncedAt": "2026-11-14 23:49:10",
+      "winnerCompetitorId": "COMP-24",
+      "bids": [
+        {
+          "competitorId": "COMP-24",
+          "amount": 43511008.17,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-25",
+          "amount": 31229137.5,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-26",
+          "amount": 25438441.73,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-2255946",
+      "ikn": "2025/2255946",
+      "kikDecisionNo": "2026/UY.I-873",
+      "title": "Erzurum Aziziye \u0130l\u00E7e Merkezi Pulur \u00C7ay\u0131 1. K\u0131s\u0131m Ta\u015Fk\u0131n Kontrol \u0130n\u015Faat\u0131",
+      "regionId": "DSI-08",
+      "workGroup": "A/III",
+      "date": "2026-01-08",
+      "approxCost": 180451134.18,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 131368425.68,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=82671fad68878417a98e2b44deec27a94fffad7bb7017720b07f9fc3d1467315",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-873 (12.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/2255946",
+      "isSampleCalibration": false,
+      "syncedAutomatically": true,
+      "syncedAt": "2026-11-14 23:49:10",
+      "winnerCompetitorId": "COMP-22",
+      "bids": [
+        {
+          "competitorId": "COMP-22",
+          "amount": 124879515.5,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-23",
+          "amount": 129397899.29,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-1751337",
+      "ikn": "2025/1751337",
+      "kikDecisionNo": "2026/UY.I-949",
+      "title": "Kilis-Musabeyli ve K\u00F6yleri \u0130\u00E7mesuyu Ar\u0131tma Tesisi",
+      "regionId": "DSI-20",
+      "workGroup": "A/IV",
+      "date": "2025-12-12",
+      "approxCost": 259757818.03,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 204478967.6,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KARAR",
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=36dbe294c85e3f82560977f6360b181e20969943eaef4682c1dda24d0286162f",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.I-949 (26.03.2026 - ekap.kik.gov.tr) \u0026 \u0130KN: 2025/1751337",
+      "isSampleCalibration": false,
+      "syncedAutomatically": true,
+      "syncedAt": "2026-11-14 23:49:10",
+      "winnerCompetitorId": "COMP-21",
+      "bids": [
+        {
+          "competitorId": "COMP-21",
+          "amount": 201411783.09,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-01",
+          "amount": 211702621.69,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-1888777",
+      "ikn": "2025/1888777",
+      "kikDecisionNo": "2026/UY.II-1764",
+      "title": "Tekirda\u011F \u0130necik 1-2 ve Dedecik Barajlar\u0131 \u0130\u00E7mesuyu \u0130sale Hatt\u0131 Yap\u0131m \u0130\u015Fi",
+      "regionId": "DSI-11",
+      "workGroup": "A/IV",
+      "date": "2026-01-08",
+      "approxCost": 1505809084.7,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 1042500000,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.II-1764 (24.06.2026 - kik.gov.tr) \u0026 EKAP \u0130KN: 2025/1888777",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-10",
+      "bids": [
+        {
+          "competitorId": "COMP-10",
+          "amount": 1059000000,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-02",
+          "amount": 1084500000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-2110590",
+      "ikn": "2025/2110590",
+      "kikDecisionNo": "2026/UY.II-643",
+      "title": "Kocaeli Kand\u0131ra Ar\u0131klar G\u00F6leti Sulamas\u0131 2. K\u0131s\u0131m Yap\u0131m \u0130\u015Fi",
+      "regionId": "DSI-01",
+      "workGroup": "A/III",
+      "date": "2026-01-05",
+      "approxCost": 325538431,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 236850000,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2026/UY.II-643 (25.02.2026 - kik.gov.tr) \u0026 EKAP \u0130KN: 2025/2110590",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-17",
+      "bids": [
+        {
+          "competitorId": "COMP-18",
+          "amount": 234900000,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-17",
+          "amount": 240016331,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-01",
+          "amount": 251400000,
+          "isValid": true
+        }
+      ],
+      "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=259e48ebe687189c4c4a6f60dc23bdaf115a74e6f5c64dfb28ac0e48090b211a",
+      "lastVerifiedAt": "2026-11-14 23:49:10"
+    },
+    {
+      "id": "TND-2025-1053977",
+      "ikn": "2025/1053977",
+      "title": "Mersin Tarsus Karaevli G\u00F6leti Sulamas\u0131 \u0130kmali Yap\u0131m \u0130\u015Fi",
+      "regionId": "DSI-06",
+      "workGroup": "A/III",
+      "date": "2025-10-31",
+      "approxCost": 215658151.27,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 164900000,
+      "officialBoundaryVerified": true,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2025/1053977 (S\u00F6zle\u015Fme: 22.12.2025 - ekap.kik.gov.tr)",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-16",
+      "bids": [
+        {
+          "competitorId": "COMP-16",
+          "amount": 168847000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-1163497",
+      "ikn": "2025/1163497",
+      "title": "Osmaniye \u0130li Kara\u00E7ay Deresi Islah\u0131 6. K\u0131s\u0131m Yap\u0131m \u0130\u015Fi",
+      "regionId": "DSI-06",
+      "workGroup": "A/III",
+      "date": "2025-09-30",
+      "approxCost": 499996289.13,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 321400000,
+      "officialBoundaryVerified": true,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2025/1163497 (S\u00F6zle\u015Fme: 09.01.2026 - ekap.kik.gov.tr)",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-15",
+      "bids": [
+        {
+          "competitorId": "COMP-15",
+          "amount": 324710000,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-03",
+          "amount": 348900000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-635261",
+      "ikn": "2025/635261",
+      "kikDecisionNo": "2025/UY.I-2762",
+      "title": "Nev\u015Fehir Bayramhac\u0131l\u0131 Pompaj Sulamas\u0131 Yap\u0131m \u0130\u015Fi",
+      "regionId": "DSI-12",
+      "workGroup": "A/III",
+      "date": "2025-06-03",
+      "approxCost": 945038470,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 768400000,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2025/UY.I-2762 (24.12.2025 - kik.gov.tr) \u0026 EKAP \u0130KN: 2025/635261",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-10",
+      "bids": [
+        {
+          "competitorId": "COMP-19",
+          "amount": 762500000,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-10",
+          "amount": 797000000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-489470",
+      "ikn": "2025/489470",
+      "title": "Tunceli-Pertek Kacarlar G\u00F6leti Sulamas\u0131 Eksiklerinin Tamamlanmas\u0131 2. K\u0131s\u0131m Yap\u0131m \u0130\u015Fi",
+      "regionId": "DSI-09",
+      "workGroup": "A/III",
+      "date": "2025-04-07",
+      "approxCost": 211126958.15,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 154122679,
+      "officialBoundaryVerified": true,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "Kamu \u0130hale Kurumu (EKAP) Resmi Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2025/489470 (S\u00F6zle\u015Fme Tarihi: 25.06.2025 - kik.gov.tr)",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-09",
+      "bids": [
+        {
+          "competitorId": "COMP-09",
+          "amount": 158990354,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2024-1484027",
+      "ikn": "2024/1484027",
+      "kikDecisionNo": "2025/UY.I-1439",
+      "title": "Musabeyli Baraj\u0131 \u0130kmali (Kilis - Musabeyli) Yap\u0131m \u0130\u015Fi",
+      "regionId": "DSI-20",
+      "workGroup": "A/I",
+      "date": "2024-12-18",
+      "approxCost": 1549891000,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 998500000,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2025/UY.I-1439 (02.07.2025 - kik.gov.tr) \u0026 EKAP \u0130KN: 2024/1484027",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-11",
+      "bids": [
+        {
+          "competitorId": "COMP-11",
+          "amount": 976123000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2024-1377593",
+      "ikn": "2024/1377593",
+      "kikDecisionNo": "2025/UY.II-878",
+      "title": "Aksaray Ulu\u0131rmak (Mamas\u0131n) Baraj\u0131 Sulamas\u0131 Ana \u0130letim Hatt\u0131 Sanat Yap\u0131lar\u0131 Yap\u0131m \u0130\u015Fi",
+      "regionId": "DSI-04",
+      "workGroup": "A/III",
+      "date": "2024-11-14",
+      "approxCost": 1194027603,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 854200000,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2025/UY.II-877 ve 2025/UY.II-878 (27.03.2025 - kik.gov.tr) \u0026 EKAP \u0130KN: 2024/1377593",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-12",
+      "bids": [
+        {
+          "competitorId": "COMP-13",
+          "amount": 848900000,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-12",
+          "amount": 861861861.99,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-10",
+          "amount": 879400000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2024-1152749",
+      "ikn": "2024/1152749",
+      "title": "\u00C7ank\u0131r\u0131 K\u0131zlaryolu Baraj\u0131 Yeniden Yerle\u015Fim Yeri Yap\u0131m\u0131 \u0130\u015Fi",
+      "regionId": "DSI-05",
+      "workGroup": "B/III",
+      "date": "2024-09-03",
+      "approxCost": 1299571040.96,
+      "nCoeff": 1,
+      "reportedBoundaryValue": 942000000,
+      "officialBoundaryVerified": true,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "Kamu \u0130hale Kurumu (EKAP) Resmi Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2024/1152749 (S\u00F6zle\u015Fme: 26.12.2024 - kik.gov.tr)",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-14",
+      "bids": [
+        {
+          "competitorId": "COMP-14",
+          "amount": 954541049.13,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-1521358",
+      "ikn": "2023/1521358",
+      "title": "DS\u0130 Ayd\u0131n 211. \u015Eube M\u00FCd\u00FCrl\u00FC\u011F\u00FC \u0130dare Binas\u0131 ve Tesisleri \u0130n\u015Faat\u0131",
+      "regionId": "DSI-21",
+      "workGroup": "B/III",
+      "date": "2024-01-25",
+      "approxCost": 149987147,
+      "nCoeff": 1,
+      "reportedBoundaryValue": 138400000,
+      "officialBoundaryVerified": true,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2023/1521358 (Nisan 2024 - ekap.kik.gov.tr)",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-20",
+      "bids": [
+        {
+          "competitorId": "COMP-20",
+          "amount": 146975000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-1580956",
+      "ikn": "2023/1580956",
+      "kikDecisionNo": "2024/UY.I-799",
+      "title": "Kahramanmara\u015F-Oniki\u015Fubat Kurucaova ve Tekir Mahalleleri Tekir \u00C7ay\u0131, Bo\u011Fazkavak ve Kandil Dereleri Ta\u015Fk\u0131n Koruma \u0130n\u015Faat\u0131",
+      "regionId": "DSI-20",
+      "workGroup": "A/III",
+      "date": "2024-02-22",
+      "approxCost": 553488040,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 428163434,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2024/UY.I-799 (Karar Tarihi: 12.06.2024 - kik.gov.tr) \u0026 EKAP \u0130KN: 2023/1580956",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-01",
+      "bids": [
+        {
+          "competitorId": "COMP-02",
+          "amount": 427027027,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-01",
+          "amount": 445105000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-1471844",
+      "ikn": "2023/1471844",
+      "kikDecisionNo": "2024/UY.II-567",
+      "title": "Samsun 19 May\u0131s \u0130l\u00E7e Merkezi Ku\u015Fkayas\u0131 Mahallesi ve Kald\u0131r\u0131m Mahallesi Tar\u0131m Arazilerinin Engiz \u00C7ay\u0131 2. K\u0131s\u0131m Ta\u015Fk\u0131n ve R\u00FCsubat Zararlar\u0131ndan Korunmas\u0131 \u0130n\u015Faat\u0131",
+      "regionId": "DSI-07",
+      "workGroup": "A/III",
+      "date": "2024-01-18",
+      "approxCost": 164927094,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 126677351,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2024/UY.II-567 (Karar Tarihi: 04.04.2024 - kik.gov.tr) \u0026 EKAP \u0130KN: 2023/1471844",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-04",
+      "bids": [
+        {
+          "competitorId": "COMP-04",
+          "amount": 119884150,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-1241906",
+      "ikn": "2023/1241906",
+      "kikDecisionNo": "2024/UY.II-553",
+      "title": "K\u0131rklareli-Kof\u00E7az Kula 2 G\u00F6leti ve \u0130letim Hatt\u0131 \u0130n\u015Faat\u0131",
+      "regionId": "DSI-11",
+      "workGroup": "A/I",
+      "date": "2023-12-26",
+      "approxCost": 571315757,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 407516472,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2024/UY.II-553 (Karar Tarihi: 04.04.2024 - kik.gov.tr) \u0026 EKAP \u0130KN: 2023/1241906",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-02",
+      "bids": [
+        {
+          "competitorId": "COMP-02",
+          "amount": 394693577,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-03",
+          "amount": 414319878.75,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-1273876",
+      "ikn": "2023/1273876",
+      "kikDecisionNo": "2024/UY.II-503",
+      "title": "G\u00FCney Marmara AT ve T\u0130GH Projesi \u0130le Tarla \u0130\u00E7i Yollar\u0131n\u0131n \u0130yile\u015Ftirilmesi \u0130n\u015Faat\u0131",
+      "regionId": "DSI-25",
+      "workGroup": "A/III",
+      "date": "2023-12-18",
+      "approxCost": 665721432.16,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 438557713.24,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2024/UY.II-503 (Karar Tarihi: 27.03.2024 - kik.gov.tr) \u0026 EKAP \u0130KN: 2023/1273876",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-05",
+      "bids": [
+        {
+          "competitorId": "COMP-05",
+          "amount": 438557713.24,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-1099327",
+      "ikn": "2023/1099327",
+      "title": "Yalova \u0130li Balaban Deresi Islah\u0131 2. K\u0131s\u0131m \u0130n\u015Faat\u0131",
+      "regionId": "DSI-01",
+      "workGroup": "A/III",
+      "date": "2023-11-09",
+      "approxCost": 199939920.44,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 154098322.6,
+      "officialBoundaryVerified": true,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2023/1099327 (09.11.2023 - ekap.kik.gov.tr)",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-01",
+      "bids": [
+        {
+          "competitorId": "COMP-01",
+          "amount": 156999905,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-716691",
+      "ikn": "2023/716691",
+      "title": "Nev\u015Fehir Sar\u0131h\u0131d\u0131r Pompaj Sulamas\u0131 Yenileme \u0130n\u015Faat\u0131",
+      "regionId": "DSI-12",
+      "workGroup": "A/III",
+      "date": "2023-08-14",
+      "approxCost": 249490385,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 205625455,
+      "officialBoundaryVerified": true,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2023/716691 (ekap.kik.gov.tr)",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-01",
+      "bids": [
+        {
+          "competitorId": "COMP-01",
+          "amount": 270000000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-620107",
+      "ikn": "2023/620107",
+      "title": "Erzurum-Pasinler K\u00FC\u00E7\u00FCkt\u00FCy G\u00F6leti Yap\u0131m \u0130\u015Fi",
+      "regionId": "DSI-08",
+      "workGroup": "A/I",
+      "date": "2023-07-17",
+      "approxCost": 245677954,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 178555729,
+      "officialBoundaryVerified": true,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "EKAP_SONUC_ILANI",
+      "verificationSource": "EKAP Resmi \u0130hale Sonu\u00E7 \u0130lan\u0131 \u0130KN: 2023/620107 (17.07.2023 - ekap.kik.gov.tr)",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-08",
+      "bids": [
+        {
+          "competitorId": "COMP-03",
+          "amount": 188497245,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-08",
+          "amount": 195871633,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-404580",
+      "ikn": "2023/404580",
+      "kikDecisionNo": "2023/UY.II-1278",
+      "title": "Bal\u0131kesir Kepsut Baraj\u0131 Yap\u0131m\u0131 (88m \u00D6n Y\u00FCz\u00FC Beton Kapl\u0131 Kaya Dolgu Baraj \u0130n\u015Faat\u0131)",
+      "regionId": "DSI-GM",
+      "workGroup": "A/I",
+      "date": "2023-05-25",
+      "approxCost": 1386328596,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 904504302,
+      "officialBoundaryVerified": true,
+      "evalRule": "ADTA_EXPLAIN",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "KIK_KURUL_KARARI",
+      "verificationSource": "Kamu \u0130hale Kurulu Karar\u0131 No: 2023/UY.II-1278 (Karar Tarihi: 04.10.2023 - kik.gov.tr) \u0026 EKAP \u0130KN: 2023/404580",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-06",
+      "bids": [
+        {
+          "competitorId": "COMP-07",
+          "amount": 829712548,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-06",
+          "amount": 867330392,
+          "isValid": true
+        }
+      ]
+    }
+  ]
+}
