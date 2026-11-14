@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>DSIIhaleZekasi</AssemblyName>
+    <Product>DSİ İhale Zekası — KİK Rakip Davranış ve Sınır Değer Öngörü Sistemi</Product>
+    <Company>DSİ Müteahhit Karar Destek Sistemleri</Company>
+    <Version>1.0.0</Version>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4314.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\ui\index.html" LogicalName="ui/index.html" />
+    <EmbeddedResource Include="..\ui\styles.css" LogicalName="ui/styles.css" />
+    <EmbeddedResource Include="..\ui\kik-engine.js" LogicalName="ui/kik-engine.js" />
+    <EmbeddedResource Include="..\ui\app.js" LogicalName="ui/app.js" />
+    <EmbeddedResource Include="..\..\data\verified_db.json" LogicalName="data/verified_db.json" />
+  </ItemGroup>
+
+</Project>
