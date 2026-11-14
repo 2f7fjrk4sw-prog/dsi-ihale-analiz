@@ -1,0 +1,13 @@
+# .NET Derleme ve Geçici Klasörleri
+**/bin/
+**/obj/
+dist/
+src/Installer/payload.zip
+
+# İşletim Sistemi ve IDE Geçici Dosyaları
+.vs/
+.vscode/
+*.user
+*.suo
+Thumbs.db
+.DS_Store
