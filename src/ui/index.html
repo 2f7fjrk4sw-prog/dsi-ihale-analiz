@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DSİ Yapım İhaleleri Teklif Analiz ve Sınır Değer Hesaplama Sistemi</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ÜST KURUMSAL BAŞLIK VE VERİ GÜVENLİĞİ ÇUBUĞU -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">DSİ</div>
+      <div class="brand-title">
+        <h1>DSİ Yapım İhaleleri Teklif Analiz ve Sınır Değer Hesaplama Sistemi</h1>
+        <p>4734 Sayılı Kamu İhale Kanunu ve Kamu İhale Genel Tebliği (Madde 45.1.1) Uyarınca Karar Destek Sistemi</p>
+      </div>
+    </div>
+
+    <div class="topbar-controls">
+      <div class="verified-pill" title="Sistem KİK (ekap.kik.gov.tr) ve DSİ (dsi.gov.tr) resmi kaynaklarını periyodik olarak tarar ve veritabanını günceller">
+        <span class="verified-dot" id="topbarSyncDot"></span>
+        <span id="verifiedStatusText">Otomatik Resmi Veri Senkronizasyonu: Aktif</span>
+      </div>
+
+      <button class="btn btn-emerald btn-sm" id="btnTopbarSyncNow" onclick="App.triggerOfficialSyncNow()" title="KİK Kurul Kararları, EKAP Bir Bakışta İhale ve DSİ Bölge Müdürlükleri resmi kaynaklarını şimdi tara ve veritabanını güncelle">
+        ↻ Resmi Kaynakları Şimdi Tara
+      </button>
+
+      <button class="btn btn-topbar btn-sm" onclick="App.openOfficialKikDecisionsPortal()" title="Kamu İhale Kurulu Resmi Uyuşmazlık Kararları Sorgulama Sayfası">
+        KİK Resmi Karar Sorgu (kik.gov.tr)
+      </button>
+
+      <button class="btn btn-topbar btn-sm" onclick="App.openOfficialEkapPortal()" title="EKAP Resmi İhale Arama Sayfası">
+        EKAP Resmi İhale Sorgu
+      </button>
+
+      <button class="btn btn-topbar btn-sm" onclick="App.exportDatabaseJson()" title="Tüm ihale ve firma kayıtlarını bilgisayarınıza yedek dosyası olarak kaydedin">
+        Veritabanı Yedeği İndir
+      </button>
+      <label class="btn btn-topbar btn-sm" style="margin:0; cursor:pointer;" title="Daha önce aldığınız yedek dosyasını sisteme geri yükleyin">
+        Yedek Dosyası Yükle
+        <input type="file" accept=".json" style="display:none" onchange="App.importDatabaseJson(event)">
+      </label>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- SOL KURUMSAL MENÜ -->
+    <aside class="sidebar">
+      <div class="nav-list">
+        <div class="nav-section-label">İhale Karar ve Teklif</div>
+        <button class="nav-btn active" data-tab="tab-dashboard" onclick="App.switchTab('tab-dashboard', this)">
+          <span class="nav-num">1</span>
+          <span>Genel Özet ve İhale Arşivi</span>
+        </button>
+        <button class="nav-btn" data-tab="tab-simulator" onclick="App.switchTab('tab-simulator', this)">
+          <span class="nav-num">2</span>
+          <span>Yeni İhale Teklif Hesaplama</span>
+        </button>
+
+        <div class="nav-section-label">Kayıt ve Veri Yönetimi</div>
+        <button class="nav-btn" data-tab="tab-competitors" onclick="App.switchTab('tab-competitors', this)">
+          <span class="nav-num">3</span>
+          <span>Rakip Firma Kayıtları</span>
+        </button>
+        <button class="nav-btn" data-tab="tab-regional" onclick="App.switchTab('tab-regional', this)">
+          <span class="nav-num">4</span>
+          <span>Bölgelere Göre Rakip Analizi</span>
+        </button>
+        <button class="nav-btn" data-tab="tab-datacenter" onclick="App.switchTab('tab-datacenter', this)">
+          <span class="nav-num">5</span>
+          <span>İhale Tutanağı ve Veri Girişi</span>
+        </button>
+        <button class="nav-btn" data-tab="tab-officialsync" onclick="App.switchTab('tab-officialsync', this)">
+          <span class="nav-num">6</span>
+          <span>Otomatik Resmi Veri Tarama</span>
+        </button>
+
+        <div class="nav-section-label">Mevzuat Hesap Cetveli</div>
+        <button class="nav-btn" data-tab="tab-kikcalc" onclick="App.switchTab('tab-kikcalc', this)">
+          <span class="nav-num">7</span>
+          <span>KİK Sınır Değer Hesap Cetveli</span>
+        </button>
+      </div>
+
+      <div class="sidebar-footer">
+        <strong>Veri Bütünlük Özeti (SHA-256)</strong>
+        <div id="dbHashDisplay" style="font-family:monospace; color:#1d4ed8; word-break:break-all; margin-bottom:6px;">
+          Doğrulanıyor...
+        </div>
+        <div>Çalışma Modu: <span style="color:#15803d; font-weight:700;">Yerel Bilgisayar Veritabanı</span></div>
+      </div>
+    </aside>
+
+    <!-- ANA İÇERİK ALANI -->
+    <main class="content-area">
+
+      <!-- ======================================================================= -->
+      <!-- 1. BÖLÜM: GENEL ÖZET VE İHALE ARŞİVİ                                    -->
+      <!-- ======================================================================= -->
+      <section id="tab-dashboard" class="tab-pane active">
+        <div class="page-header">
+          <div>
+            <h2>1. Genel Özet ve Geçmiş DSİ İhaleleri Tablosu</h2>
+            <p>Sistemde kayıtlı resmi DSİ ihale sonuçlarının, ortalama sınır değer indirim oranlarının ve rakip firmaların genel durumu</p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="App.switchTab('tab-simulator', document.querySelector('[data-tab=tab-simulator]'))">
+              Yeni İhale İçin Teklif Hesapla
+            </button>
+            <button class="btn btn-secondary" onclick="App.switchTab('tab-datacenter', document.querySelector('[data-tab=tab-datacenter]'))">
+              Yeni İhale Tutanağı Ekle
+            </button>
+          </div>
+        </div>
+
+        <div class="info-guide-banner">
+          <strong>Bu Ekran Nasıl Okunur?</strong> Aşağıdaki özet kartlarda geçmiş DSİ yapım ihalelerinde oluşan ortalama <strong>Sınır Değer İndirim (Tenkisat) Oranı</strong> ve ihaleyi kazanan firmaların ortalama indirim oranı gösterilmektedir. Yeni gireceğiniz bir ihalede hangi fiyattan teklif vermeniz gerektiğini hesaplamak için sağ üstteki <strong>"Yeni İhale İçin Teklif Hesapla"</strong> butonuna tıklayınız.
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card emerald">
+            <div class="kpi-label">Kayıtlı ve Doğrulanmış İhale</div>
+            <div class="kpi-value" id="kpiVerifiedTenders">0</div>
+            <div class="kpi-sub" id="kpiVerifiedSub">KİK Madde 45.1.1 Kontrolü Yapılmış</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Kayıtlı Rakip Firma (İstekli)</div>
+            <div class="kpi-value" id="kpiCompetitorCount">0</div>
+            <div class="kpi-sub" id="kpiActiveSignalsSub">0 Kayıtlı Şantiye / Sicil Bilgisi</div>
+          </div>
+          <div class="kpi-card amber">
+            <div class="kpi-label">Ortalama Sınır Değer İndirimi</div>
+            <div class="kpi-value" id="kpiAvgBoundaryDiscount">%0,00</div>
+            <div class="kpi-sub">Yaklaşık Maliyete Göre Ortalama Sınır Değer</div>
+          </div>
+          <div class="kpi-card purple">
+            <div class="kpi-label">Ortalama Kazanan Teklif İndirimi</div>
+            <div class="kpi-value" id="kpiAvgWinnerDiscount">%0,00</div>
+            <div class="kpi-sub" id="kpiAvgMarginAboveSD">Sınır Değerin Ortalama +%0,00 Üzeri</div>
+          </div>
+        </div>
+
+        <div class="panel-grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Sonuçlanmış DSİ İhaleleri ve Sınır Değer Özeti</div>
+              <span class="badge badge-verified">Resmi Tutanak Kayıtları</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>İhale Kayıt No (İKN) ve Tarih</th>
+                    <th>İhale Adı ve DSİ Bölgesi</th>
+                    <th>Yaklaşık Maliyet</th>
+                    <th>Resmi Sınır Değer</th>
+                    <th>İhaleyi Kazanan Firma ve İndirimi</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboardTendersBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Rakip Firmaların Teklif Eğilimi ve İş Yükü Özeti</div>
+              <span class="badge badge-blue">Firma Listesi</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Rakip Firma Ünvanı</th>
+                    <th>Teklif Verme Eğilimi</th>
+                    <th>Mevcut İş / Şantiye Yükü</th>
+                    <th>Ortalama İndirim Oranı</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboardCompetitorsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================= -->
+      <!-- 2. BÖLÜM: YENİ İHALE TEKLİF VE SINIR DEĞER HESAPLAMA                     -->
+      <!-- ======================================================================= -->
+      <section id="tab-simulator" class="tab-pane">
+        <div class="page-header no-print">
+          <div>
+            <h2>2. Yeni İhale Teklif ve Sınır Değer Öngörü Hesaplaması</h2>
+            <p>Girmeyi planladığınız DSİ ihalesinde rakiplerin olası tekliflerini, tahmini Sınır Değeri ve sizin için en uygun teklif tutarını hesaplayın</p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-emerald" onclick="App.runMonteCarloSimulation()">
+              Hesaplamayı Yeniden Çalıştır
+            </button>
+            <button class="btn btn-secondary" onclick="window.print()">
+              Teklif Analiz Raporunu Yazdır / PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="info-guide-banner no-print">
+          <strong>Kullanım Rehberi (3 Adım):</strong>
+          <strong>1)</strong> Sol bölümde gireceğiniz ihalenin DSİ Bölgesini, İş Grubunu ve kendi hesapladığınız <strong>Yaklaşık Maliyet (TL)</strong> tutarını giriniz.
+          <strong>2)</strong> İhaleye katılmasını beklediğiniz rakip firmaların durumunu kontrol ediniz.
+          <strong>3)</strong> Sağ tarafta sistemin sizin için hesapladığı <strong>3 Teklif Seçeneğini</strong> ve <strong>Tahmini Sınır Değer Aralığını</strong> inceleyiniz.
+        </div>
+
+        <div class="simulator-layout">
+          <!-- SOL PANEL: İHALE BİLGİLERİ GİRİŞİ -->
+          <div class="card no-print">
+            <div class="card-header">
+              <div class="card-title">Adım 1: Girilecek İhalenin Bilgileri</div>
+            </div>
+
+            <div class="form-group">
+              <label>İhalenin Adı (Rapor Başlığı İçin)</label>
+              <input type="text" id="simTitle" value="DSİ 5. Bölge Ankara-Çankırı Sulama ve Taşkın Koruma Yapım İşi">
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>DSİ Bölge Müdürlüğü</label>
+                <select id="simRegion" onchange="App.onSimParamsChanged()"></select>
+              </div>
+              <div class="form-group">
+                <label>Benzer İş Grubu</label>
+                <select id="simWorkGroup" onchange="App.onSimWorkGroupChanged()"></select>
+              </div>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Hesapladığınız Yaklaşık Maliyet (TL)</label>
+                <input type="number" id="simApproxCost" value="250000000" step="1000000" onchange="App.onSimParamsChanged()">
+                <span class="field-hint">Keşif/metraj çalışmanızla bulduğunuz tutar</span>
+              </div>
+              <div class="form-group">
+                <label>Sınır Değer Katsayısı (N)</label>
+                <input type="number" id="simNCoeff" value="1.20" step="0.01" min="0.90" max="1.30" onchange="App.onSimParamsChanged()">
+                <span class="field-hint">DSİ Altyapı: 1,20 / Üstyapı: 1,00</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>
+                İdare Yaklaşık Maliyet Sapma Payı:
+                <strong style="color:#1d4ed8;" id="simYmSpreadLabel">±%2.5 Sapma Payı</strong>
+              </label>
+              <input type="range" id="simYmSpread" min="0" max="8" step="0.5" value="2.5"
+                oninput="document.getElementById('simYmSpreadLabel').textContent = '±%' + this.value + ' Sapma Payı'; App.onSimParamsChanged();">
+              <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted); margin-top:4px;">
+                <span>%0 (Sabit)</span>
+                <span id="simYmRangePreview" style="font-weight:600; color:var(--text-secondary);">243.8M TL — 256.3M TL</span>
+                <span>±%8 (Geniş Aralık)</span>
+              </div>
+              <span class="field-hint">DSİ'nin açıklayacağı resmi yaklaşık maliyetin sizin hesabınızdan ne kadar farklı olabileceğini belirtir.</span>
+            </div>
+
+            <div class="form-group">
+              <label>İhale Şartnamesindeki Değerlendirme Kuralı</label>
+              <select id="simEvalMode" onchange="App.onSimParamsChanged()">
+                <option value="AUTO_REJECT">Sınır Değerin Altındaki Teklifler Otomatik Reddedilir (4734 Md. 38 - Standart)</option>
+                <option value="ADTA_EXPLAIN">Sınır Değer Altındaki Tekliflerden Aşırı Düşük Açıklaması (ADTA) İstenir</option>
+                <option value="FDU_SCORE">Fiyat Dışı Unsur (FDU) Puanlaması Уygulanır</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="simFduBox" style="display:none;">
+              <label>Firmanızın Beklenen Fiyat Dışı Unsur (Teknik) Puanı (0-100)</label>
+              <input type="number" id="simOurFduScore" value="88" min="50" max="100">
+            </div>
+
+            <div class="card-header" style="margin-top:18px;">
+              <div class="card-title">Adım 2: Rakip Firmaların Katılım Durumu</div>
+            </div>
+            <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">
+              İhaleye kesin katılacağını veya katılmayacağını bildiğiniz firmaları aşağıdan sabitleyebilirsiniz:
+            </p>
+            <div id="simCompetitorToggles" style="max-height:290px; overflow-y:auto; padding-right:4px;"></div>
+
+            <button class="btn btn-primary btn-block" style="margin-top:14px;" onclick="App.runMonteCarloSimulation()">
+              Teklif ve Sınır Değer Hesaplamasını Güncelle
+            </button>
+          </div>
+
+          <!-- SAĞ PANEL: HESAPLAMA SONUÇLARI -->
+          <div>
+            <!-- 3 TEKLİF ÖNERİ KARTI -->
+            <div class="strategy-cards">
+              <div class="strat-card safe-card">
+                <span class="strat-tag" style="color:#1d4ed8;">1. SEÇENEK: İHTİYATLI (GÜVENLİ) TEKLİF</span>
+                <div class="strat-price" id="resSafePrice">0 TL</div>
+                <div class="strat-kirim" style="color:#1d4ed8;" id="resSafeKirim">%0,00 İndirim (Tenkisat)</div>
+                <div class="strat-desc">Sınır değerin altında kalıp elenme riskini en aza indiren güvenli teklif tutarıdır.</div>
+                <div class="strat-metrics">
+                  <span>İhaleyi Kazanma Olasılığı: <strong id="resSafeWin">%0</strong></span>
+                  <span>Sınır Değer Altında Kalma Riski: <strong style="color:#15803d;" id="resSafeRisk">%0</strong></span>
+                </div>
+              </div>
+
+              <div class="strat-card optimal">
+                <span class="strat-tag" style="color:#15803d;">2. SEÇENEK: ÖNERİLEN İDEAL TEKLİF (TAVSİYE EDİLEN)</span>
+                <div class="strat-price" id="resOptPrice">0 TL</div>
+                <div class="strat-kirim" style="color:#15803d;" id="resOptKirim">%0,00 İndirim (Tenkisat)</div>
+                <div class="strat-desc">Sınır değerin üzerinde kalarak rakipler arasında 1. olma ihtimalinin en yüksek olduğu tutardır.</div>
+                <div class="strat-metrics">
+                  <span>İhaleyi Kazanma Olasılığı: <strong style="color:#15803d;" id="resOptWin">%0</strong></span>
+                  <span>Sınır Değer Altında Kalma Riski: <strong style="color:#b45309;" id="resOptRisk">%0</strong></span>
+                </div>
+              </div>
+
+              <div class="strat-card agg-card">
+                <span class="strat-tag" style="color:#b45309;">3. SEÇENEK: SINIR DEĞERE YAKIN (RİSKLİ) TEKLİF</span>
+                <div class="strat-price" id="resAggPrice">0 TL</div>
+                <div class="strat-kirim" style="color:#b45309;" id="resAggKirim">%0,00 İndirim (Tenkisat)</div>
+                <div class="strat-desc">Çok düşük fiyat veren rakipleri geçmek için sınır değere çok yakın verilen yüksek riskli tekliftir.</div>
+                <div class="strat-metrics">
+                  <span>İhaleyi Kazanma Olasılığı: <strong id="resAggWin">%0</strong></span>
+                  <span>Sınır Değer Altında Kalma Riski: <strong style="color:#b91c1c;" id="resAggRisk">%0</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- BEKLENEN SINIR DEĞER ARALIĞI KARTI -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Tahmini Sınır Değer (SD) Hesaplama Sonucu</div>
+                <span class="badge badge-blue" id="resSdBadge">Beklenen Ortalama Sınır Değer İndirimi: %0,00</span>
+              </div>
+              <p style="font-size:12.5px; color:var(--text-secondary); margin-bottom:12px;">
+                Rakiplerin geçmiş teklif alışkanlıkları ve yaklaşık maliyet sapma payı dikkate alındığında, bu ihalede <strong>Sınır Değerin (SD)</strong> oluşması beklenen fiyat aralığı aşağıdadır:
+              </p>
+              <div class="form-row-3" style="text-align:center;">
+                <div style="background:#fef2f2; padding:14px; border-radius:6px; border:1px solid #fecaca;">
+                  <div style="font-size:12px; color:#991b1b; font-weight:700;">En Düşük Muhtemel Sınır Değer</div>
+                  <div style="font-size:18px; font-weight:800; color:#b91c1c; margin-top:4px;" id="resSdP15">0 TL</div>
+                  <div style="font-size:12px; color:#7f1d1d;" id="resSdP15Kirim">%0,00 İndirim</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">(Rakipler çok düşük teklif verirse)</div>
+                </div>
+                <div style="background:#eff6ff; padding:14px; border-radius:6px; border:2px solid #2563eb;">
+                  <div style="font-size:12px; color:#1e40af; font-weight:800;">BEKLENEN ORTALAMA SINIR DEĞER</div>
+                  <div style="font-size:21px; font-weight:800; color:#0f2942; margin-top:4px;" id="resSdMean">0 TL</div>
+                  <div style="font-size:12.5px; color:#1d4ed8; font-weight:700;" id="resSdMeanKirim">%0,00 İndirim</div>
+                  <div style="font-size:11px; color:var(--text-secondary); margin-top:2px;">(En güçlü olasılık noktası)</div>
+                </div>
+                <div style="background:#f0fdf4; padding:14px; border-radius:6px; border:1px solid #bbf7d0;">
+                  <div style="font-size:12px; color:#166534; font-weight:700;">En Yüksek Muhtemel Sınır Değer</div>
+                  <div style="font-size:18px; font-weight:800; color:#15803d; margin-top:4px;" id="resSdP85">0 TL</div>
+                  <div style="font-size:12px; color:#14532d;" id="resSdP85Kirim">%0,00 İndirim</div>
+                  <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">(Rakipler yüksek teklif verirse)</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- STRATEJİ EĞRİSİ GRAFİĞİ -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">İndirim (Tenkisat) Oranına Göre İhaleyi Kazanma ve Elenme Grafiği</div>
+                <div style="font-size:12px; display:flex; gap:16px;">
+                  <span style="color:#15803d; font-weight:700;">■ İhaleyi 1. Sırada Kazanma Olasılığı (%)</span>
+                  <span style="color:#b91c1c; font-weight:700;">■ Sınır Değer Altında Kalıp Elenme Riski (%)</span>
+                </div>
+              </div>
+              <div class="chart-box">
+                <canvas id="strategyChartCanvas" width="820" height="250"></canvas>
+              </div>
+            </div>
+
+            <!-- RAKİP BAZLI TAHMİN TABLOSU -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Rakip Firmaların Bu İhaledeki Tahmini Teklif Tutarları</div>
+                <span class="badge badge-blue">Rakip Analiz Tablosu</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Rakip Firma Ünvanı</th>
+                      <th>Teklif Verme Eğilimi</th>
+                      <th>İhaleye Katılma İhtimali</th>
+                      <th>Tahmini İndirim (Tenkisat)</th>
+                      <th>Tahmini Teklif Tutarı Aralığı (TL)</th>
+                      <th>Rakibin Kazanma İhtimali</th>
+                    </tr>
+                  </thead>
+                  <tbody id="simCompetitorResultsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================= -->
+      <!-- 3. BÖLÜM: RAKİP FİRMA (İSTEKLİ) KAYITLARI VE ANALİZİ                     -->
+      <!-- ======================================================================= -->
+      <section id="tab-competitors" class="tab-pane">
+        <div class="page-header">
+          <div>
+            <h2>3. Rakip Firma (İstekli) Kayıtları ve Şantiye Durum Analizi</h2>
+            <p>Rakip müteahhit firmaların geçmiş DSİ ihalelerindeki tekliflerini, mevcut şantiye doluluk oranlarını ve resmi sicil/sözleşme bilgilerini inceleyin</p>
+          </div>
+          <button class="btn btn-primary" onclick="App.toggleNewCompetitorBox()">
+            + Yeni Rakip Firma Kaydı Ekle
+          </button>
+        </div>
+
+        <div class="info-guide-banner">
+          <strong>Resmi Kaynak Zorunluluğu:</strong> Bu bölümde yer alan tüm rakip firmalar ve üstlendikleri işler, doğrudan <strong>Kamu İhale Kurulu (KİK) Resmi Uyuşmazlık Kararları (kik.gov.tr)</strong> ve <strong>EKAP Resmi İhale Sonuç İlanları (ekap.kik.gov.tr)</strong> kayıtlarından alınmıştır. Yeni bir firma veya şantiye bilgisi eklerken resmi kaynak türü ve İKN / KİK Karar Numarası girilmesi zorunludur.
+        </div>
+
+        <!-- YENİ RAKİP EKLEME FORMU -->
+        <div class="card" id="newCompetitorBox" style="display:none; border:2px solid var(--corp-blue);">
+          <div class="card-header">
+            <div class="card-title">Yeni Rakip Müteahhit Firma Kayıt Formu (Sadece Resmi Kaynaklı)</div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Firmanın Resmi Ticaret Ünvanı *</label>
+              <input type="text" id="newCompName" placeholder="Örn: BRJ İnşaat Sanayi ve Ticaret A.Ş.">
+            </div>
+            <div class="form-group">
+              <label>Kısa Gösterim Adı</label>
+              <input type="text" id="newCompShort" placeholder="Örn: BRJ İnşaat A.Ş.">
+            </div>
+            <div class="form-group">
+              <label>Vergi Numarası / MERSİS No *</label>
+              <input type="text" id="newCompTax" placeholder="Örn: 1450293812">
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Merkez İl</label>
+              <input type="text" id="newCompCity" placeholder="Örn: Ankara">
+            </div>
+            <div class="form-group">
+              <label>Mevcut Şantiye / İş Doluluk Oranı (%)</label>
+              <input type="number" id="newCompSat" value="50" min="0" max="100">
+            </div>
+            <div class="form-group">
+              <label>Tahmini Maksimum İhale Kapasitesi (TL)</label>
+              <input type="number" id="newCompCap" value="1000000000" step="50000000">
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Çalıştığı İş Grupları (A/I, A/III, A/IV)</label>
+              <input type="text" id="newCompGroups" value="A/I, A/III">
+            </div>
+            <div class="form-group">
+              <label>Resmi Veri Kaynağı Kurumu *</label>
+              <select id="newCompSourceType"></select>
+            </div>
+            <div class="form-group">
+              <label>Resmi Belge / İKN / KİK Karar No *</label>
+              <input type="text" id="newCompSource" placeholder="Örn: KİK Karar No: 2024/UY.II-553 veya İKN: 2023/1241906">
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="App.toggleNewCompetitorBox()">Vazgeç</button>
+            <button class="btn btn-emerald" onclick="App.saveNewCompetitor()">Resmi Kaynaklı Firma Olarak Kaydet</button>
+          </div>
+        </div>
+
+        <div class="panel-grid-2">
+          <!-- SOL: RAKİP LİSTESİ -->
+          <div class="card">
+            <div class="card-header" style="flex-wrap:wrap; gap:10px;">
+              <div class="card-title">Kayıtlı Rakip Firmalar (İncelemek İçin Seçiniz)</div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <label style="font-size:11.5px; font-weight:700; color:var(--corp-navy); margin:0;">Bölge Filtresi:</label>
+                <select id="competitorRegionFilterSelect" style="width:210px; padding:5px 8px; font-size:12px;" onchange="App.onCompetitorRegionFilterChanged(this.value)">
+                  <option value="ALL">Tüm DSİ Bölgeleri</option>
+                </select>
+              </div>
+            </div>
+            <div id="competitorListContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
+          </div>
+
+          <!-- SAĞ: SEÇİLİ RAKİP DETAYI -->
+          <div class="card" id="competitorDetailCard">
+            <div id="competitorDetailContent"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================= -->
+      <!-- 4. BÖLÜM: DSİ BÖLGE MÜDÜRLÜKLERİNE GÖRE RAKİP VE REKABET ANALİZİ         -->
+      <!-- ======================================================================= -->
+      <section id="tab-regional" class="tab-pane">
+        <div class="page-header">
+          <div>
+            <h2>4. DSİ Bölge Müdürlüklerine Göre Rakip ve Rekabet Analizi</h2>
+            <p>Rakip müteahhit firmaların iş yaptıkları DSİ Bölge Müdürlüklerine göre ayrıştırılması, bölgesel sınır değer ortalamaları ve bölgeye özel teklif stratejisi</p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-primary" onclick="App.openSimulatorForSelectedRegion()">
+              Seçili Bölge İçin İhale Teklif Hesaplamasına Geç
+            </button>
+          </div>
+        </div>
+
+        <div class="info-guide-banner">
+          <strong>Bölgesel Rekabet ve Mobilizasyon Analizi:</strong> DSİ yapım ihalelerinde müteahhitlerin teklif davranışları (tenkisat oranları), şantiyelerinin ve makine parklarının bulunduğu <strong>DSİ Bölge Müdürlüğü'ne</strong> göre önemli farklılık gösterir. Aşağıda resmi KİK ve EKAP kayıtlarına göre rakiplerin hangi bölgelerde faaliyet gösterdiği, her bölgenin ortalama sınır değer indirimi ve bölge bazlı teklif tavsiyeleri yer almaktadır.
+        </div>
+
+        <!-- BÖLGESEL ÖZET KARTLARI (4 KPI) -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Resmi Kayıtlı Faal DSİ Bölgesi</div>
+            <div class="kpi-value" id="regKpiActiveCount">0</div>
+            <div class="kpi-sub" id="regKpiActiveSub">KİK / EKAP İhale ve Rakip Kaydı Bulunan Bölgeler</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">En Yüksek İndirim Yapılan Bölge</div>
+            <div class="kpi-value" id="regKpiHighDisc" style="font-size:18px; color:#b91c1c;">-</div>
+            <div class="kpi-sub" id="regKpiHighDiscSub">En sert fiyat rekabetinin yaşandığı bölge</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">En Düşük İndirim Yapılan Bölge</div>
+            <div class="kpi-value" id="regKpiLowDisc" style="font-size:18px; color:#15803d;">-</div>
+            <div class="kpi-sub" id="regKpiLowDiscSub">Sınır değerin daha yüksek oluştuğu bölge</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Çok Bölgeli (Ulusal) Rakip Sayısı</div>
+            <div class="kpi-value" id="regKpiMultiComp">0</div>
+            <div class="kpi-sub" id="regKpiMultiCompSub">Birden fazla DSİ bölgesinde iş yapan firmalar</div>
+          </div>
+        </div>
+
+        <!-- BÖLGE SEÇİM ÇUBUĞU VE SEÇİLİ BÖLGE DETAY ANALİZİ -->
+        <div class="card">
+          <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+            <div>
+              <div class="card-title">DSİ Bölge Müdürlüğü Bazında Detaylı Rakip ve İhale İncelemesi</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+                İncelemek istediğiniz DSİ Bölge Müdürlüğü'nü hızlı butonlardan veya açılır listeden seçiniz
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label style="font-size:12.5px; font-weight:700; color:var(--corp-navy); margin:0;">DSİ Bölge Müdürlüğü Seçiniz:</label>
+              <select id="regionalTabSelect" style="width:310px; font-weight:700;" onchange="App.selectRegionalAnalysisRegion(this.value)"></select>
+            </div>
+          </div>
+
+          <!-- HIZLI BÖLGE BUTONLARI -->
+          <div id="regionalQuickButtons" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;"></div>
+
+          <!-- SEÇİLİ BÖLGE STRATEJİK ÖZET VE TAVSİYE KUTUSU -->
+          <div id="regionalStrategicAdviceBox" style="background:#eff6ff; border:2px solid #2563eb; border-radius:6px; padding:16px; margin-bottom:16px;"></div>
+
+          <div class="panel-grid-2">
+            <!-- SOL: SEÇİLİ BÖLGEDE İŞ YAPAN RAKİP FİRMALAR -->
+            <div>
+              <div style="font-size:14px; font-weight:800; color:var(--corp-navy); margin-bottom:10px;" id="regionalCompTableTitle">
+                Seçili Bölgede İş Yapan Rakip Müteahhitler
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Rakip Firma Ünvanı</th>
+                      <th>Bölgedeki Konumu</th>
+                      <th>Bölge İhale / Kazanma</th>
+                      <th>Bölge Ort. İndirimi (%)</th>
+                      <th>Sözleşme / Teklif Hacmi</th>
+                      <th>İşlem</th>
+                    </tr>
+                  </thead>
+                  <tbody id="regionalCompetitorsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- SAĞ: SEÇİLİ BÖLGEDEKİ RESMİ İHALELER -->
+            <div>
+              <div style="font-size:14px; font-weight:800; color:var(--corp-navy); margin-bottom:10px;" id="regionalTenderTableTitle">
+                Seçili Bölgedeki Resmi KİK / EKAP İhaleleri
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Resmi İKN ve Tarih</th>
+                      <th>İhale Adı ve İş Grubu</th>
+                      <th>Yaklaşık Maliyet</th>
+                      <th>Resmi Sınır Değer</th>
+                      <th>Kazanan Firma</th>
+                    </tr>
+                  </thead>
+                  <tbody id="regionalTendersTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TÜM DSİ BÖLGELERİ KARŞILAŞTIRMALI REKABET VE RAKİP MATRİSİ -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Tüm DSİ Bölge Müdürlükleri Karşılaştırmalı Rakip ve Rekabet Tablosu</div>
+              <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
+                Hangi DSİ Bölge Müdürlüğü'nde hangi rakip firmaların iş yaptığı, bölgesel sınır değer ortalamaları ve önerilen hedef indirim aralıkları
+              </div>
+            </div>
+            <span class="badge badge-verified">Bölgesel Rekabet Özeti</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>DSİ Bölge Müdürlüğü</th>
+                  <th>Bölgede İş Yapan / Teklif Veren Rakip Firmalar</th>
+                  <th>Resmi İhale Sayısı ve Hacmi</th>
+                  <th>Ort. Resmi Sınır Değer İndirimi</th>
+                  <th>Ort. Kazanan Teklif İndirimi</th>
+                  <th>Önerilen Hedef İndirim Bandı</th>
+                  <th>Bölgesel Rekabet Derecesi</th>
+                  <th>İncele</th>
+                </tr>
+              </thead>
+              <tbody id="allRegionsMatrixBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================= -->
+      <!-- 5. BÖLÜM: İHALE TUTANAĞI VE VERİ GİRİŞ MERKEZİ                          -->
+      <!-- ======================================================================= -->
+      <section id="tab-datacenter" class="tab-pane">
+        <div class="page-header">
+          <div>
+            <h2>5. Resmi İhale Tutanağı ve Veri Giriş Merkezi</h2>
+            <p>Geçmiş DSİ ihalelerine ait Yaklaşık Maliyet, Sınır Değer ve Rakip Teklif bilgilerini sisteme ekleyin</p>
+          </div>
+        </div>
+
+        <div class="info-guide-banner">
+          <strong>Doğrulanmış Veri Güvencesi:</strong> Sisteme girdiğiniz her ihale kaydı, kaydedilmeden önce <strong>Kamu İhale Genel Tebliği Madde 45.1.1</strong> formülüyle otomatik olarak kontrol edilir. İsterseniz doğrudan form üzerinden, isterseniz EKAP sonuç ilanı metnini yapıştırarak veya Excel (CSV) dosyasıyla toplu olarak veri ekleyebilirsiniz.
+        </div>
+
+        <div class="subtabs">
+          <button class="btn btn-primary btn-sm" id="btnSubManual" onclick="App.switchDataSubtab('sub-manual')">
+            Yöntem 1: İhale Tutanağı Formu İle Giriş
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btnSubSmart" onclick="App.switchDataSubtab('sub-smart')">
+            Yöntem 2: EKAP Sonuç İlanı Metni Yapıştırarak Otomatik Giriş
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btnSubCsv" onclick="App.switchDataSubtab('sub-csv')">
+            Yöntem 3: Excel / CSV Dosyası İle Toplu Aktarım
+          </button>
+        </div>
+
+        <!-- ALT SEKME 1: MANUEL TUTANAK GİRİŞİ -->
+        <div id="sub-manual" class="card">
+          <div class="card-header">
+            <div class="card-title">Resmi İhale Komisyon Tutanağı / Sonuç İlanı Kayıt Formu</div>
+            <span class="badge badge-verified">Otomatik KİK 45.1.1 Matematik Kontrolü</span>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>İhale Kayıt Numarası (İKN - YYYY/NNNNNN) *</label>
+              <input type="text" id="tFormIkn" placeholder="Örn: 2023/1241906">
+            </div>
+            <div class="form-group">
+              <label>İhale Tarihi *</label>
+              <input type="date" id="tFormDate" value="2025-04-07">
+            </div>
+            <div class="form-group">
+              <label>Resmi Veri Kaynağı Kurumu *</label>
+              <select id="tFormSourceType"></select>
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Resmi Belge / KİK Kurul Karar No *</label>
+              <input type="text" id="tFormSource" placeholder="Örn: KİK Karar No: 2024/UY.II-553 (kik.gov.tr)">
+            </div>
+            <div class="form-group">
+              <label>İhale Adı / İşin Konusu *</label>
+              <input type="text" id="tFormTitle" placeholder="Örn: Kırklareli-Kofçaz Kula 2 Göleti ve İletim Hattı İnşaatı">
+            </div>
+            <div class="form-group">
+              <label>DSİ Bölge Müdürlüğü &amp; İş Grubu</label>
+              <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:6px;">
+                <select id="tFormRegion"></select>
+                <select id="tFormWorkGroup"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Açıklanan Yaklaşık Maliyet (TL) *</label>
+              <input type="number" id="tFormYM" value="200000000" step="100000" oninput="App.previewManualTenderMath()">
+            </div>
+            <div class="form-group">
+              <label>Sınır Değer Katsayısı (N)</label>
+              <input type="number" id="tFormN" value="1.20" step="0.01" oninput="App.previewManualTenderMath()">
+            </div>
+            <div class="form-group">
+              <label>KİK Formülüne Göre Hesaplanan Sınır Değer (TL)</label>
+              <input type="text" id="tFormCalculatedSD" readonly style="background:#f0fdf4; color:#15803d; font-weight:700;">
+            </div>
+          </div>
+
+          <div class="card-header" style="margin-top:10px;">
+            <div class="card-title">İhaleye Katılan İstekliler ve Teklif Tutarları</div>
+            <button class="btn btn-secondary btn-sm" onclick="App.addManualBidRow()">+ Yeni Teklif Satırı Ekle</button>
+          </div>
+
+          <div id="tFormBidsContainer" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;"></div>
+
+          <div id="tFormMathAuditBox" style="padding:12px 16px; border-radius:6px; background:#f0fdf4; border:1px solid #86efac; margin-bottom:14px; font-size:13px; color:#14532d;">
+            Teklif tutarlarını girdiğinizde KİK Madde 45.1.1 sınır değer kontrolü burada otomatik olarak gösterilecektir.
+          </div>
+
+          <button class="btn btn-emerald" onclick="App.saveManualTender()">
+            İhale Kaydını Doğrula ve Veritabanına Kaydet
+          </button>
+        </div>
+
+        <!-- ALT SEKME 2: EKAP METİN AYRIŞTIRICI -->
+        <div id="sub-smart" class="card" style="display:none;">
+          <div class="card-header">
+            <div class="card-title">EKAP İhale Sonuç İlanı / Tutanak Metni Otomatik Okuyucu</div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn btn-secondary btn-sm" onclick="App.loadSampleEkapText()">Örnek Tutanak Metni Doldur</button>
+              <button class="btn btn-primary btn-sm" onclick="App.openOfficialEkapPortal()">Resmi EKAP İhale Sorgu Sayfasını Aç</button>
+            </div>
+          </div>
+          <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
+            EKAP sayfasından kopyaladığınız <strong>İhale Sonuç İlanı</strong> veya <strong>Komisyon Tutanağı</strong> metnini aşağıdaki kutuya yapıştırınız. Sistem metin içerisindeki İhale Kayıt Numarasını (İKN), Yaklaşık Maliyeti ve Firma Tekliflerini otomatik olarak okuyup kayıt formuna aktaracaktır.
+          </p>
+          <div class="form-group">
+            <textarea id="smartParserInput" rows="9" placeholder="Örnek Resmi KİK/EKAP Metin Formatı:
+İhale Kayıt No: 2023/1241906
+İhalenin Adı: Kırklareli-Kofçaz Kula 2 Göleti ve İletim Hattı İnşaatı
+Yaklaşık Maliyet: 571.315.757,00 TL
+Sınır Değer Katsayısı N: 1,20
+1. Ilgazlar İnşaat Tic. ve San. A.Ş. & SMH Grup İnşaat İş Ortaklığı : 394.693.577 TL
+2. Erkilet İnşaat San. ve Tic. A.Ş. & Baran Yapı İnşaat İş Ortaklığı : 414.319.878,75 TL
+3. Mete Altyapı İnşaat A.Ş. : 428.500.000 TL"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="App.runSmartParser()">
+            Metni Oku ve İhale Kayıt Formuna Aktar
+          </button>
+        </div>
+
+        <!-- ALT SEKME 3: CSV / EXCEL TOPLU AKTARIM -->
+        <div id="sub-csv" class="card" style="display:none;">
+          <div class="card-header">
+            <div class="card-title">Excel / CSV Dosyası İle Toplu İhale Aktarımı</div>
+          </div>
+          <p style="font-size:13px; color:var(--text-secondary); margin-bottom:14px;">
+            Bilgisayarınızdaki geçmiş ihale kayıtlarını Excel uyumlu CSV şablonuyla tek seferde sisteme yükleyebilir veya sistemdeki tüm kayıtları Excel tablosu olarak indirebilirsiniz.
+          </p>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button class="btn btn-secondary" onclick="App.downloadCsvTemplate()">
+              1. Örnek Excel (CSV) Şablonunu İndir
+            </button>
+            <label class="btn btn-primary" style="margin:0; cursor:pointer;">
+              2. Hazırladığınız CSV Dosyasını Sisteme Yükle
+              <input type="file" accept=".csv,.txt" style="display:none;" onchange="App.importCsvFile(event)">
+            </label>
+            <button class="btn btn-emerald" onclick="App.exportTendersCsv()">
+              3. Sistemdeki Tüm İhaleleri Excel (CSV) Olarak İndir
+            </button>
+          </div>
+        </div>
+
+        <!-- KAYITLI TÜM DOĞRULANMIŞ İHALELER LİSTESİ -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Sistemde Kayıtlı Tüm Doğrulanmış İhaleler</div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>İKN</th>
+                  <th>Tarih</th>
+                  <th>İhale Adı ve DSİ Bölgesi</th>
+                  <th>İş Grubu</th>
+                  <th>Yaklaşık Maliyet (YM)</th>
+                  <th>Resmi Sınır Değer (SD)</th>
+                  <th>Mevzuat Uygunluk Kontrolü</th>
+                  <th>Belge Kaynağı ve İşlem</th>
+                </tr>
+              </thead>
+              <tbody id="datacenterTendersBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================= -->
+      <!-- 6. BÖLÜM: PERİYODİK RESMİ VERİ TOPLAMA VE OTOMATİK SENKRONİZASYON       -->
+      <!-- ======================================================================= -->
+      <section id="tab-officialsync" class="tab-pane">
+        <div class="page-header">
+          <div>
+            <h2>6. Periyodik Resmi Veri Toplama ve Otomatik Veritabanı Güncelleme Sistemi</h2>
+            <p>KİK Resmi Kurul Kararları (ekap.kik.gov.tr), EKAP Bir Bakışta İhale Sonuçları ve DSİ Bölge Müdürlükleri (dsi.gov.tr) resmi kaynaklarından düzenli aralıklarla yeni ihale ve rakip verisi toplama merkezi</p>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-emerald" id="btnSyncRunMain" onclick="App.triggerOfficialSyncNow()">
+              ↻ Şimdi Resmi Kaynakları Tara ve Veritabanını Güncelle
+            </button>
+          </div>
+        </div>
+
+        <div class="info-guide-banner">
+          <strong>Otomatik Resmi Veri Toplama Mimarisi:</strong> Bu modül, arka planda çalışan yerleşik zamanlayıcı servisi (<code>OfficialDataSyncService</code>) aracılığıyla belirlediğiniz periyotlarla <strong>1) EKAP Vatandaş Kurul Kararları (<code>ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx</code>)</strong>, <strong>2) EKAP Bir Bakışta İhale Resmi Sonuç Sayfaları (<code>ekap.kik.gov.tr/EKAP/Ortak/BirBakistaIhale.aspx</code>)</strong>, <strong>3) DSİ Genel Müdürlüğü ve 26 Bölge Müdürlüğü Resmi Web Siteleri (<code>dsi.gov.tr</code> / <code>bolge01..26.dsi.gov.tr</code>)</strong> ve <strong>4) Kamu İhale İndeks Beslemelerini</strong> HTTPS üzerinden tarar. Tespit edilen yeni DSİ yapım ihaleleri, yaklaşık maliyetler, sınır değerler ve katılımcı müteahhit firmalar otomatik olarak ayrıştırılıp mevcut veritabanınıza (<code>verified_db.json</code>) eklenir.
+        </div>
+
+        <!-- SENKRONİZASYON ÖZET KARTLARI (4 KPI) -->
+        <div class="kpi-grid">
+          <div class="kpi-card emerald">
+            <div class="kpi-label">Otomatik Senkronizasyon Durumu</div>
+            <div class="kpi-value" id="syncKpiStatus" style="font-size:18px;">Aktif</div>
+            <div class="kpi-sub" id="syncKpiLastTime">Son Tarama: Kontrol ediliyor...</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Tarama Periyodu ve Sonraki Kontrol</div>
+            <div class="kpi-value" id="syncKpiInterval" style="font-size:18px;">Her 30 Dakikada Bir</div>
+            <div class="kpi-sub" id="syncKpiNextTime">Sonraki Tarama: Hesaplanıyor...</div>
+          </div>
+          <div class="kpi-card amber">
+            <div class="kpi-label">Canlı Taramayla Eklenen Kayıtlar</div>
+            <div class="kpi-value" id="syncKpiAddedCounts">+0 İhale / +0 Firma</div>
+            <div class="kpi-sub" id="syncKpiTotalScans">Toplam Gerçekleşen Tarama: 0</div>
+          </div>
+          <div class="kpi-card purple">
+            <div class="kpi-label">İzlenen Resmi Kamu Uç Noktası</div>
+            <div class="kpi-value" id="syncKpiEndpoints">0 Resmi Kaynak</div>
+            <div class="kpi-sub">ekap.kik.gov.tr &amp; bolge01..26.dsi.gov.tr</div>
+          </div>
+        </div>
+
+        <div class="panel-grid-2">
+          <!-- SOL: ZAMANLAYICI AYARLARI VE DOĞRUDAN RESMİ URL ÇEKME -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Periyodik Otomatik Tarama Zamanlayıcı Ayarları</div>
+              <span class="badge badge-verified">Arka Plan Servisi</span>
+            </div>
+
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>Otomatik Periyodik Tarama Durumu</label>
+                <select id="syncAutoEnabledSelect" onchange="App.saveOfficialSyncConfig()">
+                  <option value="true">Aktif — Düzenli Aralıklarla Otomatik Tara ve Güncelle</option>
+                  <option value="false">Duraklatıldı — Sadece Manuel Taramada Çalıştır</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Resmi Kaynak Tarama Sıklığı (Periyot)</label>
+                <select id="syncIntervalSelect" onchange="App.saveOfficialSyncConfig()">
+                  <option value="15">Her 15 Dakikada Bir</option>
+                  <option value="30" selected>Her 30 Dakikada Bir (Önerilen)</option>
+                  <option value="60">Her 1 Saatte Bir</option>
+                  <option value="180">Her 3 Saatte Bir</option>
+                  <option value="360">Her 6 Saatte Bir</option>
+                  <option value="720">Her 12 Saatte Bir</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border-color); margin:14px 0; padding-top:14px;">
+              <div class="card-title" style="margin-bottom:6px;">Tekil Resmi EKAP / KİK Bağlantısı (URL) İle Anında Veri Çekme</div>
+              <p style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">
+                EKAP üzerinde gördüğünüz bir <strong>Kurul Kararı (<code>KurulKararGoster.aspx?KararId=...</code>)</strong> veya <strong>Bir Bakışta İhale (<code>BirBakistaIhale.aspx?...</code>)</strong> bağlantısını aşağıya yapıştırarak doğrudan resmi sunucudan çekip veritabanına işleyebilirsiniz:
+              </p>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="syncDirectUrlInput" placeholder="https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=..." style="flex:1;">
+                <button class="btn btn-primary" onclick="App.fetchSingleOfficialUrl()">
+                  Resmi URL'den Çek ve Kaydet
+                </button>
+              </div>
+              <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; align-items:center;">
+                <span style="font-size:11px; color:var(--text-muted); font-weight:700;">Örnek Canlı Resmi EKAP Bağlantıları:</span>
+                <button class="btn btn-secondary btn-sm" style="font-size:11px; padding:3px 8px;" onclick="App.fillSampleOfficialUrl('https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=36dbe294c85e3f82560977f6360b181e20969943eaef4682c1dda24d0286162f')">
+                  İKN 2025/1751337 (DSİ 20. Bölge)
+                </button>
+                <button class="btn btn-secondary btn-sm" style="font-size:11px; padding:3px 8px;" onclick="App.fillSampleOfficialUrl('https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=82671fad68878417a98e2b44deec27a94fffad7bb7017720b07f9fc3d1467315')">
+                  İKN 2025/2255946 (DSİ 8. Bölge)
+                </button>
+                <button class="btn btn-secondary btn-sm" style="font-size:11px; padding:3px 8px;" onclick="App.fillSampleOfficialUrl('https://ekap.kik.gov.tr/EKAP/Ortak/BirBakistaIhale.aspx?IdareId=d43e8dcb8867568afb82f21a60e8abb1be0d7994008ffeda8f0d841048c53e2c&IhaleId=f0479ec25e152acb3e21c47aa592064d15b213964bfff098e9581e8d453287df')">
+                  İKN 2025/462536 (Bir Bakışta İhale)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SAĞ: RESMİ KAYNAKLARIN CANLI BAĞLANTI VE SAĞLIK DURUMU -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Bağlı Resmi Kamu Veri Kaynakları Canlı Erişim Durumu</div>
+              <span class="badge badge-blue">HTTPS Resmi Kanal Kontrolü</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Resmi Kamu Veri Kaynağı</th>
+                    <th>Bağlantı Durumu</th>
+                    <th>Son Kontrol</th>
+                    <th>Doğrulanan Kayıt</th>
+                  </tr>
+                </thead>
+                <tbody id="syncSourceHealthBody">
+                  <tr>
+                    <td colspan="4" style="text-align:center; padding:18px; color:var(--text-muted);">
+                      Resmi kaynak erişim durumu yükleniyor...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-grid-2">
+          <!-- SOL: DSİ BÖLGE MÜDÜRLÜKLERİ VE KİK CANLI DUYURU RADARI -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Resmi DSİ Bölge Müdürlükleri ve Kamu İhale Duyuru Radarı</div>
+              <span class="badge badge-verified">dsi.gov.tr &amp; ekap.kik.gov.tr</span>
+            </div>
+            <div class="table-wrap" style="max-height:380px; overflow-y:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih / Bölge</th>
+                    <th>Resmi Kaynak Kurum</th>
+                    <th>Tespit Edilen Resmi Duyuru / İhale Başlığı</th>
+                    <th>Bağlantı</th>
+                  </tr>
+                </thead>
+                <tbody id="syncAnnouncementsBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SAĞ: GERÇEK ZAMANLI SENKRONİZASYON VE VERİTABANI GÜNCELLEME GÜNLÜĞÜ -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Resmi Veri Toplama ve Veritabanı Güncelleme Günlüğü (Audit Log)</div>
+              <span class="badge badge-blue">Otomatik İşlem Kayıtları</span>
+            </div>
+            <div class="table-wrap" style="max-height:380px; overflow-y:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Zaman</th>
+                    <th>Modül / Kaynak</th>
+                    <th>İşlem ve Güncelleme Detayı</th>
+                  </tr>
+                </thead>
+                <tbody id="syncLogsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================= -->
+      <!-- 7. BÖLÜM: RESMİ KİK 45.1.1 SINIR DEĞER HESAPLAMA CETVELİ                 -->
+      <!-- ======================================================================= -->
+      <section id="tab-kikcalc" class="tab-pane">
+        <div class="page-header">
+          <div>
+            <h2>7. Kamu İhale Genel Tebliği (Madde 45.1.1) Resmi Sınır Değer Hesaplama Cetveli</h2>
+            <p>Herhangi bir yapım işi ihalesinde açıklanan Yaklaşık Maliyet ve sunulan teklifleri girerek resmi Sınır Değer hesabını adım adım kontrol edin</p>
+          </div>
+        </div>
+
+        <div class="info-guide-banner">
+          <strong>Resmi Mevzuat Formülü:</strong> Kamu İhale Genel Tebliği Madde 45.1.1 uyarınca önce Yaklaşık Maliyetin %40'ı ile %120'si dışındaki teklifler elenir; kalan tekliflerin ortalaması ($T_{\text{ort},1}$) ve standart sapması ($\sigma$) bulunur. Ardından $T_{\text{ort},1} \pm \sigma$ aralığındaki tekliflerin ortalaması ($T_{\text{ort},2}$) alınarak $C$ ve $K$ katsayıları virgülden sonra 3 basamağa yuvarlanır ve <strong>Sınır Değer = $(K \times T_{\text{ort},2}) / (C \times N)$</strong> formülüyle hesaplanır.
+        </div>
+
+        <div class="panel-grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">İhale Oturumunda Açıklanan Veriler</div>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>İdare Yaklaşık Maliyeti (YM - TL) [Örn: İKN 2023/1241906]</label>
+                <input type="number" id="calcYM" value="571315757" step="1000000" oninput="App.runStandaloneKikCalc()">
+              </div>
+              <div class="form-group">
+                <label>Sınır Değer Katsayısı (N)</label>
+                <select id="calcN" onchange="App.runStandaloneKikCalc()">
+                  <option value="1.20">N = 1,20 (DSİ Altyapı: Baraj, Gölet, Sulama, Taşkın, İsale)</option>
+                  <option value="1.00">N = 1,00 (Üstyapı, Bina, Mekanik ve Elektrik İşleri)</option>
+                  <option value="1.10">N = 1,10 (Özel Katsayılı Karma Yapım İşleri)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>İhaleye Sunulan Teklif Tutarları (Her satıra bir teklif tutarı yazınız - TL)</label>
+              <textarea id="calcBidsText" rows="8" oninput="App.runStandaloneKikCalc()">394693577
+414319878.75
+428500000
+496800000
+522400000</textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Adım Adım Resmi Sınır Değer Hesaplama Dökümü</div>
+              <span class="badge badge-verified">Kamu İhale Genel Tebliği Md. 45.1.1</span>
+            </div>
+            <div id="standaloneKikOutput"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="kik-engine.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
