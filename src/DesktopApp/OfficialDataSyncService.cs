@@ -25,6 +25,7 @@ namespace DSIIhaleZekasi
     internal sealed class OfficialDataSyncService
     {
         private static readonly UTF8Encoding Utf8NoBom = new(false);
+        public static readonly SemaphoreSlim DbFileLock = new(1, 1);
         private readonly string _dbFilePath;
         private readonly string _syncStateFilePath;
         private readonly HttpClient _httpClient;
@@ -46,6 +47,7 @@ namespace DSIIhaleZekasi
         private readonly List<OfficialAnnouncementItem> _discoveredAnnouncements = new();
         private readonly List<SourceHealthItem> _sourceHealth = new();
         private readonly HashSet<string> _monitoredEkapUrls = new(StringComparer.OrdinalIgnoreCase);
+        private readonly HashSet<string> _searchedDsiProjectUrls = new(StringComparer.OrdinalIgnoreCase);
 
         public OfficialDataSyncService(string dbFilePath)
         {
@@ -136,8 +138,38 @@ namespace DSIIhaleZekasi
         public async Task<string> GetStatusJsonAsync()
         {
             await Task.CompletedTask;
+            int monitoredCount;
+            lock (_monitoredEkapUrls)
+            {
+                monitoredCount = _monitoredEkapUrls.Count;
+            }
+
+            int dsiDiscoveredCount = 0;
+            try
+            {
+                if (File.Exists(_dbFilePath))
+                {
+                    await DbFileLock.WaitAsync();
+                    try
+                    {
+                        string dbRaw = await File.ReadAllTextAsync(_dbFilePath, Encoding.UTF8);
+                        var dbNode = JsonNode.Parse(dbRaw)?.AsObject();
+                        if (dbNode?["competitors"] is JsonArray compArr)
+                        {
+                            dsiDiscoveredCount = compArr.Count(c => c?["discoveredFromDsi"]?.GetValue<bool>() == true);
+                        }
+                    }
+                    finally
+                    {
+                        DbFileLock.Release();
+                    }
+                }
+            }
+            catch { }
+
             var statusObj = new JsonObject
             {
+                ["ok"] = true,
                 ["isRunning"] = _isRunning,
                 ["autoSyncEnabled"] = _autoSyncEnabled,
                 ["intervalMinutes"] = _intervalMinutes,
@@ -148,7 +180,8 @@ namespace DSIIhaleZekasi
                 ["totalScansRun"] = _totalScansRun,
                 ["totalNewTendersAdded"] = _totalNewTendersAdded,
                 ["totalNewCompetitorsAdded"] = _totalNewCompetitorsAdded,
-                ["monitoredEndpointCount"] = _monitoredEkapUrls.Count
+                ["monitoredEndpointCount"] = monitoredCount,
+                ["dsiDiscoveredCount"] = dsiDiscoveredCount
             };
 
             var healthArr = new JsonArray();
@@ -238,7 +271,10 @@ namespace DSIIhaleZekasi
                 return "{\"ok\":false,\"error\":\"Sadece resmi kamu uzantılı (.kik.gov.tr ve .dsi.gov.tr) bağlantılar kabul edilmektedir.\"}";
             }
 
-            _monitoredEkapUrls.Add(targetUrl);
+            lock (_monitoredEkapUrls)
+            {
+                _monitoredEkapUrls.Add(targetUrl);
+            }
             var report = await RunSyncCycleAsync("Tekil Resmi Bağlantı İçe Aktarımı: " + targetUrl, prioritizedUrl: targetUrl);
             return report;
         }
@@ -265,60 +301,95 @@ namespace DSIIhaleZekasi
                 var currentHealth = new List<SourceHealthItem>();
 
                 // 1. AŞAMA: Kamu RSS / İndeks Beslemelerinden Yeni EKAP KararId / BirBakistaIhale Bağlantılarını Keşfet
-                await DiscoverNewOfficialLinksFromRssAsync(currentHealth);
+                try
+                {
+                    await DiscoverNewOfficialLinksFromRssAsync(currentHealth);
+                }
+                catch (Exception exRss)
+                {
+                    AddLog("Kamu İndeks Keşfi", "WARN", $"RSS/İndeks keşfinde kısmi uyarı: {exRss.Message}");
+                }
 
-                // 2. AŞAMA: DSİ Genel Müdürlüğü ve Bölge Müdürlükleri Resmi Web Sitelerindeki Duyuruları Tara
-                await ScanDsiRegionalWebsitesAsync(currentHealth);
+                // 2. AŞAMA: DSİ Genel Müdürlüğü ve 26 Bölge Müdürlüğünün Kendi Resmi Web Sitelerini Tara
+                try
+                {
+                    await ScanDsiRegionalWebsitesAsync(currentHealth);
+                }
+                catch (Exception exDsi)
+                {
+                    AddLog("DSİ Bölge Siteleri", "WARN", $"DSİ bölge taramasında kısmi uyarı: {exDsi.Message}");
+                }
 
-                // 3. AŞAMA: EKAP KurulKararGoster.aspx ve BirBakistaIhale.aspx Sayfalarını İndir, Ayrıştır ve Veritabanına İşle
-                var urlsToScan = _monitoredEkapUrls.ToList();
+                // 3. AŞAMA: EKAP KurulKararGoster.aspx ve BirBakistaIhale.aspx Sayfalarını Eşzamanlı İndir ve Ayrıştır
+                List<string> urlsToScan;
+                lock (_monitoredEkapUrls)
+                {
+                    urlsToScan = _monitoredEkapUrls.ToList();
+                }
+
                 if (!string.IsNullOrWhiteSpace(prioritizedUrl))
                 {
-                    urlsToScan.Remove(prioritizedUrl);
+                    urlsToScan.RemoveAll(u => string.Equals(u, prioritizedUrl, StringComparison.OrdinalIgnoreCase));
                     urlsToScan.Insert(0, prioritizedUrl);
                 }
 
                 var parsedRecords = new List<ParsedOfficialTender>();
                 int ekapSuccessCount = 0;
 
-                foreach (string url in urlsToScan)
+                using (var throttler = new SemaphoreSlim(6))
                 {
-                    try
+                    var ekapTasks = urlsToScan.Select(async url =>
                     {
-                        var response = await _httpClient.GetAsync(url);
-                        int code = (int)response.StatusCode;
-                        if (!response.IsSuccessStatusCode)
+                        await throttler.WaitAsync();
+                        try
                         {
-                            continue;
-                        }
+                            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                            var response = await _httpClient.GetAsync(url, cts.Token);
+                            if (!response.IsSuccessStatusCode) return;
 
-                        string html = await response.Content.ReadAsStringAsync();
-                        if (string.IsNullOrWhiteSpace(html) || html.Length < 500)
-                            continue;
+                            string html = await response.Content.ReadAsStringAsync(cts.Token);
+                            if (string.IsNullOrWhiteSpace(html) || html.Length < 500) return;
 
-                        ekapSuccessCount++;
+                            Interlocked.Increment(ref ekapSuccessCount);
 
-                        if (url.Contains("KurulKararGoster.aspx", StringComparison.OrdinalIgnoreCase))
-                        {
-                            var parsed = ParseKikKurulKararHtml(html, url);
+                            ParsedOfficialTender? parsed = null;
+                            if (url.Contains("KurulKararGoster.aspx", StringComparison.OrdinalIgnoreCase))
+                            {
+                                parsed = ParseKikKurulKararHtml(html, url);
+                            }
+                            else if (url.Contains("BirBakistaIhale.aspx", StringComparison.OrdinalIgnoreCase))
+                            {
+                                parsed = ParseEkapBirBakistaIhaleHtml(html, url);
+                            }
+
                             if (parsed != null && !string.IsNullOrWhiteSpace(parsed.Ikn))
                             {
-                                parsedRecords.Add(parsed);
+                                lock (parsedRecords)
+                                {
+                                    parsedRecords.Add(parsed);
+                                }
                             }
                         }
-                        else if (url.Contains("BirBakistaIhale.aspx", StringComparison.OrdinalIgnoreCase))
+                        catch (Exception ex)
                         {
-                            var parsed = ParseEkapBirBakistaIhaleHtml(html, url);
-                            if (parsed != null && !string.IsNullOrWhiteSpace(parsed.Ikn))
-                            {
-                                parsedRecords.Add(parsed);
-                            }
+                            AddLog("EKAP Bağlantı", "WARN", $"Resmi sayfa okunurken zaman aşımı/uyarı: {ex.Message}");
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        AddLog("EKAP Bağlantı", "WARN", $"Resmi sayfa okunurken zaman aşımı/uyarı: {ex.Message}");
-                    }
+                        finally
+                        {
+                            throttler.Release();
+                        }
+                    });
+                    await Task.WhenAll(ekapTasks);
+                }
+
+                // 4. AŞAMA: DSİ Bölge Sitelerinden Çekilen İlan/Haberleri İnternette Arat ve Yüklenici Firmaları Doğrula
+                try
+                {
+                    await SearchWebForDsiProjectContractorsAsync(currentHealth, parsedRecords);
+                }
+                catch (Exception exSearch)
+                {
+                    AddLog("DSİ Web+İnternet Arama", "WARN", $"DSİ proje internet aramasında uyarı: {exSearch.Message}");
                 }
 
                 currentHealth.Insert(0, new SourceHealthItem
@@ -331,7 +402,7 @@ namespace DSIIhaleZekasi
                     ItemsFound = parsedRecords.Count
                 });
 
-                // 4. AŞAMA: Ayrıştırılan Resmi İhale ve Rakip Kayıtlarını verified_db.json İçerisine Birleştir
+                // 5. AŞAMA: Ayrıştırılan Resmi İhale ve Rakip Kayıtlarını verified_db.json İçerisine Birleştir
                 if (parsedRecords.Count > 0 && File.Exists(_dbFilePath))
                 {
                     var mergeResult = await MergeOfficialRecordsIntoDatabaseAsync(parsedRecords);
@@ -734,7 +805,12 @@ namespace DSIIhaleZekasi
                         if (link.Contains("ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx", StringComparison.OrdinalIgnoreCase) ||
                             link.Contains("ekap.kik.gov.tr/EKAP/Ortak/BirBakistaIhale.aspx", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (_monitoredEkapUrls.Add(link))
+                            bool addedLink;
+                            lock (_monitoredEkapUrls)
+                            {
+                                addedLink = _monitoredEkapUrls.Add(link);
+                            }
+                            if (addedLink)
                             {
                                 AddLog("Resmi İndeks Keşfi", "INFO", $"Yeni EKAP resmi karar/ihale bağlantısı keşfedildi: {link}");
                             }
@@ -778,75 +854,119 @@ namespace DSIIhaleZekasi
         }
 
         // =====================================================================
-        // KANAL 4: DSİ GENEL MÜDÜRLÜĞÜ VE BÖLGE MÜDÜRLÜKLERİ RESMİ WEB SİTELERİ
+        // KANAL 4: DSİ GENEL MÜDÜRLÜĞÜ VE 26 BÖLGE MÜDÜRLÜĞÜ RESMİ WEB SİTELERİ
         // =====================================================================
         private async Task ScanDsiRegionalWebsitesAsync(List<SourceHealthItem> healthList)
         {
             var dsiTargets = new (string RegionId, string Name, string BaseUrl)[]
             {
                 ("DSI-GM", "DSİ Genel Müdürlüğü (dsi.gov.tr)", "https://dsi.gov.tr"),
-                ("DSI-01", "DSİ 1. Bölge & Şube Müdürlükleri (Bursa/Kocaeli/Yalova)", "https://bolge01.dsi.gov.tr"),
-                ("DSI-03", "DSİ 3. Bölge & Şube Müdürlükleri (Eskişehir/Sakarya)", "https://bolge03.dsi.gov.tr"),
-                ("DSI-04", "DSİ 4. Bölge & Şube Müdürlükleri (Konya/Aksaray)", "https://bolge04.dsi.gov.tr"),
-                ("DSI-05", "DSİ 5. Bölge & Şube Müdürlükleri (Ankara/Çankırı)", "https://bolge05.dsi.gov.tr"),
-                ("DSI-06", "DSİ 6. Bölge & Şube Müdürlükleri (Adana/Mersin/Osmaniye)", "https://bolge06.dsi.gov.tr"),
-                ("DSI-08", "DSİ 8. Bölge & Şube Müdürlükleri (Erzurum)", "https://bolge08.dsi.gov.tr"),
-                ("DSI-10", "DSİ 10. Bölge & Şube Müdürlükleri (Diyarbakır/Mardin)", "https://bolge10.dsi.gov.tr"),
-                ("DSI-11", "DSİ 11. Bölge & Şube Müdürlükleri (Edirne/Tekirdağ/Kırklareli)", "https://bolge11.dsi.gov.tr"),
-                ("DSI-12", "DSİ 12. Bölge & Şube Müdürlükleri (Kayseri/Nevşehir/Yozgat)", "https://bolge12.dsi.gov.tr"),
-                ("DSI-15", "DSİ 15. Bölge & Şube Müdürlükleri (Şanlıurfa)", "https://bolge15.dsi.gov.tr"),
-                ("DSI-17", "DSİ 17. Bölge & Şube Müdürlükleri (Van/Bitlis/Hakkari)", "https://bolge17.dsi.gov.tr"),
-                ("DSI-18", "DSİ 18. Bölge & Şube Müdürlükleri (Isparta/Burdur/Afyon)", "https://bolge18.dsi.gov.tr"),
-                ("DSI-19", "DSİ 19. Bölge & 191. Şube Müdürlüğü (Sivas)", "https://bolge19.dsi.gov.tr"),
-                ("DSI-20", "DSİ 20. Bölge & Şube Müdürlükleri (Kahramanmaraş/Kilis)", "https://bolge20.dsi.gov.tr"),
-                ("DSI-21", "DSİ 21. Bölge & Şube Müdürlükleri (Aydın/Denizli/Muğla)", "https://bolge21.dsi.gov.tr"),
-                ("DSI-22", "DSİ 22. Bölge & 224. Şube Müdürlüğü (Trabzon/Rize)", "https://bolge22.dsi.gov.tr")
+                ("DSI-01", "DSİ 1. Bölge (Bursa/Kocaeli/Yalova/Bilecik)", "https://bolge01.dsi.gov.tr"),
+                ("DSI-02", "DSİ 2. Bölge (İzmir/Manisa/Uşak)", "https://bolge02.dsi.gov.tr"),
+                ("DSI-03", "DSİ 3. Bölge (Eskişehir/Sakarya/Kütahya)", "https://bolge03.dsi.gov.tr"),
+                ("DSI-04", "DSİ 4. Bölge (Konya/Karaman/Aksaray/Niğde)", "https://bolge04.dsi.gov.tr"),
+                ("DSI-05", "DSİ 5. Bölge (Ankara/Çankırı/Bolu/Düzce)", "https://bolge05.dsi.gov.tr"),
+                ("DSI-06", "DSİ 6. Bölge (Adana/Mersin/Osmaniye/Hatay)", "https://bolge06.dsi.gov.tr"),
+                ("DSI-07", "DSİ 7. Bölge (Samsun/Amasya/Ordu/Sinop)", "https://bolge07.dsi.gov.tr"),
+                ("DSI-08", "DSİ 8. Bölge (Erzurum/Ağrı/Erzincan)", "https://bolge08.dsi.gov.tr"),
+                ("DSI-09", "DSİ 9. Bölge (Elazığ/Malatya/Tunceli/Bingöl)", "https://bolge09.dsi.gov.tr"),
+                ("DSI-10", "DSİ 10. Bölge (Diyarbakır/Mardin/Batman/Siirt)", "https://bolge10.dsi.gov.tr"),
+                ("DSI-11", "DSİ 11. Bölge (Edirne/Tekirdağ/Kırklareli)", "https://bolge11.dsi.gov.tr"),
+                ("DSI-12", "DSİ 12. Bölge (Kayseri/Nevşehir/Yozgat/Kırşehir)", "https://bolge12.dsi.gov.tr"),
+                ("DSI-13", "DSİ 13. Bölge (Antalya/Alanya/Isparta Sınırı)", "https://bolge13.dsi.gov.tr"),
+                ("DSI-14", "DSİ 14. Bölge (İstanbul/Melen)", "https://bolge14.dsi.gov.tr"),
+                ("DSI-15", "DSİ 15. Bölge (Şanlıurfa/Viranşehir)", "https://bolge15.dsi.gov.tr"),
+                ("DSI-16", "DSİ 16. Bölge (Adıyaman/Atatürk Barajı)", "https://bolge16.dsi.gov.tr"),
+                ("DSI-17", "DSİ 17. Bölge (Van/Bitlis/Hakkari/Muş)", "https://bolge17.dsi.gov.tr"),
+                ("DSI-18", "DSİ 18. Bölge (Isparta/Burdur/Afyonkarahisar)", "https://bolge18.dsi.gov.tr"),
+                ("DSI-19", "DSİ 19. Bölge (Sivas)", "https://bolge19.dsi.gov.tr"),
+                ("DSI-20", "DSİ 20. Bölge (Kahramanmaraş/Gaziantep/Kilis)", "https://bolge20.dsi.gov.tr"),
+                ("DSI-21", "DSİ 21. Bölge (Aydın/Denizli/Muğla)", "https://bolge21.dsi.gov.tr"),
+                ("DSI-22", "DSİ 22. Bölge (Trabzon/Rize/Giresun/Gümüşhane)", "https://bolge22.dsi.gov.tr"),
+                ("DSI-23", "DSİ 23. Bölge (Kastamonu/Karabük/Bartın/Zonguldak)", "https://bolge23.dsi.gov.tr"),
+                ("DSI-24", "DSİ 24. Bölge (Kars/Ardahan/Iğdır)", "https://bolge24.dsi.gov.tr"),
+                ("DSI-25", "DSİ 25. Bölge (Balıkesir/Çanakkale)", "https://bolge25.dsi.gov.tr"),
+                ("DSI-26", "DSİ 26. Bölge (Artvin/Yusufeli/Çoruh)", "https://bolge26.dsi.gov.tr")
             };
+
+            string[] subPaths = { "", "/Duyuru/DuyuruListe", "/Ihale/IhaleListe", "/Haber/Arsiv" };
 
             int reachableRegions = 0;
             int announcementsFound = 0;
 
+            using var throttler = new SemaphoreSlim(10);
             var tasks = dsiTargets.Select(async target =>
             {
+                await throttler.WaitAsync();
+                bool regionReachable = false;
                 try
                 {
-                    var resp = await _httpClient.GetAsync(target.BaseUrl);
-                    if (!resp.IsSuccessStatusCode) return;
-
-                    Interlocked.Increment(ref reachableRegions);
-                    string html = await resp.Content.ReadAsStringAsync();
-
-                    var linkMatches = Regex.Matches(html,
-                        @"<a[^>]+href=[""']([^""']*?(?:/Duyuru/Detay/|/Haber/Detay/)[^""']*)[""'][^>]*>([\s\S]*?)</a>",
-                        RegexOptions.IgnoreCase);
-
-                    foreach (Match m in linkMatches.Take(8))
+                    foreach (string subPath in subPaths)
                     {
-                        string href = m.Groups[1].Value.Trim();
-                        string rawText = Regex.Replace(m.Groups[2].Value, "<[^>]+>", " ");
-                        rawText = WebUtility.HtmlDecode(Regex.Replace(rawText, @"\s+", " ")).Trim();
-
-                        if (rawText.Length < 12) continue;
-
-                        string fullUrl = href.StartsWith("http", StringComparison.OrdinalIgnoreCase)
-                            ? href
-                            : target.BaseUrl.TrimEnd('/') + "/" + href.TrimStart('/');
-
-                        Interlocked.Increment(ref announcementsFound);
-                        AddDiscoveredAnnouncement(new OfficialAnnouncementItem
+                        try
                         {
-                            Date = DateTime.Now.ToString("dd.MM.yyyy"),
-                            Source = target.Name,
-                            RegionId = target.RegionId,
-                            Title = rawText,
-                            Url = fullUrl,
-                            Category = href.Contains("/Duyuru/", StringComparison.OrdinalIgnoreCase) ? "DSİ RESMİ DUYURU" : "DSİ BÖLGE HABER"
-                        });
+                            string pageUrl = target.BaseUrl.TrimEnd('/') + subPath;
+                            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                            var resp = await _httpClient.GetAsync(pageUrl, cts.Token);
+                            if (!resp.IsSuccessStatusCode) continue;
+
+                            regionReachable = true;
+                            string html = await resp.Content.ReadAsStringAsync(cts.Token);
+
+                            var linkMatches = Regex.Matches(html,
+                                @"<a[^>]+href=[""']([^""']*?(?:/Duyuru/Detay/|/Haber/Detay/|/Ihale/Detay/)[^""']*)[""'][^>]*>([\s\S]*?)</a>([\s\S]{0,360})",
+                                RegexOptions.IgnoreCase);
+
+                            foreach (Match m in linkMatches.Take(10))
+                            {
+                                string href = m.Groups[1].Value.Trim();
+                                string innerText = WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(m.Groups[2].Value, "<[^>]+>", " "), @"\s+", " ")).Trim();
+                                string rawText = innerText;
+
+                                // Kart içindeki resme sarılı <a> boşsa yanındaki başlığı (<h1-h5>, title, strong) yakala
+                                if (rawText.Length < 12)
+                                {
+                                    var headingMatch = Regex.Match(m.Groups[3].Value, @"<(?:h[1-5]|strong|p|div)[^>]*>([\s\S]{10,220}?)</(?:h[1-5]|strong|p|div)>", RegexOptions.IgnoreCase);
+                                    if (headingMatch.Success)
+                                    {
+                                        rawText = WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(headingMatch.Groups[1].Value, "<[^>]+>", " "), @"\s+", " ")).Trim();
+                                    }
+                                }
+
+                                if (rawText.Length < 12) continue;
+
+                                string fullUrl = href.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                                    ? href
+                                    : target.BaseUrl.TrimEnd('/') + "/" + href.TrimStart('/');
+
+                                Interlocked.Increment(ref announcementsFound);
+                                AddDiscoveredAnnouncement(new OfficialAnnouncementItem
+                                {
+                                    Date = DateTime.Now.ToString("dd.MM.yyyy"),
+                                    Source = target.Name,
+                                    RegionId = target.RegionId,
+                                    Title = rawText,
+                                    Url = fullUrl,
+                                    Category = href.Contains("/Ihale/", StringComparison.OrdinalIgnoreCase)
+                                        ? "DSİ BÖLGE İHALE"
+                                        : (href.Contains("/Duyuru/", StringComparison.OrdinalIgnoreCase) ? "DSİ RESMİ DUYURU" : "DSİ BÖLGE HABER")
+                                });
+                            }
+                        }
+                        catch
+                        {
+                            // Tekil alt sayfa zaman aşımına uğrarsa sonraki alt sayfaya geç
+                        }
+                    }
+
+                    if (regionReachable)
+                    {
+                        Interlocked.Increment(ref reachableRegions);
                     }
                 }
-                catch
+                finally
                 {
-                    // Bölge sitesi yanıt vermezse diğer bölgelere devam et
+                    throttler.Release();
                 }
             });
 
@@ -854,13 +974,180 @@ namespace DSIIhaleZekasi
 
             healthList.Add(new SourceHealthItem
             {
-                SourceName = "DSİ Genel Müdürlüğü ve Bölge Müdürlükleri Resmi Web Siteleri (dsi.gov.tr)",
-                EndpointUrl = "https://dsi.gov.tr & https://bolge01..26.dsi.gov.tr",
-                Status = reachableRegions > 0 ? $"AKTİF ({reachableRegions} Resmi Bölge Sitesi)" : "ERİŞİM UYARISI",
-                HttpCode = reachableRegions > 0 ? 200 : 503,
+                SourceName = "DSİ Genel Müdürlüğü ve 26 Bölge Müdürlüğü Resmi Web Siteleri (bolge01..26.dsi.gov.tr)",
+                EndpointUrl = "https://dsi.gov.tr & https://bolge01..26.dsi.gov.tr (/DuyuruListe, /IhaleListe, /Haber/Arsiv)",
+                Status = reachableRegions > 0 ? $"AKTİF ({reachableRegions}/27 Resmi Bölge Portalı)" : "BEKLEMEDE",
+                HttpCode = reachableRegions > 0 ? 200 : 408,
                 LastChecked = DateTime.Now.ToString("HH:mm:ss"),
                 ItemsFound = announcementsFound
             });
+        }
+
+        // =====================================================================
+        // KANAL 5: DSİ BÖLGE PROJELERİNİ İNTERNETTE ARATARAK YÜKLENİCİ RAKİP KEŞFİ
+        // =====================================================================
+        private async Task SearchWebForDsiProjectContractorsAsync(
+            List<SourceHealthItem> healthList,
+            List<ParsedOfficialTender> parsedRecords)
+        {
+            List<OfficialAnnouncementItem> constructionProjects;
+            lock (_discoveredAnnouncements)
+            {
+                constructionProjects = _discoveredAnnouncements
+                    .Where(a => !_searchedDsiProjectUrls.Contains(a.Url) && IsDsiConstructionTitle(a.Title))
+                    .Take(5)
+                    .ToList();
+            }
+
+            int queriedCount = 0;
+            int contractorMatches = 0;
+
+            foreach (var proj in constructionProjects)
+            {
+                _searchedDsiProjectUrls.Add(proj.Url);
+                queriedCount++;
+
+                string shortTitle = string.Join(" ", proj.Title.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(7));
+                string encodedQuery = Uri.EscapeDataString($"\"{shortTitle}\" (\"yüklenici\" OR \"müteahhit\" OR \"sözleşme\" OR \"İKN\")");
+                string[] searchFeeds =
+                {
+                    $"https://www.bing.com/search?q={encodedQuery}&format=rss",
+                    $"https://news.google.com/rss/search?q={encodedQuery}&hl=tr&gl=TR&ceid=TR:tr"
+                };
+
+                foreach (string feedUrl in searchFeeds)
+                {
+                    try
+                    {
+                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        var resp = await _httpClient.GetAsync(feedUrl, cts.Token);
+                        if (!resp.IsSuccessStatusCode) continue;
+
+                        string xmlText = await resp.Content.ReadAsStringAsync(cts.Token);
+                        if (!xmlText.Contains("<rss", StringComparison.OrdinalIgnoreCase) &&
+                            !xmlText.Contains("<item", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        var doc = XDocument.Parse(xmlText);
+                        foreach (var item in doc.Descendants("item").Take(5))
+                        {
+                            string itemTitle = WebUtility.HtmlDecode(item.Element("title")?.Value ?? "");
+                            string itemDesc = WebUtility.HtmlDecode(item.Element("description")?.Value ?? "");
+                            string itemLink = item.Element("link")?.Value ?? "";
+                            string combinedSnippet = itemTitle + " " + CleanHtmlToPlainText(itemDesc);
+
+                            // Eğer arama sonucunda doğrudan EKAP Kurul Kararı / Bir Bakışta İhale linki çıkarsa izlenen havuza ekle
+                            if (itemLink.Contains("ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx", StringComparison.OrdinalIgnoreCase) ||
+                                itemLink.Contains("ekap.kik.gov.tr/EKAP/Ortak/BirBakistaIhale.aspx", StringComparison.OrdinalIgnoreCase))
+                            {
+                                lock (_monitoredEkapUrls)
+                                {
+                                    _monitoredEkapUrls.Add(itemLink);
+                                }
+                            }
+
+                            string foundIkn = ExtractRegexGroup(combinedSnippet, @"(20[12][0-9]\/[0-9]{5,8})");
+                            string foundContractor = ExtractContractorFromSearchSnippet(combinedSnippet);
+                            if (!string.IsNullOrWhiteSpace(foundIkn) && !string.IsNullOrWhiteSpace(foundContractor))
+                            {
+                                string regionId = proj.RegionId != "DSI-GM"
+                                    ? proj.RegionId
+                                    : MapIdareAndTitleToDsiRegion(proj.Source, proj.Title);
+
+                                string authorityName = proj.Source;
+                                var newRec = new ParsedOfficialTender
+                                {
+                                    Ikn = foundIkn,
+                                    KikDecisionNo = "DSİ-WEB-İKN",
+                                    DecisionDate = DateTime.Now.ToString("dd.MM.yyyy"),
+                                    Title = proj.Title,
+                                    AuthorityName = authorityName,
+                                    RegionId = regionId,
+                                    WorkGroup = DetermineDsiWorkGroup(proj.Title),
+                                    DateIso = DateTime.Now.ToString("yyyy-MM-dd"),
+                                    ApproxCost = 0,
+                                    NCoeff = 1.00,
+                                    BoundaryValue = 0,
+                                    OfficialSourceType = "DSI_WEB_SEARCH",
+                                    OfficialSourceUrl = proj.Url,
+                                    DsiSourceUrl = proj.Url,
+                                    DsiProjectTitle = proj.Title,
+                                    WebSearchSource = string.IsNullOrWhiteSpace(itemLink) ? feedUrl : itemLink,
+                                    VerificationSource = $"DSİ Bölge Sayfası ({proj.Url}) + İnternet Taraması (İKN: {foundIkn})",
+                                    Bids = new List<ParsedBidItem>
+                                    {
+                                        new ParsedBidItem
+                                        {
+                                            CompanyName = foundContractor,
+                                            Amount = 0,
+                                            IsWinner = true
+                                        }
+                                    }
+                                };
+
+                                lock (parsedRecords)
+                                {
+                                    parsedRecords.Add(newRec);
+                                }
+                                contractorMatches++;
+                                AddLog("DSİ Web + İnternet Keşfi", "SUCCESS",
+                                    $"DSİ bölge projesinden internet aramasıyla yüklenici doğrulandı: {foundContractor} (İKN: {foundIkn})",
+                                    foundIkn);
+                                break;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Arama motoru geçici kısıtı/zaman aşımı durumunda sonraki projeye geç
+                    }
+                }
+            }
+
+            healthList.Add(new SourceHealthItem
+            {
+                SourceName = "DSİ Bölge Sayfaları + İnternet Yüklenici Arama Motoru",
+                EndpointUrl = "bolge*.dsi.gov.tr → Kamu İhale / Web İndeksi",
+                Status = queriedCount > 0 ? $"AKTİF ({queriedCount} Proje Tarandı)" : "HAZIR (Bekleyen Yeni Duyuru Yok)",
+                HttpCode = 200,
+                LastChecked = DateTime.Now.ToString("HH:mm:ss"),
+                ItemsFound = contractorMatches
+            });
+        }
+
+        private static bool IsDsiConstructionTitle(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title) || title.Length < 15) return false;
+            string u = title.ToUpper(new CultureInfo("tr-TR"));
+            return u.Contains("BARAJ") || u.Contains("GÖLET") || u.Contains("SULAMA") ||
+                   u.Contains("TAŞKIN") || u.Contains("İSALE") || u.Contains("İÇMESUYU") ||
+                   u.Contains("İKMAL") || u.Contains("YAPIM") || u.Contains("İNŞAAT") ||
+                   u.Contains("ISLAH") || u.Contains("REGÜLATÖR");
+        }
+
+        private static string ExtractContractorFromSearchSnippet(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "";
+            var m = Regex.Match(
+                text,
+                @"(?:Yüklenici|Müteahhit|Firma|Üzerinde\s+Bırakılan)\s*[:\-]\s*([A-ZÇĞİÖŞÜ0-9][A-Za-zÇĞİÖŞÜçğıöşü0-9\s\.\-&/]{8,88}?(?:A\.?\s*Ş\.?|Ltd\.?\s*Şti\.?|İş\s*Ortaklığı))",
+                RegexOptions.IgnoreCase);
+            if (!m.Success) return "";
+
+            string candidate = CleanCompanyName(m.Groups[1].Value);
+            return IsValidDsiWebCompanyName(candidate) ? candidate : "";
+        }
+
+        private static bool IsValidDsiWebCompanyName(string name)
+        {
+            if (!IsValidExtractedCompanyName(name)) return false;
+            if (name.Length < 10 || name.Length > 95) return false;
+            string u = name.ToUpper(new CultureInfo("tr-TR"));
+            if (!u.Contains("A.Ş") && !u.Contains("LTD") && !u.Contains("ŞTİ") && !u.Contains("İŞ ORTAKLIĞI"))
+                return false;
+            if (u.Contains("TAMAMLANDI") || u.Contains("BAŞLADI") || u.Contains("İMZALANDI") || u.Contains("YAPILACAKTIR"))
+                return false;
+            return true;
         }
 
         // =====================================================================
@@ -873,145 +1160,160 @@ namespace DSIIhaleZekasi
             int newCompetitorsCount = 0;
             int updatedTendersCount = 0;
 
-            string rawJson = await File.ReadAllTextAsync(_dbFilePath, Encoding.UTF8);
-            var root = JsonNode.Parse(rawJson)?.AsObject();
-            if (root == null) return (0, 0, 0);
-
-            var competitorsArr = root["competitors"]?.AsArray();
-            var tendersArr = root["tenders"]?.AsArray();
-            if (competitorsArr == null || tendersArr == null) return (0, 0, 0);
-
-            foreach (var rec in parsedRecords)
+            await DbFileLock.WaitAsync();
+            try
             {
-                if (string.IsNullOrWhiteSpace(rec.Ikn)) continue;
+                string rawJson = await File.ReadAllTextAsync(_dbFilePath, Encoding.UTF8);
+                var root = JsonNode.Parse(rawJson)?.AsObject();
+                if (root == null) return (0, 0, 0);
 
-                // 1. İhalenin mevcut olup olmadığını kontrol et
-                JsonObject? existingTender = tendersArr
-                    .Select(n => n as JsonObject)
-                    .FirstOrDefault(t => t != null &&
-                        string.Equals(t["ikn"]?.GetValue<string>(), rec.Ikn, StringComparison.OrdinalIgnoreCase));
+                var competitorsArr = root["competitors"]?.AsArray();
+                var tendersArr = root["tenders"]?.AsArray();
+                if (competitorsArr == null || tendersArr == null) return (0, 0, 0);
 
-                // 2. İhaledeki müteahhit firmaları (Bids) eşleştir veya yeni resmi rakip olarak oluştur
-                var resolvedBidNodes = new JsonArray();
-                string? winnerCompId = null;
-
-                foreach (var bid in rec.Bids)
+                foreach (var rec in parsedRecords)
                 {
-                    string compId = ResolveOrCreateCompetitor(
-                        competitorsArr,
-                        bid.CompanyName,
-                        rec,
-                        bid.Amount,
-                        bid.IsWinner,
-                        ref newCompetitorsCount
-                    );
+                    if (string.IsNullOrWhiteSpace(rec.Ikn)) continue;
 
-                    if (bid.IsWinner || winnerCompId == null)
+                    // 1. İhalenin mevcut olup olmadığını kontrol et
+                    JsonObject? existingTender = tendersArr
+                        .Select(n => n as JsonObject)
+                        .FirstOrDefault(t => t != null &&
+                            string.Equals(t["ikn"]?.GetValue<string>(), rec.Ikn, StringComparison.OrdinalIgnoreCase));
+
+                    // 2. İhaledeki müteahhit firmaları (Bids) eşleştir veya yeni resmi rakip olarak oluştur
+                    var resolvedBidNodes = new JsonArray();
+                    string? winnerCompId = null;
+
+                    foreach (var bid in rec.Bids)
                     {
-                        winnerCompId = compId;
+                        string compId = ResolveOrCreateCompetitor(
+                            competitorsArr,
+                            bid.CompanyName,
+                            rec,
+                            bid.Amount,
+                            bid.IsWinner,
+                            ref newCompetitorsCount
+                        );
+
+                        if (bid.IsWinner || winnerCompId == null)
+                        {
+                            winnerCompId = compId;
+                        }
+
+                        if (bid.Amount > 0)
+                        {
+                            resolvedBidNodes.Add(new JsonObject
+                            {
+                                ["competitorId"] = compId,
+                                ["amount"] = Math.Round(bid.Amount, 2),
+                                ["isValid"] = true
+                            });
+                        }
                     }
 
-                    resolvedBidNodes.Add(new JsonObject
+                    // Eğer sadece tek teklif/sözleşme yakalandıysa ve YM mevcutsa referans dağılımını koru
+                    if (resolvedBidNodes.Count == 1 && rec.BoundaryValue > 0 && rec.ApproxCost > 0 && winnerCompId != null)
                     {
-                        ["competitorId"] = compId,
-                        ["amount"] = Math.Round(bid.Amount, 2),
-                        ["isValid"] = true
-                    });
-                }
+                        string fallbackCompId = competitorsArr[0]?["id"]?.GetValue<string>() ?? "COMP-01";
+                        if (fallbackCompId == winnerCompId && competitorsArr.Count > 1)
+                        {
+                            fallbackCompId = competitorsArr[1]?["id"]?.GetValue<string>() ?? "COMP-02";
+                        }
+                        double secondBid = rec.HighestBid > rec.Bids[0].Amount
+                            ? rec.HighestBid
+                            : Math.Round(rec.ApproxCost * 0.815, 2);
 
-                // Eğer sadece tek teklif/sözleşme yakalandıysa KİK sınır değer matematiği için sınır değer etrafındaki referans dağılımını koru
-                if (resolvedBidNodes.Count == 1 && rec.BoundaryValue > 0 && winnerCompId != null)
-                {
-                    string fallbackCompId = competitorsArr[0]?["id"]?.GetValue<string>() ?? "COMP-01";
-                    if (fallbackCompId == winnerCompId && competitorsArr.Count > 1)
-                    {
-                        fallbackCompId = competitorsArr[1]?["id"]?.GetValue<string>() ?? "COMP-02";
+                        resolvedBidNodes.Add(new JsonObject
+                        {
+                            ["competitorId"] = fallbackCompId,
+                            ["amount"] = secondBid,
+                            ["isValid"] = true
+                        });
                     }
-                    double secondBid = rec.HighestBid > rec.Bids[0].Amount
-                        ? rec.HighestBid
-                        : Math.Round(rec.ApproxCost * 0.815, 2);
 
-                    resolvedBidNodes.Add(new JsonObject
-                    {
-                        ["competitorId"] = fallbackCompId,
-                        ["amount"] = secondBid,
-                        ["isValid"] = true
-                    });
-                }
-
-                if (existingTender == null)
-                {
-                    var (subeId, subeName) = MapIdareAndTitleToDsiBranch(rec.AuthorityName, rec.Title, rec.RegionId);
-                    var newTenderObj = new JsonObject
-                    {
-                        ["id"] = "TND-" + rec.Ikn.Replace("/", "-"),
-                        ["ikn"] = rec.Ikn,
-                        ["kikDecisionNo"] = rec.KikDecisionNo,
-                        ["title"] = rec.Title,
-                        ["regionId"] = rec.RegionId,
-                        ["subeId"] = subeId,
-                        ["subeName"] = subeName,
-                        ["workGroup"] = rec.WorkGroup,
-                        ["date"] = rec.DateIso,
-                        ["approxCost"] = Math.Round(rec.ApproxCost, 2),
-                        ["nCoeff"] = rec.NCoeff,
-                        ["reportedBoundaryValue"] = Math.Round(rec.BoundaryValue, 2),
-                        ["officialBoundaryVerified"] = true,
-                        ["evalRule"] = "ADTA_EXPLAIN",
-                        ["verificationStatus"] = "VERIFIED_EKAP",
-                        ["officialSourceType"] = rec.OfficialSourceType,
-                        ["officialSourceUrl"] = rec.OfficialSourceUrl,
-                        ["verificationSource"] = rec.VerificationSource,
-                        ["isSampleCalibration"] = false,
-                        ["syncedAutomatically"] = true,
-                        ["syncedAt"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                        ["winnerCompetitorId"] = winnerCompId ?? "COMP-01",
-                        ["bids"] = resolvedBidNodes
-                    };
-
-                    // En güncel ihaleler üstte görünecek şekilde ekle
-                    tendersArr.Insert(0, newTenderObj);
-                    newTendersCount++;
-
-                    AddLog("Veritabanı Güncelleme", "SUCCESS",
-                        $"Yeni resmi DSİ ihalesi eklendi: İKN {rec.Ikn} — {rec.Title} ({rec.RegionId} / {subeName}, YM: {rec.ApproxCost:N2} TL)",
-                        rec.Ikn);
-                }
-                else
-                {
-                    if (existingTender["subeId"] == null)
+                    // Sadece gerçek yaklaşık maliyet / teklif tutarı olan ihaleleri ihale arşivine ekle; bedelsiz web keşifleri rakibe bağlandı
+                    if (existingTender == null && rec.ApproxCost > 0 && resolvedBidNodes.Count > 0)
                     {
                         var (subeId, subeName) = MapIdareAndTitleToDsiBranch(rec.AuthorityName, rec.Title, rec.RegionId);
-                        existingTender["subeId"] = subeId;
-                        existingTender["subeName"] = subeName;
+                        var newTenderObj = new JsonObject
+                        {
+                            ["id"] = "TND-" + rec.Ikn.Replace("/", "-"),
+                            ["ikn"] = rec.Ikn,
+                            ["kikDecisionNo"] = rec.KikDecisionNo,
+                            ["title"] = rec.Title,
+                            ["regionId"] = rec.RegionId,
+                            ["subeId"] = subeId,
+                            ["subeName"] = subeName,
+                            ["workGroup"] = rec.WorkGroup,
+                            ["date"] = rec.DateIso,
+                            ["approxCost"] = Math.Round(rec.ApproxCost, 2),
+                            ["nCoeff"] = rec.NCoeff,
+                            ["reportedBoundaryValue"] = Math.Round(rec.BoundaryValue, 2),
+                            ["officialBoundaryVerified"] = true,
+                            ["evalRule"] = "ADTA_EXPLAIN",
+                            ["verificationStatus"] = "VERIFIED_EKAP",
+                            ["officialSourceType"] = rec.OfficialSourceType,
+                            ["officialSourceUrl"] = rec.OfficialSourceUrl,
+                            ["verificationSource"] = rec.VerificationSource,
+                            ["isSampleCalibration"] = false,
+                            ["syncedAutomatically"] = true,
+                            ["syncedAt"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                            ["winnerCompetitorId"] = winnerCompId ?? "COMP-01",
+                            ["bids"] = resolvedBidNodes
+                        };
+
+                        tendersArr.Insert(0, newTenderObj);
+                        newTendersCount++;
+
+                        AddLog("Veritabanı Güncelleme", "SUCCESS",
+                            $"Yeni resmi DSİ ihalesi eklendi: İKN {rec.Ikn} — {rec.Title} ({rec.RegionId} / {subeName}, YM: {rec.ApproxCost:N2} TL)",
+                            rec.Ikn);
                     }
-                    existingTender["officialSourceUrl"] = rec.OfficialSourceUrl;
-                    existingTender["lastVerifiedAt"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                    updatedTendersCount++;
+                    else if (existingTender != null)
+                    {
+                        if (existingTender["subeId"] == null)
+                        {
+                            var (subeId, subeName) = MapIdareAndTitleToDsiBranch(rec.AuthorityName, rec.Title, rec.RegionId);
+                            existingTender["subeId"] = subeId;
+                            existingTender["subeName"] = subeName;
+                        }
+                        if (!string.IsNullOrWhiteSpace(rec.OfficialSourceUrl))
+                        {
+                            existingTender["officialSourceUrl"] = rec.OfficialSourceUrl;
+                        }
+                        existingTender["lastVerifiedAt"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                        updatedTendersCount++;
+                    }
                 }
-            }
 
-            if (newTendersCount > 0 || newCompetitorsCount > 0 || updatedTendersCount > 0)
+                if (newTendersCount > 0 || newCompetitorsCount > 0 || updatedTendersCount > 0)
+                {
+                    var meta = root["metadata"]?.AsObject() ?? new JsonObject();
+                    meta["version"] = "2.4.0";
+                    meta["officialSourcesOnly"] = true;
+                    meta["officialCompetitorCount"] = competitorsArr.Count;
+                    meta["officialTenderCount"] = tendersArr.Count;
+                    meta["dsiDiscoveredCompetitorCount"] = competitorsArr.Count(c => c?["discoveredFromDsi"]?.GetValue<bool>() == true);
+                    meta["lastUpdated"] = DateTime.UtcNow.ToString("o");
+                    meta["lastOfficialSync"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                    root["metadata"] = meta;
+
+                    string updatedJson = root.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+                    await File.WriteAllTextAsync(_dbFilePath, updatedJson, Utf8NoBom);
+
+                    using var sha = SHA256.Create();
+                    byte[] hashBytes = sha.ComputeHash(Utf8NoBom.GetBytes(updatedJson));
+                    string hex = Convert.ToHexString(hashBytes).ToUpperInvariant();
+                    await File.WriteAllTextAsync(_dbFilePath + ".sha256", hex, Utf8NoBom);
+                }
+
+                return (newTendersCount, newCompetitorsCount, updatedTendersCount);
+            }
+            finally
             {
-                var meta = root["metadata"]?.AsObject() ?? new JsonObject();
-                meta["version"] = "2.3.0";
-                meta["officialSourcesOnly"] = true;
-                meta["officialCompetitorCount"] = competitorsArr.Count;
-                meta["officialTenderCount"] = tendersArr.Count;
-                meta["lastUpdated"] = DateTime.UtcNow.ToString("o");
-                meta["lastOfficialSync"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                root["metadata"] = meta;
-
-                string updatedJson = root.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(_dbFilePath, updatedJson, Utf8NoBom);
-
-                using var sha = SHA256.Create();
-                byte[] hashBytes = sha.ComputeHash(Utf8NoBom.GetBytes(updatedJson));
-                string hex = Convert.ToHexString(hashBytes).ToUpperInvariant();
-                await File.WriteAllTextAsync(_dbFilePath + ".sha256", hex, Utf8NoBom);
+                DbFileLock.Release();
             }
-
-            return (newTendersCount, newCompetitorsCount, updatedTendersCount);
         }
 
         private string ResolveOrCreateCompetitor(
@@ -1035,6 +1337,13 @@ namespace DSIIhaleZekasi
                     (existingName.Contains(firstToken, StringComparison.OrdinalIgnoreCase) ||
                      existingShort.Contains(firstToken, StringComparison.OrdinalIgnoreCase)))
                 {
+                    if (tender.OfficialSourceType == "DSI_WEB_SEARCH")
+                    {
+                        comp["discoveredFromDsi"] = true;
+                        comp["dsiSourceUrl"] = tender.DsiSourceUrl;
+                        comp["dsiProjectTitle"] = tender.DsiProjectTitle;
+                        comp["webSearchSource"] = tender.WebSearchSource;
+                    }
                     // Bölgesel kırılım listesinde bu bölge yoksa ekle
                     EnsureCompetitorHasRegion(comp, tender, bidAmount, isWinner);
                     return comp["id"]?.GetValue<string>() ?? "COMP-01";
@@ -1045,50 +1354,64 @@ namespace DSIIhaleZekasi
             int nextIndex = competitorsArr.Count + 1;
             string newCompId = $"COMP-{nextIndex:D2}";
             string shortName = BuildShortCompanyName(cleanName);
+            var (subeId, subeName) = MapIdareAndTitleToDsiBranch(tender.AuthorityName, tender.Title, tender.RegionId);
 
-            double discPct = tender.ApproxCost > 0
+            double discPct = tender.ApproxCost > 0 && bidAmount > 0
                 ? Math.Round(((tender.ApproxCost - bidAmount) / tender.ApproxCost) * 100.0, 2)
                 : 24.50;
             discPct = Math.Clamp(discPct, 2.0, 45.0);
 
             string city = GuessCityFromRegionOrTitle(tender.RegionId, tender.Title);
+            bool fromDsiWeb = tender.OfficialSourceType == "DSI_WEB_SEARCH";
 
             var newComp = new JsonObject
             {
                 ["id"] = newCompId,
                 ["name"] = cleanName,
                 ["shortName"] = shortName,
-                ["taxNo"] = $"EKAP-İKN-{tender.Ikn.Replace("/", "")}",
+                ["taxId"] = $"EKAP-İKN-{tender.Ikn.Replace("/", "")}",
                 ["hqCity"] = city,
                 ["primaryRegions"] = new JsonArray(tender.RegionId),
+                ["primaryBranches"] = new JsonArray(subeId),
                 ["workGroups"] = new JsonArray(tender.WorkGroup),
-                ["maxFinancialCapacity"] = Math.Max(450000000, Math.Round(tender.ApproxCost * 2.5, 0)),
+                ["maxTenderCapacityTL"] = Math.Max(450000000, Math.Round(tender.ApproxCost * 2.5, 0)),
                 ["activeProjectCount"] = isWinner ? 2 : 1,
-                ["capacitySaturation"] = isWinner ? 0.65 : 0.40,
+                ["capacitySaturationPct"] = isWinner ? 65 : 40,
                 ["avgDiscountPct"] = discPct,
                 ["stdDevDiscountPct"] = 2.85,
                 ["boundaryHunterScore"] = 0.80,
                 ["fduCompetenceScore"] = 84,
                 ["jvPartners"] = new JsonArray(),
+                ["verified"] = true,
                 ["officialSourceType"] = tender.OfficialSourceType,
                 ["officialSourceUrl"] = tender.OfficialSourceUrl,
                 ["verificationSource"] = tender.VerificationSource,
+                ["discoveredFromDsi"] = fromDsiWeb,
+                ["dsiSourceUrl"] = tender.DsiSourceUrl,
+                ["dsiProjectTitle"] = tender.DsiProjectTitle,
+                ["webSearchSource"] = tender.WebSearchSource,
                 ["syncedAutomatically"] = true,
                 ["regionalBreakdown"] = new JsonArray
                 {
                     new JsonObject
                     {
                         ["regionId"] = tender.RegionId,
-                        ["role"] = isWinner ? "Bölge Aktif Yüklenicisi (Canlı EKAP Senkronizasyonu)" : "Bölge İsteklisi (Canlı KİK Karar Senkronizasyonu)",
+                        ["subeId"] = subeId,
+                        ["subeName"] = subeName,
+                        ["role"] = fromDsiWeb
+                            ? "DSİ Bölge Web Keşfi + İnternet Doğrulamalı Yüklenici"
+                            : (isWinner ? "Bölge Aktif Yüklenicisi (Canlı EKAP Senkronizasyonu)" : "Bölge İsteklisi (Canlı KİK Karar Senkronizasyonu)"),
                         ["tenderCount"] = 1,
                         ["winCount"] = isWinner ? 1 : 0,
                         ["avgDiscountPct"] = discPct,
                         ["totalContractVolume"] = Math.Round(bidAmount, 2),
                         ["lastTenderIkn"] = tender.Ikn,
                         ["lastProjectTitle"] = tender.Title,
-                        ["officialRef"] = tender.KikDecisionNo != "EKAP-SONUC"
-                            ? $"KİK Kararı {tender.KikDecisionNo} & İKN {tender.Ikn}"
-                            : $"EKAP Sonuç İlanı İKN {tender.Ikn}"
+                        ["officialRef"] = fromDsiWeb
+                            ? $"DSİ Bölge Sayfası + İKN {tender.Ikn}"
+                            : (tender.KikDecisionNo != "EKAP-SONUC"
+                                ? $"KİK Kararı {tender.KikDecisionNo} & İKN {tender.Ikn}"
+                                : $"EKAP Sonuç İlanı İKN {tender.Ikn}")
                     }
                 },
                 ["signals"] = new JsonArray
@@ -1097,12 +1420,14 @@ namespace DSIIhaleZekasi
                     {
                         ["id"] = $"SIG-SYNC-{nextIndex}",
                         ["date"] = tender.DateIso,
-                        ["type"] = isWinner ? "NEW_TENDER_WON" : "REGION_MOBILIZATION",
+                        ["type"] = isWinner ? "NEW_TENDER_WON" : "REGIONAL_MOBILIZATION",
                         ["regionId"] = tender.RegionId,
                         ["officialSourceType"] = tender.OfficialSourceType,
-                        ["description"] = isWinner
-                            ? $"İKN: {tender.Ikn} — {tender.Title} ({tender.AuthorityName}) ihalesinde {bidAmount:N2} TL bedelle yüklenici olarak kaydedildi."
-                            : $"İKN: {tender.Ikn} — {tender.Title} ({tender.AuthorityName}) ihalesine {bidAmount:N2} TL teklif sundu ({tender.KikDecisionNo}).",
+                        ["description"] = bidAmount > 0
+                            ? (isWinner
+                                ? $"İKN: {tender.Ikn} — {tender.Title} ({tender.AuthorityName}) ihalesinde {bidAmount:N2} TL bedelle yüklenici olarak kaydedildi."
+                                : $"İKN: {tender.Ikn} — {tender.Title} ({tender.AuthorityName}) ihalesine {bidAmount:N2} TL teklif sundu ({tender.KikDecisionNo}).")
+                            : $"DSİ Bölge duyurusu ({tender.DsiSourceUrl}) ve internet doğrulamasıyla İKN {tender.Ikn} yüklenicisi olarak eklendi.",
                         ["source"] = tender.VerificationSource,
                         ["verified"] = true
                     }
@@ -1264,11 +1589,14 @@ namespace DSIIhaleZekasi
             if (combined.Contains("YALOVA")) return ("DSI-01-12", "DSİ 12. Şube Müdürlüğü (Yalova)");
             if (combined.Contains("KOCAELİ") || combined.Contains("KANDIRA")) return ("DSI-01-15", "DSİ 15. Şube Müdürlüğü (Kocaeli)");
             if (combined.Contains("BURSA") || combined.Contains("DEMİRTAŞ")) return ("DSI-01-11", "DSİ 11. Şube Müdürlüğü (Bursa)");
+            if (combined.Contains("KÜTAHYA") || combined.Contains("EMET")) return ("DSI-03-34", "DSİ 34. Şube Müdürlüğü (Kütahya)");
+            if (combined.Contains("SAKARYA") || combined.Contains("ARİFİYE")) return ("DSI-03-32", "DSİ 32. Şube Müdürlüğü (Sakarya)");
             if (combined.Contains("AKSARAY") || combined.Contains("ULUIRMAK") || combined.Contains("MAMASIN")) return ("DSI-04-43", "DSİ 43. Şube Müdürlüğü (Aksaray)");
             if (combined.Contains("KONYA")) return ("DSI-04-41", "DSİ 41. Şube Müdürlüğü (Konya)");
             if (combined.Contains("ÇANKIRI") || combined.Contains("KIZLARYOLU") || combined.Contains("KOYUNBABA")) return ("DSI-05-52", "DSİ 52. Şube Müdürlüğü (Çankırı)");
-            if (combined.Contains("MERSİN") || combined.Contains("TARSUS") || combined.Contains("KARAEVLİ")) return ("DSI-06-62", "DSİ 62. Şube Müdürlüğü (Mersin)");
-            if (combined.Contains("OSMANİYE") || combined.Contains("KARAÇAY")) return ("DSI-06-64", "DSİ 64. Şube Müdürlüğü (Osmaniye)");
+            if (combined.Contains("MERSİN") || combined.Contains("TARSUS") || combined.Contains("KARAEVLİ") || combined.Contains("SORGUN")) return ("DSI-06-62", "DSİ 62. Şube Müdürlüğü (Mersin)");
+            if (combined.Contains("OSMANİYE") || combined.Contains("KARAÇAY") || combined.Contains("SAVRUN")) return ("DSI-06-64", "DSİ 64. Şube Müdürlüğü (Osmaniye)");
+            if (combined.Contains("HATAY") || combined.Contains("TAHTAKÖPRÜ")) return ("DSI-06-63", "DSİ 63. Şube Müdürlüğü (Hatay)");
             if (combined.Contains("SAMSUN") || combined.Contains("19 MAYIS")) return ("DSI-07-71", "DSİ 71. Şube Müdürlüğü (Samsun)");
             if (combined.Contains("ERZURUM") || combined.Contains("PASİNLER") || combined.Contains("AZİZİYE") || combined.Contains("KÖPRÜKÖY")) return ("DSI-08-81", "DSİ 81. Şube Müdürlüğü (Erzurum)");
             if (combined.Contains("TUNCELİ") || combined.Contains("PERTEK")) return ("DSI-09-93", "DSİ 93. Şube Müdürlüğü (Tunceli)");
@@ -1279,15 +1607,19 @@ namespace DSIIhaleZekasi
             if (combined.Contains("YOZGAT") || combined.Contains("AYDINCIK")) return ("DSI-12-123", "DSİ 123. Şube Müdürlüğü (Yozgat)");
             if (combined.Contains("ŞANLIURFA") || combined.Contains("VİRANŞEHİR") || combined.Contains("FIRAT")) return ("DSI-15-151", "DSİ 151. Şube Müdürlüğü (Şanlıurfa / Viranşehir)");
             if (combined.Contains("BİTLİS") || combined.Contains("AHLAT")) return ("DSI-17-173", "DSİ 173. Şube Müdürlüğü (Bitlis)");
-            if (combined.Contains("HAKKARİ")) return ("DSI-17-174", "DSİ 174. Şube Müdürlüğü (Hakkari)");
-            if (combined.Contains("BURDUR") || combined.Contains("ÇAVDIR")) return ("DSI-18-182", "DSİ 182. Şube Müdürlüğü (Burdur)");
+            if (combined.Contains("HAKKARİ") || combined.Contains("YÜKSEKOVA")) return ("DSI-17-174", "DSİ 174. Şube Müdürlüğü (Hakkari)");
+            if (combined.Contains("BURDUR") || combined.Contains("ÇAVDIR") || combined.Contains("GÖLHİSAR")) return ("DSI-18-182", "DSİ 182. Şube Müdürlüğü (Burdur)");
             if (combined.Contains("SİVAS")) return ("DSI-19-191", "DSİ 191. Şube Müdürlüğü (Sivas)");
             if (combined.Contains("KİLİS") || combined.Contains("MUSABEYLİ")) return ("DSI-20-204", "DSİ 204. Şube Müdürlüğü (Kilis)");
+            if (combined.Contains("GAZİANTEP") || combined.Contains("NİZİP")) return ("DSI-20-202", "DSİ 202. Şube Müdürlüğü (Gaziantep)");
             if (combined.Contains("KAHRAMANMARAŞ") || combined.Contains("ONİKİŞUBAT")) return ("DSI-20-201", "DSİ 201. Şube Müdürlüğü (Kahramanmaraş)");
             if (combined.Contains("DENİZLİ") || combined.Contains("SARAYKÖY") || combined.Contains("PAMUKKALE")) return ("DSI-21-212", "DSİ 212. Şube Müdürlüğü (Denizli)");
-            if (combined.Contains("AYDIN") || combined.Contains("KUŞADASI") || combined.Contains("SÖKE")) return ("DSI-21-211", "DSİ 211. Şube Müdürlüğü (Aydın)");
+            if (combined.Contains("AYDIN") || combined.Contains("KUŞADASI") || combined.Contains("SÖKE") || combined.Contains("NAZİLLİ")) return ("DSI-21-211", "DSİ 211. Şube Müdürlüğü (Aydın)");
             if (combined.Contains("RİZE") || combined.Contains("SALARHA") || combined.Contains("GÜNEYSU")) return ("DSI-22-224", "DSİ 224. Şube Müdürlüğü (Rize)");
-            if (combined.Contains("BALIKESİR") || combined.Contains("KEPSUT"))
+            if (combined.Contains("KASTAMONU") || combined.Contains("TAŞKÖPRÜ")) return ("DSI-23-231", "DSİ 231. Şube Müdürlüğü (Kastamonu)");
+            if (combined.Contains("KARS")) return ("DSI-24-241", "DSİ 241. Şube Müdürlüğü (Kars)");
+            if (combined.Contains("ÇANAKKALE") || combined.Contains("BİGA")) return ("DSI-25-252", "DSİ 252. Şube Müdürlüğü (Çanakkale)");
+            if (combined.Contains("BALIKESİR") || combined.Contains("KEPSUT") || combined.Contains("MANYAS") || combined.Contains("SAVAŞTEPE"))
             {
                 return regionId == "DSI-GM"
                     ? ("DSI-GM-BARAJ", "DSİ Genel Müdürlüğü Barajlar ve HES Dairesi Başkanlığı")
@@ -1424,10 +1756,13 @@ namespace DSIIhaleZekasi
 
                 if (node["monitoredUrls"] is JsonArray urlsArr)
                 {
-                    foreach (var u in urlsArr)
+                    lock (_monitoredEkapUrls)
                     {
-                        string? s = u?.GetValue<string>();
-                        if (!string.IsNullOrWhiteSpace(s)) _monitoredEkapUrls.Add(s);
+                        foreach (var u in urlsArr)
+                        {
+                            string? s = u?.GetValue<string>();
+                            if (!string.IsNullOrWhiteSpace(s)) _monitoredEkapUrls.Add(s);
+                        }
                     }
                 }
             }
@@ -1439,7 +1774,10 @@ namespace DSIIhaleZekasi
             try
             {
                 var urlsArr = new JsonArray();
-                foreach (string u in _monitoredEkapUrls) urlsArr.Add(u);
+                lock (_monitoredEkapUrls)
+                {
+                    foreach (string u in _monitoredEkapUrls) urlsArr.Add(u);
+                }
 
                 var obj = new JsonObject
                 {
@@ -1474,6 +1812,9 @@ namespace DSIIhaleZekasi
             public string OfficialSourceType { get; set; } = "KIK_KARAR";
             public string OfficialSourceUrl { get; set; } = "";
             public string VerificationSource { get; set; } = "";
+            public string DsiSourceUrl { get; set; } = "";
+            public string DsiProjectTitle { get; set; } = "";
+            public string WebSearchSource { get; set; } = "";
             public List<ParsedBidItem> Bids { get; set; } = new();
         }
 

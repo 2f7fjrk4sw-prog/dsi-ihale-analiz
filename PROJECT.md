@@ -41,17 +41,18 @@ dsi-ihale-analiz/
 ├── PROJECT.md                              # AI & Geliştirici Mimari ve Matematik Referans Belgesi
 ├── DSIIhaleZekasi_Kurulum_Setup.exe        # Tek Tıkla Kurulabilir Windows Setup Sihirbazı
 ├── data/
-│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Yerel İhale ve Rakip Veritabanı
+│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale ve Rakip Veritabanı (v2.4.0)
 │   └── verified_db.json.sha256             # SHA-256 Veri Bütünlük Mührü
 ├── src/
 │   ├── ui/
-│   │   ├── index.html                      # 5 Sekmeli Yönetici Karar Destek Arayüzü
+│   │   ├── index.html                      # 8 Sekmeli Yönetici Karar Destek Arayüzü
 │   │   ├── styles.css                      # Koyu Tema Mühendislik Stilleri ve Rapor Yazdırma Tasarımı
-│   │   ├── kik-engine.js                   # KİK Md. 45.1.1 Motoru, Rakip X-Ray ve 10.000 Monte Carlo Çekirdeği
-│   │   └── app.js                          # Arayüz Kontrolcüsü, Grafik Çizici ve 3-Kanallı Veri Merkezi
+│   │   ├── kik-engine.js                   # KİK Md. 45.1.1 Motoru, Bölge/Şube Analizi ve 10.000 Monte Carlo Çekirdeği
+│   │   └── app.js                          # Arayüz Kontrolcüsü, DSİ Kaynaklı Rakipler Sekmesi ve 3-Kanallı Veri Merkezi
 │   ├── DesktopApp/
 │   │   ├── DSIIhaleZekasi.csproj           # .NET 10 Masaüstü Uygulama Projesi
-│   │   └── Program.cs                      # Yerel Sunucu, SHA-256 API ve Masaüstü Pencere Yöneticisi
+│   │   ├── Program.cs                      # Yerel Sunucu, Lock Korumalı API ve Masaüstü Pencere Yöneticisi
+│   │   └── OfficialDataSyncService.cs      # Periyodik KİK/EKAP, 26 DSİ Bölge Sitesi ve İnternet Yüklenici Arama Servisi
 │   └── Installer/
 │       ├── DSIIhaleZekasi_Setup.csproj     # .NET 10 Kurulum Sihirbazı Projesi
 │       └── SetupProgram.cs                 # Windows Kurulum Sihirbazı ve Kısayol Oluşturucu

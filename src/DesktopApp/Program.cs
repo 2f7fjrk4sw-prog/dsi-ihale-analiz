@@ -109,7 +109,7 @@ namespace DSIIhaleZekasi
                 try
                 {
                     string existingJson = File.ReadAllText(appDataDbFile, Encoding.UTF8);
-                    if (existingJson.Contains("\"version\": \"2.3.0\""))
+                    if (existingJson.Contains("\"version\": \"2.4.0\""))
                     {
                         forceUpgradeDb = false;
                     }
@@ -135,7 +135,7 @@ namespace DSIIhaleZekasi
                 try
                 {
                     string localJson = File.ReadAllText(localDb, Encoding.UTF8);
-                    if (!localJson.Contains("\"officialSourcesOnly\": true") || !localJson.Contains("\"version\": \"2.3.0\""))
+                    if (!localJson.Contains("\"officialSourcesOnly\": true") || !localJson.Contains("\"version\": \"2.4.0\""))
                     {
                         ExtractEmbeddedResource("data/verified_db.json", localDb, overwrite: true);
                     }
@@ -220,7 +220,20 @@ namespace DSIIhaleZekasi
 
                 if (path.Equals("/api/sync/run", StringComparison.OrdinalIgnoreCase) && req.HttpMethod == "POST" && _syncService != null)
                 {
-                    string json = await _syncService.RunSyncCycleAsync("Kullanıcı Manuel Resmi Kaynak Taraması");
+                    string json;
+                    try
+                    {
+                        json = await _syncService.RunSyncCycleAsync("Kullanıcı Manuel Resmi Kaynak Taraması");
+                    }
+                    catch (Exception syncEx)
+                    {
+                        var errObj = new JsonObject
+                        {
+                            ["ok"] = false,
+                            ["error"] = syncEx.Message
+                        };
+                        json = errObj.ToJsonString();
+                    }
                     byte[] bytes = Encoding.UTF8.GetBytes(json);
                     resp.ContentType = "application/json; charset=utf-8";
                     resp.ContentLength64 = bytes.Length;
@@ -268,7 +281,16 @@ namespace DSIIhaleZekasi
                     {
                         if (File.Exists(_dbFilePath))
                         {
-                            byte[] bytes = await File.ReadAllBytesAsync(_dbFilePath);
+                            byte[] bytes;
+                            await OfficialDataSyncService.DbFileLock.WaitAsync();
+                            try
+                            {
+                                bytes = await File.ReadAllBytesAsync(_dbFilePath);
+                            }
+                            finally
+                            {
+                                OfficialDataSyncService.DbFileLock.Release();
+                            }
                             resp.ContentType = "application/json; charset=utf-8";
                             resp.ContentLength64 = bytes.Length;
                             await resp.OutputStream.WriteAsync(bytes);
@@ -286,14 +308,23 @@ namespace DSIIhaleZekasi
                         string body = await reader.ReadToEndAsync();
                         if (!string.IsNullOrWhiteSpace(body) && body.Contains("\"competitors\"") && body.Contains("\"tenders\""))
                         {
-                            string? dir = Path.GetDirectoryName(_dbFilePath);
-                            if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-                            await File.WriteAllTextAsync(_dbFilePath, body, Encoding.UTF8);
+                            string hex;
+                            await OfficialDataSyncService.DbFileLock.WaitAsync();
+                            try
+                            {
+                                string? dir = Path.GetDirectoryName(_dbFilePath);
+                                if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                                await File.WriteAllTextAsync(_dbFilePath, body, new UTF8Encoding(false));
 
-                            using var sha = SHA256.Create();
-                            byte[] hash = sha.ComputeHash(Encoding.UTF8.GetBytes(body));
-                            string hex = Convert.ToHexString(hash).ToLowerInvariant();
-                            await File.WriteAllTextAsync(_dbFilePath + ".sha256", hex, Encoding.UTF8);
+                                using var sha = SHA256.Create();
+                                byte[] hash = sha.ComputeHash(new UTF8Encoding(false).GetBytes(body));
+                                hex = Convert.ToHexString(hash).ToUpperInvariant();
+                                await File.WriteAllTextAsync(_dbFilePath + ".sha256", hex, new UTF8Encoding(false));
+                            }
+                            finally
+                            {
+                                OfficialDataSyncService.DbFileLock.Release();
+                            }
 
                             byte[] okBytes = Encoding.UTF8.GetBytes("{\"status\":\"saved\",\"sha256\":\"" + hex + "\"}");
                             resp.ContentType = "application/json; charset=utf-8";
@@ -330,9 +361,27 @@ namespace DSIIhaleZekasi
                 await resp.OutputStream.WriteAsync(fileBytes);
                 resp.Close();
             }
-            catch
+            catch (Exception ex)
             {
-                try { resp.StatusCode = 500; resp.Close(); } catch { }
+                try
+                {
+                    if ((req.Url?.AbsolutePath ?? "").StartsWith("/api/", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var errObj = new JsonObject { ["ok"] = false, ["error"] = ex.Message };
+                        byte[] errBytes = Encoding.UTF8.GetBytes(errObj.ToJsonString());
+                        resp.StatusCode = 500;
+                        resp.ContentType = "application/json; charset=utf-8";
+                        resp.ContentLength64 = errBytes.Length;
+                        await resp.OutputStream.WriteAsync(errBytes);
+                        resp.Close();
+                    }
+                    else
+                    {
+                        resp.StatusCode = 500;
+                        resp.Close();
+                    }
+                }
+                catch { }
             }
         }
 

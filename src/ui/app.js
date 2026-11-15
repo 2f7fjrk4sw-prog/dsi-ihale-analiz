@@ -46,13 +46,13 @@ const App = {
         const data = await resp.json();
         if (data && Array.isArray(data.competitors) && Array.isArray(data.tenders)) {
           if (data.metadata && data.metadata.officialSourcesOnly === true &&
-              data.metadata.version === '2.3.0') {
+              data.metadata.version === '2.4.0') {
             this.db = data;
             localStorage.setItem('dsi_ihale_official_kik_db_v2_1', JSON.stringify(this.db));
             await this.updateDatabaseHash();
             return;
           } else {
-            // Eski sürüm veritabanını v2.3.0 DSİ Bölge & Şube resmi veritabanına yükselt
+            // Eski sürüm veritabanını v2.4.0 DSİ Bölge, Şube ve DSİ Web Keşif veritabanına yükselt
             this.db = createInitialVerifiedDatabase();
             await this.saveDatabase();
             return;
@@ -66,7 +66,7 @@ const App = {
       try {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.metadata && parsed.metadata.officialSourcesOnly === true &&
-            parsed.metadata.version === '2.3.0') {
+            parsed.metadata.version === '2.4.0') {
           this.db = parsed;
         } else {
           this.db = createInitialVerifiedDatabase();
@@ -97,7 +97,7 @@ const App = {
 
   async saveDatabase() {
     this.db.metadata = this.db.metadata || {};
-    this.db.metadata.version = '2.3.0';
+    this.db.metadata.version = '2.4.0';
     this.db.metadata.officialSourcesOnly = true;
     this.db.metadata.lastUpdated = new Date().toISOString();
 
@@ -216,6 +216,7 @@ const App = {
 
     this.populateSimBranches();
     this.populateCompetitorBranchFilter();
+    this.populateDsiDiscoveredFilters();
 
     const groupSelects = ['simWorkGroup', 'tFormWorkGroup'];
     groupSelects.forEach(selId => {
@@ -245,6 +246,7 @@ const App = {
     this.renderSimulatorCompetitorToggles();
     this.runMonteCarloSimulation();
     this.renderCompetitorsTab();
+    this.renderDsiCompetitorsTab();
     this.renderRegionalAnalysisTab();
     this.renderDatacenterTable();
     this.previewManualTenderMath();
@@ -508,9 +510,17 @@ const App = {
     const target = this.getTargetTenderConfigFromUI();
     const tenders = this.getActiveVerifiedTenders();
 
-    const profiles = this.db.competitors.map(c =>
-      CompetitorPredictionEngine.analyzeCompetitor(c, tenders, target)
-    );
+    const profiles = this.db.competitors
+      .map(c => CompetitorPredictionEngine.analyzeCompetitor(c, tenders, target))
+      .sort((a, b) => {
+        if (Boolean(b.hasTargetBranchExperience) !== Boolean(a.hasTargetBranchExperience)) {
+          return b.hasTargetBranchExperience ? 1 : -1;
+        }
+        if (Boolean(b.hasTargetRegionExperience) !== Boolean(a.hasTargetRegionExperience)) {
+          return b.hasTargetRegionExperience ? 1 : -1;
+        }
+        return (b.participationPct || 0) - (a.participationPct || 0);
+      });
 
     container.innerHTML = profiles.map(p => {
       const currentMode = this.forcedParticipation[p.competitorId] || 'AUTO';
@@ -549,9 +559,17 @@ const App = {
     const target = this.getTargetTenderConfigFromUI();
     const tenders = this.getActiveVerifiedTenders();
 
-    const profiles = this.db.competitors.map(c =>
-      CompetitorPredictionEngine.analyzeCompetitor(c, tenders, target)
-    );
+    const profiles = this.db.competitors
+      .map(c => CompetitorPredictionEngine.analyzeCompetitor(c, tenders, target))
+      .sort((a, b) => {
+        if (Boolean(b.hasTargetBranchExperience) !== Boolean(a.hasTargetBranchExperience)) {
+          return b.hasTargetBranchExperience ? 1 : -1;
+        }
+        if (Boolean(b.hasTargetRegionExperience) !== Boolean(a.hasTargetRegionExperience)) {
+          return b.hasTargetRegionExperience ? 1 : -1;
+        }
+        return (b.participationPct || 0) - (a.participationPct || 0);
+      });
 
     const simResult = MonteCarloTenderSimulator.runSimulation({
       estimatedYM: target.approxCost,
@@ -837,16 +855,24 @@ const App = {
     this.renderCompetitorsTab();
   },
 
+  onCompetitorFilterOrSortChanged() {
+    this.renderCompetitorsTab();
+  },
+
   renderCompetitorsTab() {
     if (!this.db || !this.db.competitors.length) return;
 
     const tenders = this.getActiveVerifiedTenders();
     const listContainer = document.getElementById('competitorListContainer');
+    const searchVal = (document.getElementById('competitorSearchInput')?.value || '').trim().toLocaleLowerCase('tr-TR');
+    const originFilter = document.getElementById('competitorOriginFilter')?.value || 'ALL';
+    const sortMode = document.getElementById('competitorSortSelect')?.value || 'TENDERS_DESC';
 
-    const enriched = this.db.competitors.map(c => ({
-      comp: c,
-      prof: CompetitorPredictionEngine.analyzeCompetitor(c, tenders)
-    }));
+    const enriched = this.db.competitors.map(c => {
+      const prof = CompetitorPredictionEngine.analyzeCompetitor(c, tenders);
+      const isDsiWeb = c.discoveredFromDsi === true || c.officialSourceType === 'DSI_WEB_SEARCH';
+      return { comp: c, prof, isDsiWeb };
+    });
 
     let filtered = (this.competitorRegionFilter && this.competitorRegionFilter !== 'ALL')
       ? enriched.filter(x => (x.prof.allActiveRegions || []).includes(this.competitorRegionFilter))
@@ -854,6 +880,48 @@ const App = {
 
     if (this.competitorBranchFilter && this.competitorBranchFilter !== 'ALL') {
       filtered = filtered.filter(x => (x.prof.allActiveBranches || []).includes(this.competitorBranchFilter));
+    }
+
+    if (originFilter === 'DSI_WEB') {
+      filtered = filtered.filter(x => x.isDsiWeb);
+    } else if (originFilter === 'KIK_EKAP') {
+      filtered = filtered.filter(x => !x.isDsiWeb);
+    }
+
+    if (searchVal) {
+      filtered = filtered.filter(x => {
+        const hay = [
+          x.comp.name,
+          x.comp.shortName,
+          x.comp.hqCity,
+          x.comp.taxId,
+          x.comp.dsiProjectTitle,
+          x.comp.verificationSource
+        ].filter(Boolean).join(' ').toLocaleLowerCase('tr-TR');
+        return hay.includes(searchVal);
+      });
+    }
+
+    filtered.sort((a, b) => {
+      if (sortMode === 'NAME_ASC') {
+        return (a.comp.shortName || a.comp.name).localeCompare(b.comp.shortName || b.comp.name, 'tr-TR');
+      }
+      if (sortMode === 'DISCOUNT_DESC') {
+        return (b.prof.expectedDiscountPct || 0) - (a.prof.expectedDiscountPct || 0);
+      }
+      if (sortMode === 'CAPACITY_DESC') {
+        return (b.comp.maxTenderCapacityTL || 0) - (a.comp.maxTenderCapacityTL || 0);
+      }
+      // TENDERS_DESC
+      if ((b.prof.verifiedTenderCount || 0) !== (a.prof.verifiedTenderCount || 0)) {
+        return (b.prof.verifiedTenderCount || 0) - (a.prof.verifiedTenderCount || 0);
+      }
+      return (b.prof.winCount || 0) - (a.prof.winCount || 0);
+    });
+
+    const countBadge = document.getElementById('competitorListCountBadge');
+    if (countBadge) {
+      countBadge.textContent = `${filtered.length} / ${enriched.length} Firma`;
     }
 
     if (filtered.length > 0 && !filtered.some(x => x.comp.id === this.selectedCompetitorId)) {
@@ -868,45 +936,55 @@ const App = {
         : this.getRegionName(this.competitorRegionFilter);
       listContainer.innerHTML = `
         <div style="padding:18px; text-align:center; color:var(--text-muted); border:1px dashed var(--border-color); border-radius:6px;">
-          Seçilen birim (${filterDesc}) için kayıtlı rakip firma bulunmamaktadır.
+          Seçilen filtreler (${this.escapeHtml(filterDesc)}) için kayıtlı rakip firma bulunmamaktadır.
           <div style="margin-top:8px;">
-            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('competitorRegionFilterSelect').value='ALL'; App.onCompetitorRegionFilterChanged('ALL');">
-              Tüm Bölge ve Şubelerdeki Rakipleri Göster
+            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('competitorSearchInput').value=''; document.getElementById('competitorOriginFilter').value='ALL'; document.getElementById('competitorRegionFilterSelect').value='ALL'; App.onCompetitorRegionFilterChanged('ALL');">
+              Filtreleri Temizle ve Tüm Firmaları Göster
             </button>
           </div>
         </div>
       `;
     } else {
-      listContainer.innerHTML = filtered.map(({ comp: c, prof }) => {
+      listContainer.innerHTML = filtered.map(({ comp: c, prof, isDsiWeb }) => {
         const isSelected = c.id === this.selectedCompetitorId;
+        const originBadge = isDsiWeb
+          ? `<span class="badge badge-verified" style="font-size:10px; padding:1px 6px; background:#ecfdf5; color:#047857; border-color:#a7f3d0;">DSİ Web Keşfi</span>`
+          : `<span class="badge badge-blue" style="font-size:10px; padding:1px 6px;">KİK / EKAP</span>`;
+
         const regionBadges = (prof.regionalBreakdown || [])
-          .map(rb => `<span class="badge ${rb.winCount > 0 ? 'badge-verified' : 'badge-blue'}" style="font-size:10.5px; padding:2px 6px;">${rb.regionId} (${rb.city || rb.regionName.split('(')[0].trim()})</span>`)
+          .slice(0, 4)
+          .map(rb => `<span class="badge ${rb.winCount > 0 ? 'badge-verified' : 'badge-blue'}" style="font-size:10px; padding:1px 6px;">${rb.regionId} (${rb.city || rb.regionName.split('(')[0].trim()})</span>`)
           .join(' ');
         const branchBadges = (prof.branchBreakdown || [])
-          .slice(0, 3)
-          .map(bb => `<span class="badge badge-blue" style="font-size:10px; padding:1px 5px; background:#f0f9ff; color:#0369a1; border-color:#bae6fd;">${bb.subeCode}. Şube (${bb.city})</span>`)
+          .slice(0, 2)
+          .map(bb => `<span class="badge badge-blue" style="font-size:10px; padding:1px 5px; background:#f0f9ff; color:#0369a1; border-color:#bae6fd;">${bb.subeCode}. Şube</span>`)
           .join(' ');
 
         return `
           <div onclick="App.selectCompetitor('${c.id}')"
-            style="padding:12px 14px; border-radius:6px; cursor:pointer; transition:all 0.15s;
+            style="padding:10px 12px; border-radius:6px; cursor:pointer; transition:all 0.15s;
             background:${isSelected ? '#eff6ff' : '#ffffff'};
             border:${isSelected ? '2px solid #1d4ed8' : '1px solid var(--border-color)'};">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <strong style="font-size:14px; color:var(--corp-navy);">${c.name}</strong>
-              <span class="badge badge-blue">%${prof.expectedDiscountPct.toFixed(2)} Tahmini İndirim</span>
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                  <strong style="font-size:13.5px; color:var(--corp-navy);">${this.escapeHtml(c.shortName || c.name)}</strong>
+                  ${originBadge}
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${this.escapeHtml(c.name)}</div>
+              </div>
+              <span class="badge badge-blue" style="white-space:nowrap;">%${prof.expectedDiscountPct.toFixed(2)} İndirim</span>
             </div>
-            <div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">
-              Merkez: ${c.hqCity} • Vergi No: ${c.taxId} • İş Grupları: ${(c.workGroups || []).join(', ')}
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-top:5px;">
+              Merkez: ${this.escapeHtml(c.hqCity || '-')} • Kayıt: ${this.escapeHtml(c.taxId || '-')} • Gruplar: ${(c.workGroups || []).join(', ')}
             </div>
-            <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
-              <span style="font-size:11px; color:var(--text-muted); font-weight:600;">Bölge / Şube:</span>
-              ${regionBadges || '<span style="font-size:11px; color:var(--text-muted);">Belirtilmedi</span>'}
+            <div style="margin-top:5px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+              ${regionBadges || '<span style="font-size:11px; color:var(--text-muted);">Bölge Belirtilmedi</span>'}
               ${branchBadges}
             </div>
-            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-top:6px;">
-              <span>Katıldığı İhale: <strong style="color:#15803d;">${prof.verifiedTenderCount}</strong> (Kazandığı: ${prof.winCount})</span>
-              <span>Mevcut Şantiye Yükü: <strong>%${c.capacitySaturationPct}</strong></span>
+            <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted); margin-top:5px;">
+              <span>İhale: <strong style="color:#15803d;">${prof.verifiedTenderCount}</strong> (Kazanılan: ${prof.winCount})</span>
+              <span>Kapasite Yükü: <strong>%${c.capacitySaturationPct ?? 50}</strong></span>
             </div>
           </div>
         `;
@@ -914,6 +992,162 @@ const App = {
     }
 
     this.renderSelectedCompetitorDetail();
+  },
+
+  populateDsiDiscoveredFilters() {
+    const regSel = document.getElementById('dsiDiscRegionFilter');
+    if (regSel && typeof DSI_REGIONS !== 'undefined') {
+      regSel.innerHTML = `<option value="ALL">Tüm DSİ Bölgeleri</option>` +
+        DSI_REGIONS.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+    }
+    const brSel = document.getElementById('dsiDiscBranchFilter');
+    if (brSel && typeof DSI_BRANCHES !== 'undefined') {
+      brSel.innerHTML = `<option value="ALL">Tüm DSİ Şubeleri</option>` +
+        DSI_BRANCHES.map(b => `<option value="${b.id}">${b.code}. Şube (${b.city})</option>`).join('');
+    }
+  },
+
+  renderDsiCompetitorsTab() {
+    const tbody = document.getElementById('dsiDiscoveredCompetitorsBody');
+    if (!tbody || !this.db || !Array.isArray(this.db.competitors)) return;
+
+    const tenders = this.getActiveVerifiedTenders();
+    const searchVal = (document.getElementById('dsiDiscSearchInput')?.value || '').trim().toLocaleLowerCase('tr-TR');
+    const regFilter = document.getElementById('dsiDiscRegionFilter')?.value || 'ALL';
+    const brFilter = document.getElementById('dsiDiscBranchFilter')?.value || 'ALL';
+
+    const dsiComps = this.db.competitors
+      .filter(c => c.discoveredFromDsi === true || c.officialSourceType === 'DSI_WEB_SEARCH')
+      .map(c => ({
+        comp: c,
+        prof: CompetitorPredictionEngine.analyzeCompetitor(c, tenders)
+      }));
+
+    // KPI Özeti (filtreden bağımsız tüm DSİ keşif özeti)
+    const activeRegionsSet = new Set();
+    const activeBranchesSet = new Set();
+    let totalContractVolume = 0;
+    let discSum = 0;
+
+    dsiComps.forEach(({ comp, prof }) => {
+      (prof.allActiveRegions || []).forEach(r => activeRegionsSet.add(r));
+      (prof.allActiveBranches || []).forEach(b => activeBranchesSet.add(b));
+      totalContractVolume += prof.totalWonVolume || prof.totalBidVolume || 0;
+      discSum += prof.expectedDiscountPct || 0;
+    });
+
+    const elCount = document.getElementById('dsiDiscKpiCount');
+    const elRegs = document.getElementById('dsiDiscKpiRegions');
+    const elVol = document.getElementById('dsiDiscKpiVolume');
+    const elAvg = document.getElementById('dsiDiscKpiAvgDisc');
+
+    if (elCount) elCount.textContent = dsiComps.length;
+    if (elRegs) elRegs.textContent = `${activeRegionsSet.size} Bölge / ${activeBranchesSet.size} Şube`;
+    if (elVol) elVol.textContent = this.formatMillionsTL(totalContractVolume);
+    if (elAvg) elAvg.textContent = dsiComps.length > 0 ? `%${(discSum / dsiComps.length).toFixed(2)}` : '%0.00';
+
+    let filtered = dsiComps;
+    if (regFilter !== 'ALL') {
+      filtered = filtered.filter(x => (x.prof.allActiveRegions || []).includes(regFilter));
+    }
+    if (brFilter !== 'ALL') {
+      filtered = filtered.filter(x => (x.prof.allActiveBranches || []).includes(brFilter));
+    }
+    if (searchVal) {
+      filtered = filtered.filter(({ comp }) => {
+        const hay = [
+          comp.name,
+          comp.shortName,
+          comp.hqCity,
+          comp.dsiProjectTitle,
+          comp.verificationSource
+        ].filter(Boolean).join(' ').toLocaleLowerCase('tr-TR');
+        return hay.includes(searchVal);
+      });
+    }
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:18px; color:var(--text-muted);">Seçilen kriterlere uygun DSİ kaynaklı rakip bulunamadı.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(({ comp: c, prof }) => {
+      const regionId = (prof.allActiveRegions && prof.allActiveRegions[0]) || (c.primaryRegions && c.primaryRegions[0]) || 'DSI-GM';
+      const subeId = (prof.allActiveBranches && prof.allActiveBranches[0]) || (c.primaryBranches && c.primaryBranches[0]) || 'ALL';
+      const branchLabel = subeId !== 'ALL' ? this.getBranchName(subeId) : `${regionId} Bölge`;
+
+      const compTenders = tenders.filter(t =>
+        t.winnerCompetitorId === c.id || (t.bids || []).some(b => b.competitorId === c.id)
+      );
+      const primaryTender = compTenders[0];
+      const projectTitle = c.dsiProjectTitle || primaryTender?.title || 'DSİ Yapım İşi';
+      const iknLabel = primaryTender?.ikn || (c.taxId || '').replace('EKAP-İKN-', '');
+      const contractVol = prof.totalWonVolume || prof.totalBidVolume || (primaryTender?.approxCost || 0);
+
+      const dsiUrl = c.dsiSourceUrl || c.officialSourceUrl || 'https://dsi.gov.tr';
+      const webSearchUrl = c.webSearchSource || c.officialSourceUrl || dsiUrl;
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:700; color:var(--corp-navy);">${this.escapeHtml(c.shortName || c.name)}</div>
+            <div style="font-size:11px; color:var(--text-muted);">${this.escapeHtml(c.name)} • ${this.escapeHtml(c.hqCity || '')}</div>
+          </td>
+          <td>
+            <span class="badge badge-verified" style="font-size:10.5px;">${this.escapeHtml(regionId)}</span>
+            <div style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">${this.escapeHtml(branchLabel)}</div>
+          </td>
+          <td style="max-width:290px;">
+            <div style="font-size:12px; font-weight:600; color:var(--text-primary);">${this.escapeHtml(projectTitle)}</div>
+            <div style="font-size:11px; color:#1d4ed8; font-family:monospace; margin-top:2px;">İKN: ${this.escapeHtml(iknLabel || '-')}</div>
+          </td>
+          <td style="white-space:nowrap;">
+            <div style="font-weight:700; color:#15803d;">${contractVol > 0 ? this.formatMillionsTL(contractVol) : 'İlan / Yapım'}</div>
+            <div style="font-size:11px; color:var(--text-muted);">${prof.verifiedTenderCount} Doğrulanmış İş</div>
+          </td>
+          <td>
+            <span class="badge badge-blue">%${prof.expectedDiscountPct.toFixed(2)}</span>
+          </td>
+          <td style="white-space:nowrap;">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <a href="${this.escapeHtml(dsiUrl)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; text-align:center;">
+                DSİ Bölge Sayfası
+              </a>
+              <a href="${this.escapeHtml(webSearchUrl)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; text-align:center;">
+                İnternet / İKN Kaynağı
+              </a>
+            </div>
+          </td>
+          <td style="white-space:nowrap;">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="App.openCompetitorDetailFromDashboard('${c.id}')">
+                Detay
+              </button>
+              <button class="btn btn-primary btn-sm" style="font-size:11px;" onclick="App.openSimulatorForDsiCompetitor('${regionId}', '${subeId}')">
+                Teklif Hesapla
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  openSimulatorForDsiCompetitor(regionId, subeId) {
+    const simRegion = document.getElementById('simRegion');
+    if (simRegion && regionId) {
+      simRegion.value = regionId;
+      this.populateSimBranches();
+    }
+    const simBranch = document.getElementById('simBranch');
+    if (simBranch && subeId && subeId !== 'ALL') {
+      const opt = Array.from(simBranch.options).find(o => o.value === subeId);
+      if (opt) simBranch.value = subeId;
+    }
+    const btn = document.querySelector('[data-tab="tab-simulator"]');
+    this.switchTab('tab-simulator', btn);
+    this.onSimParamsChanged();
+    this.runMonteCarloSimulation();
   },
 
   selectCompetitor(compId) {
@@ -2148,17 +2382,38 @@ Sınır Değer Katsayısı (N): 1,20
       btnMain.textContent = 'Resmi KİK & DSİ Kaynakları Taranıyor...';
     }
 
+    const ctrl = new AbortController();
+    const timeoutId = setTimeout(() => ctrl.abort(), 90000);
+
     try {
-      const resp = await fetch('/api/sync/run', { method: 'POST' });
-      if (resp.ok) {
-        const status = await resp.json();
-        this.lastObservedSyncTimestamp = status.lastSyncTime || '';
-        await this.reloadDatabaseFromServer();
-        this.renderOfficialSyncPanel(status);
+      const resp = await fetch('/api/sync/run', { method: 'POST', signal: ctrl.signal });
+      const rawText = await resp.text();
+      let status = null;
+      try {
+        status = JSON.parse(rawText);
+      } catch (_) {
+        throw new Error(`Sunucudan geçersiz yanıt alındı (HTTP ${resp.status}).`);
       }
+
+      if (!resp.ok || status?.ok === false) {
+        throw new Error(status?.error || `HTTP ${resp.status} tarama hatası`);
+      }
+
+      this.lastObservedSyncTimestamp = status.lastSyncTime || '';
+      await this.reloadDatabaseFromServer();
+      this.renderOfficialSyncPanel(status);
     } catch (err) {
-      alert('Resmi kaynak taraması sırasında bağlantı uyarısı: ' + err.message);
+      const msg = err?.name === 'AbortError'
+        ? 'Tarama zaman aşımına uğradı (90 sn). Arka plan taraması devam ediyor olabilir.'
+        : (err?.message || 'Bilinmeyen bağlantı hatası');
+      const elScans = document.getElementById('syncKpiTotalScans');
+      if (elScans) {
+        elScans.textContent = `Tarama uyarısı: ${msg}`;
+        elScans.style.color = '#b91c1c';
+      }
+      console.warn('Resmi kaynak taraması uyarısı:', msg);
     } finally {
+      clearTimeout(timeoutId);
       if (btnTop) {
         btnTop.disabled = false;
         btnTop.textContent = '↻ Resmi Kaynakları Şimdi Tara';
@@ -2277,9 +2532,10 @@ Sınır Değer Katsayısı (N): 1,20
     }
     if (elScans) {
       elScans.textContent = `Toplam Gerçekleşen Tarama: ${status.totalScansRun || 0} (${status.lastSyncStatus || 'Hazır'})`;
+      elScans.style.color = '';
     }
     if (elEndpoints) {
-      elEndpoints.textContent = `${(status.monitoredEndpointCount || 8) + 10} Resmi Uç Nokta`;
+      elEndpoints.textContent = `${(status.monitoredEndpointCount || 10) + 27} Resmi Uç Nokta`;
     }
 
     const autoSel = document.getElementById('syncAutoEnabledSelect');

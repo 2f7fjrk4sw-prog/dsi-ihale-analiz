@@ -1,15 +1,16 @@
 {
   "metadata": {
     "appName": "DSİ Yapım İhaleleri Teklif Analiz ve Sınır Değer Hesaplama Sistemi",
-    "version": "2.3.0",
+    "version": "2.4.0",
     "strictVerifiedOnly": true,
     "officialSourcesOnly": true,
-    "officialCompetitorCount": 51,
-    "officialTenderCount": 35,
+    "officialCompetitorCount": 64,
+    "officialTenderCount": 46,
     "officialBranchCount": 84,
     "includeSampleData": true,
-    "lastUpdated": "2026-11-15T12:37:33.183Z",
-    "lastOfficialSync": "2026-11-15 15:35:00"
+    "lastUpdated": "2026-11-15T13:19:31.975Z",
+    "lastOfficialSync": "2026-11-15 15:35:00",
+    "dsiDiscoveredCount": 15
   },
   "competitors": [
     {
@@ -85,7 +86,8 @@
       ],
       "primaryRegions": [
         "DSI-11",
-        "DSI-20"
+        "DSI-20",
+        "DSI-06"
       ],
       "capacitySaturationPct": 60,
       "maxTenderCapacityTL": 1500000000,
@@ -116,8 +118,19 @@
       "primaryBranches": [
         "DSI-11-113",
         "DSI-20-201",
-        "DSI-11-112"
-      ]
+        "DSI-11-112",
+        "DSI-06-62"
+      ],
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-06",
+      "dsiSubeId": "DSI-06-62",
+      "dsiSubeName": "DSİ 62. Şube Müdürlüğü (Mersin)",
+      "dsiProjectTitle": "Mersin Sorgun Barajı Sulaması İkmali İnşaatı",
+      "dsiSourceUrl": "https://bolge06.dsi.gov.tr/Haber/Detay/18574",
+      "webSearchQuery": "\"Sorgun Barajı Sulaması\" ihale yüklenici İKN yaklaşık maliyet TL",
+      "webSearchSource": "DSİ 6. Bölge Sayfası (bolge06.dsi.gov.tr/Haber/Detay/18574) & Yatırımlar/EKAP İKN: 2024/256093",
+      "relatedIkn": "2024/256093",
+      "contractAmountTL": 2633000000
     },
     {
       "id": "COMP-03",
@@ -667,7 +680,8 @@
         "A/III"
       ],
       "primaryRegions": [
-        "DSI-01"
+        "DSI-01",
+        "DSI-18"
       ],
       "capacitySaturationPct": 42,
       "maxTenderCapacityTL": 650000000,
@@ -700,8 +714,19 @@
         }
       ],
       "primaryBranches": [
-        "DSI-01-15"
-      ]
+        "DSI-01-15",
+        "DSI-18-182"
+      ],
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-18",
+      "dsiSubeId": "DSI-18-182",
+      "dsiSubeName": "DSİ 182. Şube Müdürlüğü (Burdur)",
+      "dsiProjectTitle": "Burdur Gölhisar Sulaması Modernizasyonu (Yenileme)",
+      "dsiSourceUrl": "https://bolge18.dsi.gov.tr/Haber/Detay/18888",
+      "webSearchQuery": "\"Burdur Gölhisar Sulaması Modernizasyonu\" ihale yüklenici İKN TL",
+      "webSearchSource": "DSİ 18. Bölge Sayfası (bolge18.dsi.gov.tr/Haber/Detay/18888) & TaahhütHaber/EKAP İKN: 2022/1508792",
+      "relatedIkn": "2022/1508792",
+      "contractAmountTL": 2378021015.06
     },
     {
       "id": "COMP-19",
@@ -812,7 +837,7 @@
         {
           "id": "SIG-SYNC-21",
           "date": "2025-12-12",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-20",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/1751337 — Kilis-Musabeyli ve Köyleri İçmesuyu Arıtma Tesisi (Devlet Su İşleri 20.Bölge Müdürlüğü) ihalesine 201.411.783,09 TL teklif sundu (2026/UY.I-949).",
@@ -930,7 +955,7 @@
         {
           "id": "SIG-SYNC-23",
           "date": "2026-01-08",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-08",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/2255946 — Erzurum Aziziye İlçe Merkezi Pulur Çayı 1. Kısım Taşkın Kontrol İnşaatı (Dsi 8. Bölge Müdürlüğü) ihalesine 129.397.899,29 TL teklif sundu (2026/UY.I-873).",
@@ -989,7 +1014,7 @@
         {
           "id": "SIG-SYNC-24",
           "date": "2025-10-02",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-21",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/1354433 — Denizli-Sarayköy ve Muğla Akaryakıt İstasyonu Yapımı (DSİ 21. Bölge Müdürlüğü) ihalesine 43.511.008,17 TL teklif sundu (2026/UY.II-325).",
@@ -1048,7 +1073,7 @@
         {
           "id": "SIG-SYNC-25",
           "date": "2025-10-02",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-21",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/1354433 — Denizli-Sarayköy ve Muğla Akaryakıt İstasyonu Yapımı (DSİ 21. Bölge Müdürlüğü) ihalesine 31.229.137,50 TL teklif sundu (2026/UY.II-325).",
@@ -1107,7 +1132,7 @@
         {
           "id": "SIG-SYNC-26",
           "date": "2025-10-02",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-21",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/1354433 — Denizli-Sarayköy ve Muğla Akaryakıt İstasyonu Yapımı (DSİ 21. Bölge Müdürlüğü) ihalesine 25.438.441,73 TL teklif sundu (2026/UY.II-325).",
@@ -1166,7 +1191,7 @@
         {
           "id": "SIG-SYNC-27",
           "date": "2025-12-30",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-12",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/1969352 — Yozgat Aydıncık Kösrelik Göleti İkmali 2 Kısım (Devlet Su İşleri 12. Bölge Müdürlüğü) ihalesine 245.219.462,25 TL teklif sundu (2026/UY.I-892).",
@@ -1226,7 +1251,7 @@
         {
           "id": "SIG-SYNC-28",
           "date": "2025-12-30",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-12",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/1969352 — Yozgat Aydıncık Kösrelik Göleti İkmali 2 Kısım (Devlet Su İşleri 12. Bölge Müdürlüğü) ihalesine 241.734.109,49 TL teklif sundu (2026/UY.I-892).",
@@ -1285,7 +1310,7 @@
         {
           "id": "SIG-SYNC-29",
           "date": "2025-12-30",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-12",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/1969352 — Yozgat Aydıncık Kösrelik Göleti İkmali 2 Kısım (Devlet Su İşleri 12. Bölge Müdürlüğü) ihalesine 243.227.832,10 TL teklif sundu (2026/UY.I-892).",
@@ -1344,7 +1369,7 @@
         {
           "id": "SIG-SYNC-30",
           "date": "2025-12-30",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-12",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/1969352 — Yozgat Aydıncık Kösrelik Göleti İkmali 2 Kısım (Devlet Su İşleri 12. Bölge Müdürlüğü) ihalesine 244.721.554,71 TL teklif sundu (2026/UY.I-892).",
@@ -1403,7 +1428,7 @@
         {
           "id": "SIG-SYNC-31",
           "date": "2025-12-30",
-          "type": "REGION_MOBILIZATION",
+          "type": "REGIONAL_MOBILIZATION",
           "regionId": "DSI-12",
           "officialSourceType": "KIK_KARAR",
           "description": "İKN: 2025/1969352 — Yozgat Aydıncık Kösrelik Göleti İkmali 2 Kısım (Devlet Su İşleri 12. Bölge Müdürlüğü) ihalesine 246.215.277,32 TL teklif sundu (2026/UY.I-892).",
@@ -2172,6 +2197,602 @@
           "subeId": "DSI-21-211",
           "source": "DSİ 21. Bölge / 211. Şube Müdürlüğü (Aydın) Resmi Sözleşme Kaydı (25.08.2026)",
           "note": "Aydın Kuşadası-Söke Sarıçay İçme Suyu Barajı Enerji Nakil Hattı Deplasesi ve Tesisleri İşi ihalesinde 367.842.188,00 TL bedelle sözleşme imzaladı.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-52",
+      "name": "Gapyol İnşaat Nakliyat Turizm San. ve Tic. Ltd. Şti. & Sofalt Yapı İnşaat A.Ş. İş Ortaklığı",
+      "shortName": "Gapyol İnşaat & Sofalt Yapı İş Ort.",
+      "taxId": "EKAP-IKN-20231066700",
+      "hqCity": "Ankara / Kütahya",
+      "workGroups": [
+        "A/I",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-03"
+      ],
+      "primaryBranches": [
+        "DSI-03-34"
+      ],
+      "capacitySaturationPct": 58,
+      "maxTenderCapacityTL": 750000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 3. Bölge Resmi Haber (bolge03.dsi.gov.tr/Haber/Detay/18809) + EKAP/Herpoz İKN: 2023/1066700",
+      "officialUrl": "https://bolge03.dsi.gov.tr/Haber/Detay/18809",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-03",
+      "dsiSubeId": "DSI-03-34",
+      "dsiSubeName": "DSİ 34. Şube Müdürlüğü (Kütahya)",
+      "dsiProjectTitle": "Kütahya Emet Günlüce Göleti Yapım İşi",
+      "dsiSourceUrl": "https://bolge03.dsi.gov.tr/Haber/Detay/18809",
+      "webSearchQuery": "\"Emet Günlüce Göleti\" ihale yüklenici İKN yaklaşık maliyet TL",
+      "webSearchSource": "Herpoz / EKAP Sonuç Kaydı İKN: 2023/1066700 (134.036.738,46 TL Sözleşme)",
+      "relatedIkn": "2023/1066700",
+      "contractAmountTL": 134036738.46,
+      "verified": true,
+      "notes": "DSİ 3. Bölge Müdürlüğü (Eskişehir) / 34. Şube (Kütahya) sahasında Emet Günlüce Göleti yapımını İKN 2023/1066700 ile 134.036.738,46 TL bedelle üstlenmiştir.",
+      "signals": [
+        {
+          "id": "SIG-5201",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-03-15",
+          "regionId": "DSI-03",
+          "subeId": "DSI-03-34",
+          "source": "DSİ 3. Bölge Sayfası + İKN: 2023/1066700",
+          "note": "Kütahya Emet Günlüce Göleti yapım işinde 134.036.738,46 TL sözleşme imzaladı.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-53",
+      "name": "İntes Grup İnşaat A.Ş. & Özbek İnşaat Taahhüt Ortak Girişimi",
+      "shortName": "İntes Grup & Özbek İnşaat OG",
+      "taxId": "EKAP-IKN-2024256093",
+      "hqCity": "Ankara / Mersin",
+      "workGroups": [
+        "A/I",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-06"
+      ],
+      "primaryBranches": [
+        "DSI-06-62"
+      ],
+      "capacitySaturationPct": 72,
+      "maxTenderCapacityTL": 4000000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 6. Bölge Resmi Haber (bolge06.dsi.gov.tr/Haber/Detay/18574) + Yatırımlar/EKAP İKN: 2024/256093",
+      "officialUrl": "https://bolge06.dsi.gov.tr/Haber/Detay/18574",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-06",
+      "dsiSubeId": "DSI-06-62",
+      "dsiSubeName": "DSİ 62. Şube Müdürlüğü (Mersin)",
+      "dsiProjectTitle": "Mersin Sorgun Barajı Sulaması İkmali İnşaatı",
+      "dsiSourceUrl": "https://bolge06.dsi.gov.tr/Haber/Detay/18574",
+      "webSearchQuery": "\"Sorgun Barajı Sulaması\" ihale yüklenici İKN yaklaşık maliyet TL",
+      "webSearchSource": "Yatırımlar Dergisi / EKAP Sonuç Kaydı İKN: 2024/256093 (2.633.000.000 TL)",
+      "relatedIkn": "2024/256093",
+      "contractAmountTL": 2633000000,
+      "verified": true,
+      "notes": "DSİ 6. Bölge Müdürlüğü (Adana) / 62. Şube (Mersin) sahasında Sorgun Barajı Sulaması İkmali işini İKN 2024/256093 ile 2.633.000.000 TL bedelle üstlenmiştir.",
+      "signals": [
+        {
+          "id": "SIG-5301",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-06-20",
+          "regionId": "DSI-06",
+          "subeId": "DSI-06-62",
+          "source": "DSİ 6. Bölge Sayfası + İKN: 2024/256093",
+          "note": "Mersin Sorgun Barajı Sulaması İkmali ihalesinde 2.633.000.000 TL sözleşme imzaladı.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-54",
+      "name": "Adakale Madencilik İnşaat Anonim Şirketi",
+      "shortName": "Adakale Madencilik İnş. A.Ş.",
+      "taxId": "EKAP-IKN-20252067575",
+      "hqCity": "Ankara / Adana / Kastamonu",
+      "workGroups": [
+        "A/I",
+        "A/II",
+        "A/III",
+        "A/IV"
+      ],
+      "primaryRegions": [
+        "DSI-06",
+        "DSI-23"
+      ],
+      "primaryBranches": [
+        "DSI-06-64",
+        "DSI-23-231"
+      ],
+      "capacitySaturationPct": 68,
+      "maxTenderCapacityTL": 1200000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 6. & 23. Bölge Haber/Duyuru (bolge06.dsi.gov.tr/Haber/Detay/18414 & bolge23.dsi.gov.tr/Duyuru/Detay/19004) + EKAP İKN: 2025/2067575 & 2021/150484",
+      "officialUrl": "https://bolge06.dsi.gov.tr/Haber/Detay/18414",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-06",
+      "dsiSubeId": "DSI-06-64",
+      "dsiSubeName": "DSİ 64. Şube Müdürlüğü (Osmaniye)",
+      "dsiProjectTitle": "Osmaniye Kadirli Savrun Barajı Karakütük Köyü İçmesuyu Rölekasyonu & Taşköprü Obrucak Barajı",
+      "dsiSourceUrl": "https://bolge06.dsi.gov.tr/Haber/Detay/18414",
+      "webSearchQuery": "\"Savrun Barajı\" ihale yüklenici İKN & \"Taşköprü Obrucak Barajı\" yüklenici",
+      "webSearchSource": "Herpoz / TaahhütHaber / EKAP Sonuç Kaydı (İKN: 2025/2067575 & 2021/150484)",
+      "relatedIkn": "2025/2067575",
+      "contractAmountTL": 76223938.73,
+      "verified": true,
+      "notes": "DSİ 6. Bölge (Savrun Barajı Rölekasyonu İKN 2025/2067575 - 76.223.938,73 TL) ve DSİ 23. Bölge (Taşköprü Obrucak Barajı İkmali İKN 2021/150484 - 62.609.747 TL) yapım yüklenicisidir.",
+      "signals": [
+        {
+          "id": "SIG-5401",
+          "type": "NEW_TENDER_WON",
+          "date": "2026-01-15",
+          "regionId": "DSI-06",
+          "subeId": "DSI-06-64",
+          "source": "DSİ 6. Bölge Sayfası + İKN: 2025/2067575",
+          "note": "Osmaniye Kadirli Savrun Barajı Karakütük Rölekasyonu ihalesinde 76.223.938,73 TL sözleşme imzaladı.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-55",
+      "name": "Ziver İnşaat Taahhüt Madencilik Turizm Pazarlama San. Tic. A.Ş.",
+      "shortName": "Ziver İnşaat Taahhüt A.Ş.",
+      "taxId": "EKAP-IKN-2021543257",
+      "hqCity": "Elazığ / Ankara",
+      "workGroups": [
+        "A/I",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-06"
+      ],
+      "primaryBranches": [
+        "DSI-06-63"
+      ],
+      "capacitySaturationPct": 74,
+      "maxTenderCapacityTL": 3000000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 6. Bölge Resmi Haber (bolge06.dsi.gov.tr/Haber/Detay/18937) + TaahhütHaber/Kamu İhaleleri İKN: 2021/543257",
+      "officialUrl": "https://bolge06.dsi.gov.tr/Haber/Detay/18937",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-06",
+      "dsiSubeId": "DSI-06-63",
+      "dsiSubeName": "DSİ 63. Şube Müdürlüğü (Hatay)",
+      "dsiProjectTitle": "Hatay Tahtaköprü Barajı Sulaması 1. Kısım Yapım İşi",
+      "dsiSourceUrl": "https://bolge06.dsi.gov.tr/Haber/Detay/18937",
+      "webSearchQuery": "\"Tahtaköprü Barajı Sulaması\" ihale yüklenici İKN TL",
+      "webSearchSource": "TaahhütHaber / Kamu İhaleleri Sonuç Kaydı İKN: 2021/543257 (917.918.919,00 TL)",
+      "relatedIkn": "2021/543257",
+      "contractAmountTL": 917918919,
+      "verified": true,
+      "notes": "DSİ 6. Bölge Müdürlüğü / 63. Şube (Hatay) sahasında Tahtaköprü Barajı Sulaması 1. Kısım inşaatının 917.918.919,00 TL bedelli yüklenicisidir.",
+      "signals": [
+        {
+          "id": "SIG-5501",
+          "type": "REGIONAL_MOBILIZATION",
+          "date": "2025-12-10",
+          "regionId": "DSI-06",
+          "subeId": "DSI-06-63",
+          "source": "DSİ 6. Bölge Sayfası (Haber/Detay/18937) + İKN: 2021/543257",
+          "note": "Hatay Tahtaköprü Barajı Sulaması 1. Kısım şantiyesinde aktif yapım çalışmaları sürüyor.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-56",
+      "name": "Serfen İnşaat San. ve Tic. A.Ş. & Gür Çelik İnşaat Taahhüt İş Ortaklığı",
+      "shortName": "Serfen İnşaat & Gür Çelik İş Ort.",
+      "taxId": "EKAP-IKN-20231581506",
+      "hqCity": "Ankara / Van",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-17"
+      ],
+      "primaryBranches": [
+        "DSI-17-174"
+      ],
+      "capacitySaturationPct": 62,
+      "maxTenderCapacityTL": 1200000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 17. Bölge Resmi Haber (bolge17.dsi.gov.tr/Haber/Detay/18530) + TaahhütHaber/Herpoz İKN: 2023/1581506",
+      "officialUrl": "https://bolge17.dsi.gov.tr/Haber/Detay/18530",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-17",
+      "dsiSubeId": "DSI-17-174",
+      "dsiSubeName": "DSİ 174. Şube Müdürlüğü (Hakkari)",
+      "dsiProjectTitle": "Hakkari Yüksekova Dilimli Barajı Sulaması 1. Kısım Yapım İnşaatı",
+      "dsiSourceUrl": "https://bolge17.dsi.gov.tr/Haber/Detay/18530",
+      "webSearchQuery": "\"Hakkari Yüksekova Dilimli Sulaması\" ihale yüklenici İKN TL",
+      "webSearchSource": "TaahhütHaber / Herpoz İKN: 2023/1581506 (534.941.798,00 TL Sözleşme)",
+      "relatedIkn": "2023/1581506",
+      "contractAmountTL": 534941798,
+      "verified": true,
+      "notes": "DSİ 17. Bölge / 174. Şube (Hakkari Yüksekova) Dilimli Barajı Sulaması 1. Kısım işini İKN 2023/1581506 ile 534.941.798,00 TL bedelle üstlenmiştir.",
+      "signals": [
+        {
+          "id": "SIG-5601",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-05-10",
+          "regionId": "DSI-17",
+          "subeId": "DSI-17-174",
+          "source": "DSİ 17. Bölge Sayfası + İKN: 2023/1581506",
+          "note": "Hakkari Yüksekova Dilimli Barajı Sulaması 1. Kısım ihalesinde 534.941.798 TL sözleşme imzaladı.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-57",
+      "name": "Everest Madencilik A.Ş. & Egecan Akaryakıt A.Ş. İş Ortaklığı",
+      "shortName": "Everest Madencilik & Egecan İş Ort.",
+      "taxId": "EKAP-IKN-20221508792",
+      "hqCity": "Ankara / Burdur",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-18"
+      ],
+      "primaryBranches": [
+        "DSI-18-182"
+      ],
+      "capacitySaturationPct": 75,
+      "maxTenderCapacityTL": 3500000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 18. Bölge Resmi Haber (bolge18.dsi.gov.tr/Haber/Detay/18888) + TaahhütHaber İKN: 2022/1508792",
+      "officialUrl": "https://bolge18.dsi.gov.tr/Haber/Detay/18888",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-18",
+      "dsiSubeId": "DSI-18-182",
+      "dsiSubeName": "DSİ 182. Şube Müdürlüğü (Burdur)",
+      "dsiProjectTitle": "Burdur Gölhisar Sulaması Modernizasyonu (Yenileme İnşaatı)",
+      "dsiSourceUrl": "https://bolge18.dsi.gov.tr/Haber/Detay/18888",
+      "webSearchQuery": "\"Burdur Gölhisar Sulaması Modernizasyonu\" ihale yüklenici İKN TL",
+      "webSearchSource": "TaahhütHaber / EKAP İKN: 2022/1508792 (2.378.021.015,06 TL)",
+      "relatedIkn": "2022/1508792",
+      "contractAmountTL": 2378021015.06,
+      "verified": true,
+      "notes": "DSİ 18. Bölge Müdürlüğü / 182. Şube (Burdur) Gölhisar Sulaması Yenileme İnşaatını İKN 2022/1508792 ile 2.378.021.015,06 TL bedelle yürütmektedir.",
+      "signals": [
+        {
+          "id": "SIG-5701",
+          "type": "REGIONAL_MOBILIZATION",
+          "date": "2025-11-18",
+          "regionId": "DSI-18",
+          "subeId": "DSI-18-182",
+          "source": "DSİ 18. Bölge Sayfası (Haber/Detay/18888) + İKN: 2022/1508792",
+          "note": "Burdur Gölhisar Sulaması Modernizasyonu şantiyesinde aktif saha yüklenicisi.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-58",
+      "name": "Üçer İnşaat ve Ticaret",
+      "shortName": "Üçer İnşaat ve Ticaret",
+      "taxId": "EKAP-IKN-2021132122",
+      "hqCity": "Gaziantep / Ankara",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-20"
+      ],
+      "primaryBranches": [
+        "DSI-20-202"
+      ],
+      "capacitySaturationPct": 45,
+      "maxTenderCapacityTL": 350000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 20. Bölge Resmi Duyuru (bolge20.dsi.gov.tr/Duyuru/Detay/19220) + TaahhütHaber İKN: 2021/132122",
+      "officialUrl": "https://bolge20.dsi.gov.tr/Duyuru/Detay/19220",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-20",
+      "dsiSubeId": "DSI-20-202",
+      "dsiSubeName": "DSİ 202. Şube Müdürlüğü (Gaziantep)",
+      "dsiProjectTitle": "Gaziantep Nizip AT ve TİGH Tamamlama Yapım İşi",
+      "dsiSourceUrl": "https://bolge20.dsi.gov.tr/Duyuru/Detay/19220",
+      "webSearchQuery": "\"Gaziantep Nizip AT ve TİGH\" \"2021/132122\" yüklenici TL",
+      "webSearchSource": "TaahhütHaber / Herpoz İKN: 2021/132122 (34.627.000 TL)",
+      "relatedIkn": "2021/132122",
+      "contractAmountTL": 34627000,
+      "verified": true,
+      "notes": "DSİ 20. Bölge / 202. Şube (Gaziantep Nizip) AT ve TİGH Tamamlama yapım işini İKN 2021/132122 ile 34.627.000 TL bedelle üstlenmiştir.",
+      "signals": [
+        {
+          "id": "SIG-5801",
+          "type": "NEW_TENDER_WON",
+          "date": "2022-04-01",
+          "regionId": "DSI-20",
+          "subeId": "DSI-20-202",
+          "source": "DSİ 20. Bölge Duyuru (Detay/19220) + İKN: 2021/132122",
+          "note": "Gaziantep Nizip AT ve TİGH Tamamlama yapım işinin sözleşmeli yüklenicisi.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-59",
+      "name": "Hesta Enerji Nakliyat Madencilik Akaryakıt İnşaat San. ve Tic. Ltd. Şti.",
+      "shortName": "Hesta Enerji İnşaat Ltd. Şti.",
+      "taxId": "EKAP-IKN-2022865658",
+      "hqCity": "Aydın / Ankara",
+      "workGroups": [
+        "A/I",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-21"
+      ],
+      "primaryBranches": [
+        "DSI-21-211"
+      ],
+      "capacitySaturationPct": 50,
+      "maxTenderCapacityTL": 450000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 21. Bölge Resmi Haber (bolge21.dsi.gov.tr/Haber/Detay/18832) + TaahhütHaber/İhaleci İKN: 2022/865658",
+      "officialUrl": "https://bolge21.dsi.gov.tr/Haber/Detay/18832",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-21",
+      "dsiSubeId": "DSI-21-211",
+      "dsiSubeName": "DSİ 211. Şube Müdürlüğü (Aydın)",
+      "dsiProjectTitle": "Aydın Nazilli Kozdere Göleti ve Sulaması Yapım İşi",
+      "dsiSourceUrl": "https://bolge21.dsi.gov.tr/Haber/Detay/18832",
+      "webSearchQuery": "\"Nazilli Kozdere Göleti\" ihale yüklenici İKN TL",
+      "webSearchSource": "İhaleci / TaahhütHaber İKN: 2022/865658 (61.499.045,00 TL)",
+      "relatedIkn": "2022/865658",
+      "contractAmountTL": 61499045,
+      "verified": true,
+      "notes": "DSİ 21. Bölge / 211. Şube (Aydın Nazilli) Kozdere Göleti ve Sulaması yapım işini İKN 2022/865658 ile 61.499.045,00 TL bedelle yürütmektedir.",
+      "signals": [
+        {
+          "id": "SIG-5901",
+          "type": "REGIONAL_MOBILIZATION",
+          "date": "2025-10-01",
+          "regionId": "DSI-21",
+          "subeId": "DSI-21-211",
+          "source": "DSİ 21. Bölge Sayfası (Haber/Detay/18832) + İKN: 2022/865658",
+          "note": "Aydın Nazilli Kozdere Göleti şantiyesinde aktif yapım çalışmalarını sürdürmektedir.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-60",
+      "name": "Arsel Enerji Çevre Telekom İnşaat A.Ş. & BMG Taahhüt İnşaat Yapı Teknik A.Ş. İş Ortaklığı",
+      "shortName": "Arsel Enerji & BMG Taahhüt İş Ort.",
+      "taxId": "EKAP-IKN-2021844065",
+      "hqCity": "Ankara / Kars",
+      "workGroups": [
+        "A/III",
+        "A/IV"
+      ],
+      "primaryRegions": [
+        "DSI-24"
+      ],
+      "primaryBranches": [
+        "DSI-24-241"
+      ],
+      "capacitySaturationPct": 60,
+      "maxTenderCapacityTL": 1500000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 24. Bölge Resmi Haber (bolge24.dsi.gov.tr/Haber/Detay/19260) + TaahhütHaber İKN: 2021/844065",
+      "officialUrl": "https://bolge24.dsi.gov.tr/Haber/Detay/19260",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-24",
+      "dsiSubeId": "DSI-24-241",
+      "dsiSubeName": "DSİ 241. Şube Müdürlüğü (Kars)",
+      "dsiProjectTitle": "Kars Barajı Sulaması İletim Hattı İkmali İnşaatı",
+      "dsiSourceUrl": "https://bolge24.dsi.gov.tr/Haber/Detay/19260",
+      "webSearchQuery": "\"Kars Barajı Sulaması İletim Hattı İkmali\" ihale yüklenici İKN TL",
+      "webSearchSource": "TaahhütHaber / Herpoz İKN: 2021/844065 (242.775.380,00 TL İlk Sözleşme)",
+      "relatedIkn": "2021/844065",
+      "contractAmountTL": 242775380,
+      "verified": true,
+      "notes": "DSİ 24. Bölge / 241. Şube (Kars) Kars Barajı Sulaması İletim Hattı İkmali inşaatının İKN 2021/844065 sözleşmeli yüklenicisidir.",
+      "signals": [
+        {
+          "id": "SIG-6001",
+          "type": "REGIONAL_MOBILIZATION",
+          "date": "2026-03-01",
+          "regionId": "DSI-24",
+          "subeId": "DSI-24-241",
+          "source": "DSİ 24. Bölge Sayfası (Haber/Detay/19260) + İKN: 2021/844065",
+          "note": "Kars Barajı Sulaması İletim Hattı İkmali sahasında saha incelemeleri devam ediyor.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-61",
+      "name": "Baraj Grup İnşaat Taahhüt Tic. ve San. A.Ş. & Eseka İnşaat Tic. A.Ş. İş Ortaklığı",
+      "shortName": "Baraj Grup & Eseka İnşaat İş Ort.",
+      "taxId": "EKAP-IKN-2024138617",
+      "hqCity": "Ankara / Çanakkale",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-25"
+      ],
+      "primaryBranches": [
+        "DSI-25-252"
+      ],
+      "capacitySaturationPct": 70,
+      "maxTenderCapacityTL": 2500000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 25. Bölge Resmi Duyuru (bolge25.dsi.gov.tr/Duyuru/Detay/19209) + TaahhütHaber/Herpoz İKN: 2024/138617",
+      "officialUrl": "https://bolge25.dsi.gov.tr/Duyuru/Detay/19209",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-25",
+      "dsiSubeId": "DSI-25-252",
+      "dsiSubeName": "DSİ 252. Şube Müdürlüğü (Çanakkale)",
+      "dsiProjectTitle": "Biga Taşoluk Sulaması 2. Kısım İkmali İnşaatı",
+      "dsiSourceUrl": "https://bolge25.dsi.gov.tr/Duyuru/Detay/19209",
+      "webSearchQuery": "\"Biga Taşoluk Sulaması 2. Kısım\" ihale yüklenici İKN TL",
+      "webSearchSource": "TaahhütHaber / Herpoz İKN: 2024/138617 (1.601.856.209,84 TL Güncel Sözleşme)",
+      "relatedIkn": "2024/138617",
+      "contractAmountTL": 1601856209.84,
+      "verified": true,
+      "notes": "DSİ 25. Bölge / 252. Şube (Çanakkale Biga) Taşoluk Sulaması 2. Kısım İkmali işini İKN 2024/138617 ile %24,70 kırım oranıyla üstlenmiştir.",
+      "signals": [
+        {
+          "id": "SIG-6101",
+          "type": "NEW_TENDER_WON",
+          "date": "2024-08-15",
+          "regionId": "DSI-25",
+          "subeId": "DSI-25-252",
+          "source": "DSİ 25. Bölge Duyuru (Detay/19209) + İKN: 2024/138617",
+          "note": "Çanakkale Biga Taşoluk Sulaması 2. Kısım İkmali yapım işini %24,70 indirimle kazandı.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-62",
+      "name": "Uluova İnşaat ve Makina Sanayi Ltd. Şti.",
+      "shortName": "Uluova İnşaat ve Makina Ltd. Şti.",
+      "taxId": "EKAP-IKN-2025329759",
+      "hqCity": "Balıkesir / İzmir",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-25"
+      ],
+      "primaryBranches": [
+        "DSI-25-251"
+      ],
+      "capacitySaturationPct": 64,
+      "maxTenderCapacityTL": 1200000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 25. Bölge Resmi Duyuru (bolge25.dsi.gov.tr/Duyuru/Detay/19240) + TaahhütHaber/Herpoz İKN: 2025/329759",
+      "officialUrl": "https://bolge25.dsi.gov.tr/Duyuru/Detay/19240",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-25",
+      "dsiSubeId": "DSI-25-251",
+      "dsiSubeName": "DSİ 251. Şube Müdürlüğü (Balıkesir)",
+      "dsiProjectTitle": "Balıkesir Savaştepe Sarıbeyler Ovası Sulaması Yenileme İnşaatı",
+      "dsiSourceUrl": "https://bolge25.dsi.gov.tr/Duyuru/Detay/19240",
+      "webSearchQuery": "\"Savaştepe Sarıbeyler Ovası Sulaması Yenileme\" ihale yüklenici İKN TL",
+      "webSearchSource": "TaahhütHaber / Herpoz İKN: 2025/329759 (726.725.613,22 TL / %28,07 Kırım)",
+      "relatedIkn": "2025/329759",
+      "contractAmountTL": 726725613.22,
+      "verified": true,
+      "notes": "DSİ 25. Bölge / 251. Şube (Balıkesir) Savaştepe Sarıbeyler Ovası Sulaması Yenileme işini İKN 2025/329759 ile %28,07 kırım oranıyla üstlenmiştir.",
+      "signals": [
+        {
+          "id": "SIG-6201",
+          "type": "NEW_TENDER_WON",
+          "date": "2025-05-20",
+          "regionId": "DSI-25",
+          "subeId": "DSI-25-251",
+          "source": "DSİ 25. Bölge Duyuru (Detay/19240) + İKN: 2025/329759",
+          "note": "Savaştepe Sarıbeyler Sulaması Yenileme ihalesinde 726.725.613,22 TL (%28,07 indirim) sözleşme imzaladı.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-63",
+      "name": "Öz Aras Grup İnşaat Taahhüt A.Ş. & İnelsan İnşaat Elektrik Ltd. Şti. İş Ortaklığı",
+      "shortName": "Öz Aras Grup & İnelsan İş Ort.",
+      "taxId": "EKAP-IKN-20221027126",
+      "hqCity": "Ankara / Balıkesir",
+      "workGroups": [
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-25"
+      ],
+      "primaryBranches": [
+        "DSI-25-251"
+      ],
+      "capacitySaturationPct": 73,
+      "maxTenderCapacityTL": 2200000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 25. Bölge Resmi Haber (bolge25.dsi.gov.tr/Haber/Detay/18350) + TaahhütHaber İKN: 2022/1027126",
+      "officialUrl": "https://bolge25.dsi.gov.tr/Haber/Detay/18350",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-25",
+      "dsiSubeId": "DSI-25-251",
+      "dsiSubeName": "DSİ 251. Şube Müdürlüğü (Balıkesir)",
+      "dsiProjectTitle": "Manyas Ovası Sol Sahil Sulaması İkmali İnşaatı",
+      "dsiSourceUrl": "https://bolge25.dsi.gov.tr/Haber/Detay/18350",
+      "webSearchQuery": "\"Manyas Ovası Sol Sahil Sulaması\" ihale yüklenici İKN TL",
+      "webSearchSource": "TaahhütHaber / EKAP İKN: 2022/1027126 (1.184.574.241 TL Sözleşme)",
+      "relatedIkn": "2022/1027126",
+      "contractAmountTL": 1184574241,
+      "verified": true,
+      "notes": "DSİ 25. Bölge / 251. Şube (Balıkesir Manyas) Sol Sahil Sulaması İkmali ihalesini İKN 2022/1027126 ile 1.184.574.241 TL (%25,94 kırım) bedelle üstlenmiştir.",
+      "signals": [
+        {
+          "id": "SIG-6301",
+          "type": "REGIONAL_MOBILIZATION",
+          "date": "2025-09-10",
+          "regionId": "DSI-25",
+          "subeId": "DSI-25-251",
+          "source": "DSİ 25. Bölge Sayfası (Haber/Detay/18350) + İKN: 2022/1027126",
+          "note": "Manyas Ovası Sol Sahil Sulaması şantiyesinde aktif yapım yüklenicisi.",
+          "verified": true
+        }
+      ]
+    },
+    {
+      "id": "COMP-64",
+      "name": "Ark Su İnşaat Proje Mühendislik Ltd. Şti. & Derinsu Proje İnşaat A.Ş. İş Ortaklığı",
+      "shortName": "Ark Su & Derinsu Proje İş Ort.",
+      "taxId": "EKAP-IKN-2021245903",
+      "hqCity": "Ankara / Balıkesir",
+      "workGroups": [
+        "A/II",
+        "A/III"
+      ],
+      "primaryRegions": [
+        "DSI-25"
+      ],
+      "primaryBranches": [
+        "DSI-25-251"
+      ],
+      "capacitySaturationPct": 55,
+      "maxTenderCapacityTL": 400000000,
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "verificationSource": "DSİ 25. Bölge Resmi Haber (bolge25.dsi.gov.tr/Haber/Detay/18350) + TaahhütHaber İKN: 2021/245903",
+      "officialUrl": "https://bolge25.dsi.gov.tr/Haber/Detay/18350",
+      "discoveredFromDsi": true,
+      "dsiRegionId": "DSI-25",
+      "dsiSubeId": "DSI-25-251",
+      "dsiSubeName": "DSİ 251. Şube Müdürlüğü (Balıkesir)",
+      "dsiProjectTitle": "Manyas Ovası Sol Sahil Sulaması İkmali İletim Tüneli İnşaatı",
+      "dsiSourceUrl": "https://bolge25.dsi.gov.tr/Haber/Detay/18350",
+      "webSearchQuery": "\"Manyas Ovası Sol Sahil Sulaması\" \"İletim Tüneli\" ihale yüklenici İKN TL",
+      "webSearchSource": "TaahhütHaber / EKAP İKN: 2021/245903 (82.950.074 TL Sözleşme)",
+      "relatedIkn": "2021/245903",
+      "contractAmountTL": 82950074,
+      "verified": true,
+      "notes": "DSİ 25. Bölge / 251. Şube (Balıkesir Manyas) Sol Sahil Sulaması İkmali İletim Tüneli inşaatını İKN 2021/245903 ile 82.950.074 TL (%30,87 kırım) bedelle üstlenmiştir.",
+      "signals": [
+        {
+          "id": "SIG-6401",
+          "type": "REGIONAL_MOBILIZATION",
+          "date": "2025-09-10",
+          "regionId": "DSI-25",
+          "subeId": "DSI-25-251",
+          "source": "DSİ 25. Bölge Sayfası (Haber/Detay/18350) + İKN: 2021/245903",
+          "note": "Manyas Ovası Sol Sahil Sulaması İletim Tüneli yüklenicisi.",
           "verified": true
         }
       ]
@@ -3373,6 +3994,330 @@
       ],
       "subeId": "DSI-GM-BARAJ",
       "subeName": "DSİ Genel Müdürlüğü Barajlar ve HES Dairesi Başkanlığı"
+    },
+    {
+      "id": "TND-2023-1066700",
+      "ikn": "2023/1066700",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Kütahya Emet Günlüce Göleti Yapım İşi",
+      "regionId": "DSI-03",
+      "subeId": "DSI-03-34",
+      "subeName": "DSİ 34. Şube Müdürlüğü (Kütahya)",
+      "workGroup": "A/I",
+      "date": "2024-02-15",
+      "approxCost": 180257901.71,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 132026187.38,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge03.dsi.gov.tr/Haber/Detay/18809",
+      "verificationSource": "DSİ 3. Bölge Sayfası + Herpoz/EKAP İKN: 2023/1066700",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-52",
+      "bids": [
+        {
+          "competitorId": "COMP-52",
+          "amount": 134036738.46,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2024-256093",
+      "ikn": "2024/256093",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Mersin Sorgun Barajı Sulaması İkmali İnşaatı",
+      "regionId": "DSI-06",
+      "subeId": "DSI-06-62",
+      "subeName": "DSİ 62. Şube Müdürlüğü (Mersin)",
+      "workGroup": "A/III",
+      "date": "2024-06-15",
+      "approxCost": 2999004905,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 2593505000,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge06.dsi.gov.tr/Haber/Detay/18574",
+      "verificationSource": "DSİ 6. Bölge Sayfası + Yatırımlar/EKAP İKN: 2024/256093",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-53",
+      "bids": [
+        {
+          "competitorId": "COMP-53",
+          "amount": 2633000000,
+          "isValid": true
+        },
+        {
+          "competitorId": "COMP-02",
+          "amount": 2633000000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-2067575",
+      "ikn": "2025/2067575",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Osmaniye Kadirli Savrun Barajı Karakütük Köyü İçmesuyu Rölekasyonu Yapım İşi",
+      "regionId": "DSI-06",
+      "subeId": "DSI-06-64",
+      "subeName": "DSİ 64. Şube Müdürlüğü (Osmaniye)",
+      "workGroup": "A/IV",
+      "date": "2026-01-15",
+      "approxCost": 115638241.36,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 75080579.65,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge06.dsi.gov.tr/Haber/Detay/18414",
+      "verificationSource": "DSİ 6. Bölge Sayfası + Herpoz/EKAP İKN: 2025/2067575",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-54",
+      "bids": [
+        {
+          "competitorId": "COMP-54",
+          "amount": 76223938.73,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2023-1581506",
+      "ikn": "2023/1581506",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Hakkari Yüksekova Dilimli Barajı Sulaması 1. Kısım Yapım İnşaatı",
+      "regionId": "DSI-17",
+      "subeId": "DSI-17-174",
+      "subeName": "DSİ 174. Şube Müdürlüğü (Hakkari)",
+      "workGroup": "A/III",
+      "date": "2024-05-10",
+      "approxCost": 646340291,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 526917671.03,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge17.dsi.gov.tr/Haber/Detay/18530",
+      "verificationSource": "DSİ 17. Bölge Sayfası + TaahhütHaber/EKAP İKN: 2023/1581506",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-56",
+      "bids": [
+        {
+          "competitorId": "COMP-56",
+          "amount": 534941798,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2022-1508792",
+      "ikn": "2022/1508792",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Burdur Gölhisar Sulaması Modernizasyonu (Yenileme İnşaatı)",
+      "regionId": "DSI-18",
+      "subeId": "DSI-18-182",
+      "subeName": "DSİ 182. Şube Müdürlüğü (Burdur)",
+      "workGroup": "A/III",
+      "date": "2023-03-10",
+      "approxCost": 2108161280,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 1897345152,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge18.dsi.gov.tr/Haber/Detay/18888",
+      "verificationSource": "DSİ 18. Bölge Sayfası + TaahhütHaber/EKAP İKN: 2022/1508792",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-57",
+      "bids": [
+        {
+          "competitorId": "COMP-57",
+          "amount": 2378021015.06,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2021-132122",
+      "ikn": "2021/132122",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Gaziantep Nizip AT ve TİGH Tamamlama Yapım İşi",
+      "regionId": "DSI-20",
+      "subeId": "DSI-20-202",
+      "subeName": "DSİ 202. Şube Müdürlüğü (Gaziantep)",
+      "workGroup": "A/III",
+      "date": "2022-03-20",
+      "approxCost": 56617117,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 34107595,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge20.dsi.gov.tr/Duyuru/Detay/19220",
+      "verificationSource": "DSİ 20. Bölge Sayfası + TaahhütHaber İKN: 2021/132122",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-58",
+      "bids": [
+        {
+          "competitorId": "COMP-58",
+          "amount": 34627000,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2021-844065",
+      "ikn": "2021/844065",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Kars Barajı Sulaması İletim Hattı İkmali İnşaatı",
+      "regionId": "DSI-24",
+      "subeId": "DSI-24-241",
+      "subeName": "DSİ 241. Şube Müdürlüğü (Kars)",
+      "workGroup": "A/III",
+      "date": "2022-01-21",
+      "approxCost": 248004250,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 215763697.5,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge24.dsi.gov.tr/Haber/Detay/19260",
+      "verificationSource": "DSİ 24. Bölge Sayfası + TaahhütHaber İKN: 2021/844065",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-60",
+      "bids": [
+        {
+          "competitorId": "COMP-60",
+          "amount": 242775380,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2024-138617",
+      "ikn": "2024/138617",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Biga Taşoluk Sulaması 2. Kısım İkmali İnşaatı",
+      "regionId": "DSI-25",
+      "subeId": "DSI-25-252",
+      "subeName": "DSİ 252. Şube Müdürlüğü (Çanakkale)",
+      "workGroup": "A/III",
+      "date": "2024-08-10",
+      "approxCost": 2127312284.34,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 1577828366.69,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge25.dsi.gov.tr/Duyuru/Detay/19209",
+      "verificationSource": "DSİ 25. Bölge Duyuru (Detay/19209) + Herpoz/TaahhütHaber İKN: 2024/138617",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-61",
+      "bids": [
+        {
+          "competitorId": "COMP-61",
+          "amount": 1601856209.84,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2025-329759",
+      "ikn": "2025/329759",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Balıkesir Savaştepe Sarıbeyler Ovası Sulaması Yenileme İnşaatı",
+      "regionId": "DSI-25",
+      "subeId": "DSI-25-251",
+      "subeName": "DSİ 251. Şube Müdürlüğü (Balıkesir)",
+      "workGroup": "A/III",
+      "date": "2025-05-15",
+      "approxCost": 1010315585.09,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 715824729.02,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge25.dsi.gov.tr/Duyuru/Detay/19240",
+      "verificationSource": "DSİ 25. Bölge Duyuru (Detay/19240) + Herpoz/TaahhütHaber İKN: 2025/329759",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-62",
+      "bids": [
+        {
+          "competitorId": "COMP-62",
+          "amount": 726725613.22,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2022-1027126",
+      "ikn": "2022/1027126",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Manyas Ovası Sol Sahil Sulaması İkmali İnşaatı",
+      "regionId": "DSI-25",
+      "subeId": "DSI-25-251",
+      "subeName": "DSİ 251. Şube Müdürlüğü (Balıkesir)",
+      "workGroup": "A/III",
+      "date": "2023-02-01",
+      "approxCost": 1599425366,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 1166805627.39,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge25.dsi.gov.tr/Haber/Detay/18350",
+      "verificationSource": "DSİ 25. Bölge Sayfası (Haber/Detay/18350) + TaahhütHaber İKN: 2022/1027126",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-63",
+      "bids": [
+        {
+          "competitorId": "COMP-63",
+          "amount": 1184574241,
+          "isValid": true
+        }
+      ]
+    },
+    {
+      "id": "TND-2021-245903",
+      "ikn": "2021/245903",
+      "kikDecisionNo": "EKAP-SONUC",
+      "title": "Manyas Ovası Sol Sahil Sulaması İkmali İletim Tüneli İnşaatı",
+      "regionId": "DSI-25",
+      "subeId": "DSI-25-251",
+      "subeName": "DSİ 251. Şube Müdürlüğü (Balıkesir)",
+      "workGroup": "A/II",
+      "date": "2021-07-15",
+      "approxCost": 119999996,
+      "nCoeff": 1.2,
+      "reportedBoundaryValue": 81705822.89,
+      "officialBoundaryVerified": false,
+      "evalRule": "AUTO_REJECT",
+      "verificationStatus": "VERIFIED_EKAP",
+      "officialSourceType": "DSI_WEB_SEARCH",
+      "officialSourceUrl": "https://bolge25.dsi.gov.tr/Haber/Detay/18350",
+      "verificationSource": "DSİ 25. Bölge Sayfası (Haber/Detay/18350) + TaahhütHaber İKN: 2021/245903",
+      "isSampleCalibration": false,
+      "winnerCompetitorId": "COMP-64",
+      "bids": [
+        {
+          "competitorId": "COMP-64",
+          "amount": 82950074,
+          "isValid": true
+        }
+      ]
     }
   ]
 }

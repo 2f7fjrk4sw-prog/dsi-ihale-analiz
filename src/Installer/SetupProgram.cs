@@ -59,13 +59,13 @@ namespace DSIIhaleZekasiSetup
                     if (!string.IsNullOrEmpty(entryDir))
                         Directory.CreateDirectory(entryDir);
 
-                    // Eğer kullanıcının daha önceden girdiği veya otomatik senkronize edilen güncel (v2.3.0) verified_db.json varsa koru
+                    // Eğer kullanıcının daha önceden girdiği veya otomatik senkronize edilen güncel (v2.4.0) verified_db.json varsa koru
                     if (entry.Name.Equals("verified_db.json", StringComparison.OrdinalIgnoreCase) && File.Exists(fullPath))
                     {
                         try
                         {
                             string existing = File.ReadAllText(fullPath);
-                            if (existing.Contains("\"version\": \"2.3.0\""))
+                            if (existing.Contains("\"version\": \"2.4.0\""))
                                 continue;
                         }
                         catch { }
