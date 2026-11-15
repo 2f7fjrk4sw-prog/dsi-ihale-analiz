@@ -41,7 +41,7 @@ dsi-ihale-analiz/
 ├── PROJECT.md                              # AI & Geliştirici Mimari ve Matematik Referans Belgesi
 ├── DSIIhaleZekasi_Kurulum_Setup.exe        # Tek Tıkla Kurulabilir Windows Setup Sihirbazı
 ├── data/
-│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale ve Rakip Veritabanı (v2.4.0)
+│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale ve Rakip Veritabanı (v2.5.0)
 │   └── verified_db.json.sha256             # SHA-256 Veri Bütünlük Mührü
 ├── src/
 │   ├── ui/
@@ -248,3 +248,17 @@ Copy-Item "dist/installer/DSIIhaleZekasi_Kurulum_Setup.exe" "DSIIhaleZekasi_Kuru
 - **Şube Deneyimi ve Teklif Öngörü Ağırlığı:** `CompetitorPredictionEngine`, aynı DSİ Şube Müdürlüğü'nde iş/teklif geçmişi bulunan firmalara **`%100` Şube Deneyimli** etiketi, ek katılım eğilimi ve **`1.35x`** tarihsel benzerlik ağırlığı uygular.
 - **Yeni Doğrulanmış Kayıtlar (`v2.3.0`):** `dsi.gov.tr` (DSİ 1., 6., 10., 18., 20., 21., 22. Bölgeler ve Şubeler), EKAP Sonuç İlanları (`2024/1911692`, `2024/1911693`, `2024/1792851`, `2024/1878585`, `2024/1878583`, `2024/1541999`, `2024/1633720`, `2025/1043449`) ve KİK Kurul Kararları (`2025/UY.II-874` / `2024/1548525`, `2024/UY.I-603` / `2023/894949`) ile doğrulanan **12 ek DSİ Bölge/Şube ihalesi** ve **19 yeni yüklenici firma (`COMP-33` .. `COMP-51`)** sisteme işlenmiştir.
 - **Canlı DSİ Web Radarı Genişlemesi:** `OfficialDataSyncService`, DSİ Merkez ve Bölge Müdürlükleri ağında 17 hedef adresi (`bolge01`..`bolge22` + `dsi.gov.tr`) ve şube eşleme (`MapIdareAndTitleToDsiBranch`) kurallarıyla otomatik izlemektedir.
+
+---
+
+## 13. v2.5.0 Tam Kapsam Güncellemesi (111 Doğrulanmış İhale, 122 Tekil Rakip, 27 Birim, 85 Şube & Crawler v2.5.0)
+
+- **Tam Kapsamlı Resmi Veritabanı (`v2.5.0`):** `data/verified_db.json` ve gömülü `src/ui/kik-engine.js` çekirdeği **111 doğrulanmış ihale**, **122 tekil rakip**, **26 DSİ Bölge + DSI-GM (27 birim)** ve **85 DSİ Şube Müdürlüğü** kapsayacak şekilde genişletilmiştir. Her 27 birim aktif ihaleye ve aktif rakip portföyüne sahiptir (Bursa `DSI-01` ve İzmir `DSI-02` ihaleleri dahil).
+- **Şube ve Arşiv Bölge Düzeltmeleri:**
+  - Bilecik (`DSI-03-33`) DSİ 3. Bölge Müdürlüğü (`DSI-03`) altına, Adıyaman (`DSI-20-203`) DSİ 20. Bölge Müdürlüğü (`DSI-20`) altına alınmıştır.
+  - `DSI-16` (`bolge16.dsi.gov.tr`): **DSİ Ilısu Projesi 16. Bölge Müdürlüğü (Mardin / Arşiv - 2025 Kararnamesi)** olarak tanımlanmış olup HTTP 404 yanıtları hata sayacı yerine temiz arşiv/kapalı bölge notu olarak işlenir.
+- **Crawler & Eşleştirme İyileştirmeleri (`OfficialDataSyncService.cs`, `Program.cs`, `SetupProgram.cs`, `app.js`):**
+  - **Zaman Aşımı ve Rotalar:** `HttpClient.Timeout` `15s`, istek bazlı `CancellationTokenSource` `10s`, bölge tarama eşzamanlılığı `SemaphoreSlim(6)` olarak güncellenmiştir (`9-15s` aralığı). `subPaths` içine `/Ihale/Arsiv` eklenerek `{ "", "/Ihale/IhaleListe", "/Ihale/Arsiv", "/Duyuru/DuyuruListe" }` sırasıyla ihale odaklı rotalar önceliklendirilmiştir.
+  - **Gürültü Filtresi & Bölge Çeşitliliği:** `IsNonConstructionNoiseTitle` ve `IsDsiConstructionTitle` ile `İŞÇİ ALIMI`, `STAJ`, `TAŞINMAZ`, `SATIŞ`, `KİRALAMA`, `ZİYARET`, `SEMİNER`, `SEMPOZYUM`, `SINAV`, `NOTER`, `KURA`, `PERSONEL`, `ATAMA`, `SULAMA BİRLİKLERİ BAŞKAN`, `MÜHENDİSLİK HARİKASI`, `DUYURU METNİ` gibi yapım dışı başlıklar elenir; `AddDiscoveredAnnouncement` 60 kayıt sınırında bölge başına kota ve adil çıkarma kuralıyla ilk bölgelerin (`DSI-01`, `DSI-02` vb.) ezilmesini önler.
+  - **Esnek Web Yüklenici & İKN Araması:** 7 kelimelik tırnaklı sorgular yerine kısa proje anahtar kelimesi + şehir + `ihale / ekap / taahhuthaber` sorguları ve eksik/öncelikli bölgeler (`DSI-01`, `DSI-02`, `DSI-13`, `DSI-14`, `DSI-23`, `DSI-26` dahil) arasında 26 bölgeli round-robin tarama uygulanır; RSS özetinden veya açık hedef sayfasından esnek İKN + yüklenici eşleştirmesi çıkarılır.
+  - **Gerçek Şube & 27 Birim Şehir Eşleştirmesi:** Sahte `DSI-XX-MERKEZ` üretimi kaldırılıp `kik-engine.js` ile birebir uyumlu `RealDsiBranches` tablosuna geçilmiş, `GuessCityFromRegionOrTitle` 27 birimin tamamını tanıyacak şekilde güncellenmiş ve tüm sürüm kontrolleri `"2.5.0"` yapılmıştır.

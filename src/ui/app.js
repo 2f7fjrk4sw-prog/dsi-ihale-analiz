@@ -46,13 +46,13 @@ const App = {
         const data = await resp.json();
         if (data && Array.isArray(data.competitors) && Array.isArray(data.tenders)) {
           if (data.metadata && data.metadata.officialSourcesOnly === true &&
-              data.metadata.version === '2.4.0') {
+              data.metadata.version === '2.5.0') {
             this.db = data;
             localStorage.setItem('dsi_ihale_official_kik_db_v2_1', JSON.stringify(this.db));
             await this.updateDatabaseHash();
             return;
           } else {
-            // Eski sürüm veritabanını v2.4.0 DSİ Bölge, Şube ve DSİ Web Keşif veritabanına yükselt
+            // Eski sürüm veritabanını v2.5.0 DSİ Bölge, Şube ve DSİ Web Keşif veritabanına yükselt
             this.db = createInitialVerifiedDatabase();
             await this.saveDatabase();
             return;
@@ -66,7 +66,7 @@ const App = {
       try {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.metadata && parsed.metadata.officialSourcesOnly === true &&
-            parsed.metadata.version === '2.4.0') {
+            parsed.metadata.version === '2.5.0') {
           this.db = parsed;
         } else {
           this.db = createInitialVerifiedDatabase();
@@ -97,7 +97,7 @@ const App = {
 
   async saveDatabase() {
     this.db.metadata = this.db.metadata || {};
-    this.db.metadata.version = '2.4.0';
+    this.db.metadata.version = '2.5.0';
     this.db.metadata.officialSourcesOnly = true;
     this.db.metadata.lastUpdated = new Date().toISOString();
 

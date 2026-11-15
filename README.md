@@ -1,4 +1,4 @@
-# DSİ Yapım İhaleleri Teklif Analiz ve Sınır Değer Hesaplama Sistemi (`DSİ-İhaleZekası v2.4.0`)
+# DSİ Yapım İhaleleri Teklif Analiz ve Sınır Değer Hesaplama Sistemi (`DSİ-İhaleZekası v2.5.0`)
 
 **Devlet Su İşleri (DSİ)** yapım işi ihalelerine katılan müteahhitlik firmaları için geliştirilmiş; **4734 sayılı Kamu İhale Kanunu** ve **Kamu İhale Genel Tebliği (Madde 45.1.1)** hükümlerine birebir uyumlu, **%100 doğrulanmış resmi kamu verileriyle (`kik.gov.tr`, `ekap.kik.gov.tr`, `bolge01..26.dsi.gov.tr`)** çalışan kurulabilir masaüstü ihale karar destek ve rakip davranış öngörü yazılımıdır.
 
@@ -9,8 +9,8 @@
 DSİ altyapı ve su yapıları ihalelerinde (Baraj, Gölet, Sulama, Taşkın Kontrol, İçmesuyu İsale Hattı ve Arıtma Tesisleri) ihaleyi kazanmanın en kritik aşaması, **Sınır Değerin ($SD$)** nerede oluşacağını ve ihaleye katılacak rakip müteahhitlerin hangi tenzilat (kırım) oranlarıyla teklif vereceğini doğru öngörmektir.
 
 Bu sistem:
-1. **Periyodik Resmi Veri Toplama Servisi (`OfficialDataSyncService`)** ile Kamu İhale Kurumu (`ekap.kik.gov.tr`) Kurul Kararları, EKAP "Bir Bakışta İhale" sonuç sayfaları ve tüm DSİ Bölge Müdürlüklerinin kendi web sayfalarını (`bolge01..26.dsi.gov.tr` — `/Duyuru/DuyuruListe`, `/Ihale/IhaleListe`, `/Haber/Arsiv`) düzenli aralıklarla tarar; bölge sayfalarından çekilen yapım işlerini internette aratarak yüklenici firmaları doğrular ve veritabanını (`data/verified_db.json`) otomatik günceller.
-2. **DSİ Kaynaklarından Bulunan Rakipler ve Bölge/Şube Analizi (`RegionalAnalysisEngine`)** ile hem KİK/EKAP hem de DSİ Bölge sayfaları + internet aramasından doğrulanan rakipleri **26 DSİ Bölge Müdürlüğü** ve bağlı **84 DSİ Şube Müdürlüğü (`DSI_BRANCHES`)** bazında ayrıştırır.
+1. **Periyodik Resmi Veri Toplama Servisi (`OfficialDataSyncService`)** ile Kamu İhale Kurumu (`ekap.kik.gov.tr`) Kurul Kararları, EKAP "Bir Bakışta İhale" sonuç sayfaları ve tüm DSİ Bölge Müdürlüklerinin kendi web sayfalarını (`bolge01..26.dsi.gov.tr` — `/Ihale/IhaleListe`, `/Ihale/Arsiv`, `/Duyuru/DuyuruListe`; `bolge16.dsi.gov.tr` 2025 kararnamesi uyarınca arşiv/kapalı bölge notu olarak işlenir) `9-15s` kontrollü zaman aşımı ve `SemaphoreSlim(6)` eşzamanlılığıyla tarar. Yapım dışı ilanları eleyen gürültü filtresi, bölge çeşitliliği korumalı duyuru tamponu ve esnek web/RSS yüklenici+İKN eşleştirmesi ile veritabanını (`data/verified_db.json`) otomatik günceller.
+2. **DSİ Kaynaklarından Bulunan Rakipler ve Bölge/Şube Analizi (`RegionalAnalysisEngine`)** ile hem KİK/EKAP hem de DSİ Bölge sayfaları + internet aramasından doğrulanan rakipleri **26 DSİ Bölge Müdürlüğü + DSI-GM (27 birim)** ve bağlı **85 DSİ Şube Müdürlüğü (`DSI_BRANCHES`)** bazında ayrıştırır.
 3. **3 Katmanlı Rakip Davranış Algoritması ve 10.000 İterasyonlu Monte Carlo Simülasyonu (`MonteCarloTenderSimulator`)** ile yeni girilecek bir DSİ ihalesinde rakiplerin katılım olasılıklarını, tahmini teklif aralıklarını ve beklenen Sınır Değeri hesaplayarak kullanıcıya **3 Kademeli Teklif Stratejisi** (*İhtiyatlı Teklif*, *Önerilen İdeal Teklif*, *Sınır Değere Yakın Riskli Teklif*) sunar.
 
 ---
@@ -19,13 +19,13 @@ Bu sistem:
 
 | Bölüm | Modül Adı | Açıklama |
 | :--- | :--- | :--- |
-| **1** | **Genel Özet ve İhale Arşivi** | Sistemde kayıtlı 46 resmi DSİ ihalesinin, 64 gerçek müteahhit firmanın, ortalama Sınır Değer indiriminin ve kazanan teklif marjlarının yönetici özeti. |
+| **1** | **Genel Özet ve İhale Arşivi** | Sistemde kayıtlı 111 resmi DSİ ihalesinin, 122 tekil gerçek müteahhit firmanın, ortalama Sınır Değer indiriminin ve kazanan teklif marjlarının yönetici özeti. |
 | **2** | **Yeni İhale Teklif ve Sınır Değer Hesaplama** | Girilecek ihalenin DSİ Bölge ve Şube Müdürlüğü, İş Grubu (`A/I`, `A/II`, `A/III`, `A/IV`, `A/V`, `B/III`), Yaklaşık Maliyet ($YM$) tahmini ve $\pm\%X$ sapma payına göre 10.000 iterasyonlu Monte Carlo simülasyonu ve kazanma/elenme eğrisi. |
 | **3** | **Rakip Firma Kayıtları (Düzenlenmiş Dizin)** | Kaynak kökeni (`KİK / EKAP` vs `DSİ Web Keşfi`), arama kutusu, DSİ Bölge/Şube filtresi ve çoklu sıralama (ihale sayısı, A-Z, indirim, kapasite) seçenekleriyle düzenli rakip dizini ve detaylı karne görünümü. |
-| **4** | **DSİ Kaynaklarından Bulunan Rakipler** | `bolge01..26.dsi.gov.tr` duyuru/ihale/haber sayfalarından çekilen işlerin internette aratılarak doğrulanan yüklenicileri (15+ DSİ Web Keşfi rakibi), DSİ proje/İKN eşleşmeleri ve kaynak bağlantıları. |
-| **5** | **Bölge ve Şube Bazlı Rakip Analizi** | 26 DSİ Bölge Müdürlüğü ve bağlı 84 DSİ Şube Müdürlüğü bazında hangi rakiplerin hangi şube ve bölgelerde iş yaptığı, şube/bölge sınır değer tenzilat ortalamaları ve hedef kırım tavsiyeleri. |
+| **4** | **DSİ Kaynaklarından Bulunan Rakipler** | Bursa (`DSI-01`), İzmir (`DSI-02`) ve tüm 27 birim genelinde `bolge01..26.dsi.gov.tr` ihale/arşiv/duyuru sayfaları + esnek internet/TaahhütHaber/EKAP aramasından doğrulanan yükleniciler, DSİ proje/İKN eşleşmeleri ve kaynak bağlantıları. |
+| **5** | **Bölge ve Şube Bazlı Rakip Analizi** | 26 DSİ Bölge + DSI-GM (27 birim) ve bağlı 85 DSİ Şube Müdürlüğü bazında hangi rakiplerin hangi şube ve bölgelerde iş yaptığı, şube/bölge sınır değer tenzilat ortalamaları ve hedef kırım tavsiyeleri. |
 | **6** | **İhale Tutanağı ve Veri Girişi** | 3 kanallı doğrulanmış veri girişi: **(1)** Otomatik KİK 45.1.1 matematik denetimli tutanak formu, **(2)** Akıllı EKAP Sonuç İlanı metin okuyucu (`EkapSmartParser`), **(3)** Excel/CSV toplu içe ve dışa aktarım. |
-| **7** | **Otomatik Resmi Veri Tarama (`OfficialDataSyncService`)** | `ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx`, `BirBakistaIhale.aspx` ve `bolge01..26.dsi.gov.tr` + internet yüklenici aramasını kilit korumalı (`SemaphoreSlim`), periyodik (15 dk – 12 saat) veya tek tıkla canlı tarayan arka plan servisi. |
+| **7** | **Otomatik Resmi Veri Tarama (`OfficialDataSyncService`)** | `ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx`, `BirBakistaIhale.aspx` ve `bolge01..26.dsi.gov.tr` (`/Ihale/IhaleListe`, `/Ihale/Arsiv`, `/Duyuru/DuyuruListe`) + esnek web/RSS yüklenici aramasını `9-15s` timeout, gürültü filtresi ve kilit korumalı (`SemaphoreSlim`) olarak tarayan arka plan servisi. |
 | **8** | **KİK Madde 45.1.1 Sınır Değer Hesap Cetveli** | Açıklanan Yaklaşık Maliyet ve sunulan tekliflere göre $T_{\text{ort},1}$, standart sapma ($\sigma$), $T_{\text{ort},2}$, $C$, $K$ ve $N$ katsayılarını (virgülden sonra 3 basamak yuvarlamalı) adım adım gösteren resmi mevzuat cetveli. |
 
 ---
@@ -54,7 +54,7 @@ Sistem içerisindeki `KikBoundaryEngine` motoru, Kamu İhale Genel Tebliği Madd
 
 ## 4. %100 Resmi Kamu Veri Kaynağı İlkesi (`officialSourcesOnly: true`)
 
-Sistemde hiçbir kurgusal firma veya tahmini ihale verisi yer almaz. `data/verified_db.json` (`v2.4.0`) içerisindeki **46 DSİ ihalesi** ve **64 yüklenici firma / iş ortaklığı** (15 tanesi doğrudan `bolge01..26.dsi.gov.tr` sayfaları + internet yüklenici aramasından doğrulanmıştır), doğrudan Kamu İhale Kurulu resmi kararları (`kik.gov.tr`), EKAP resmi sonuç kayıtları (`ekap.kik.gov.tr`), KİK Yapım İşleri Bültenleri ve DSİ Bölge/Şube Müdürlükleri resmi duyurularından (`dsi.gov.tr`) doğrulanmıştır:
+Sistemde hiçbir kurgusal firma veya tahmini ihale verisi yer almaz. `data/verified_db.json` (`v2.5.0`) içerisindeki **111 doğrulanmış DSİ ihalesi** ve **122 tekil yüklenici firma / iş ortaklığı** (**26 DSİ Bölge + DSI-GM toplam 27 birim** ve **85 şube** kapsama alanı; Bursa `DSI-01` ve İzmir `DSI-02` ihaleleri dahil, `bolge16.dsi.gov.tr` 2025 kararnamesi kapsamında Ilısu Projesi arşiv birimi olarak işaretlenmiştir), doğrudan Kamu İhale Kurulu resmi kararları (`kik.gov.tr`), EKAP resmi sonuç kayıtları (`ekap.kik.gov.tr`), KİK Yapım İşleri Bültenleri ve DSİ Bölge/Şube Müdürlükleri resmi duyurularından (`dsi.gov.tr`) doğrulanmıştır:
 
 - **İKN `2025/1888777`** (*KİK Kararı `2026/UY.II-1764`*): DSİ 11. Bölge — *Tekirdağ İnecik 1-2 ve Dedecik Barajları İçmesuyu İsale Hattı* (`YM: 1.505.809.084,70 TL`)
 - **İKN `2025/2110590`** (*KİK Kararı `2026/UY.II-643`*): DSİ 1. Bölge — *Kocaeli Kandıra Arıklar Göleti Sulaması 2. Kısım* (`YM: 325.538.431,00 TL`)
@@ -83,7 +83,7 @@ dsi-ihale-analiz/
 ├── DSIIhaleZekasi_Kurulum_Setup.exe        # Tek Tıkla Kurulabilir Windows Kurulum Sihirbazı (Setup)
 ├── DSIIhaleZekasi.exe                      # Doğrudan Çalıştırılabilir Masaüstü Uygulaması
 ├── data/
-│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale ve Rakip Veritabanı (v2.4.0)
+│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale ve Rakip Veritabanı (v2.5.0)
 │   └── verified_db.json.sha256             # SHA-256 Veri Bütünlük Mührü
 └── src/
     ├── ui/

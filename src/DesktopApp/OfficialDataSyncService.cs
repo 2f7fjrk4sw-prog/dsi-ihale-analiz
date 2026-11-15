@@ -25,6 +25,7 @@ namespace DSIIhaleZekasi
     internal sealed class OfficialDataSyncService
     {
         private static readonly UTF8Encoding Utf8NoBom = new(false);
+        private static readonly CultureInfo TrCulture = new("tr-TR");
         public static readonly SemaphoreSlim DbFileLock = new(1, 1);
         private readonly string _dbFilePath;
         private readonly string _syncStateFilePath;
@@ -40,6 +41,7 @@ namespace DSIIhaleZekasi
         private int _totalScansRun;
         private int _totalNewTendersAdded;
         private int _totalNewCompetitorsAdded;
+        private int _regionSearchCursor;
         private string _lastSyncTrigger = "Henüz çalıştırılmadı";
         private string _lastSyncStatus = "Hazır";
 
@@ -62,7 +64,7 @@ namespace DSIIhaleZekasi
             };
             _httpClient = new HttpClient(handler)
             {
-                Timeout = TimeSpan.FromSeconds(14)
+                Timeout = TimeSpan.FromSeconds(15)
             };
             _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
                 "User-Agent",
@@ -343,7 +345,7 @@ namespace DSIIhaleZekasi
                         await throttler.WaitAsync();
                         try
                         {
-                            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+                            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                             var response = await _httpClient.GetAsync(url, cts.Token);
                             if (!response.IsSuccessStatusCode) return;
 
@@ -776,11 +778,21 @@ namespace DSIIhaleZekasi
         // =====================================================================
         private async Task DiscoverNewOfficialLinksFromRssAsync(List<SourceHealthItem> healthList)
         {
+            var priorityPool = new[]
+            {
+                ("DSI-01", "Bursa"), ("DSI-02", "İzmir"), ("DSI-13", "Antalya"),
+                ("DSI-14", "İstanbul"), ("DSI-23", "Kastamonu"), ("DSI-26", "Artvin"),
+                ("DSI-03", "Eskişehir"), ("DSI-07", "Samsun"), ("DSI-10", "Diyarbakır")
+            };
+            var rotTarget = priorityPool[_regionSearchCursor % priorityPool.Length];
+            string rotCityEscaped = Uri.EscapeDataString(rotTarget.Item2);
+
             string[] rssQueries =
             {
                 "https://www.bing.com/search?q=site%3Aekap.kik.gov.tr%2FEKAP%2FVatandas%2FKurulKararGoster.aspx+%22Devlet+Su+%C4%B0%C5%9Fleri%22&format=rss",
                 "https://www.bing.com/search?q=site%3Aekap.kik.gov.tr%2FEKAP%2FOrtak%2FBirBakistaIhale.aspx+%22DEVLET+SU+%C4%B0%C5%9ELER%C4%B0%22&format=rss",
-                "https://news.google.com/rss/search?q=%22Devlet+Su+%C4%B0%C5%9Fleri%22+%22%C4%B0hale%22+OR+%22Baraj%C4%B1%22+OR+%22Sulamas%C4%B1%22+OR+%22Ta%C5%9Fk%C4%B1n%22&hl=tr&gl=TR&ceid=TR:tr"
+                $"https://www.bing.com/search?q=site%3Ataahhuthaber.com+DS%C4%B0+{rotCityEscaped}+ihale&format=rss",
+                "https://news.google.com/rss/search?q=Devlet+Su+%C4%B0%C5%9Fleri+baraj+OR+g%C3%B6let+OR+sulama+ihale&hl=tr&gl=TR&ceid=TR:tr"
             };
 
             int totalRssItems = 0;
@@ -790,46 +802,50 @@ namespace DSIIhaleZekasi
             {
                 try
                 {
-                    var resp = await _httpClient.GetAsync(rssUrl);
+                    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                    var resp = await _httpClient.GetAsync(rssUrl, cts.Token);
                     if (!resp.IsSuccessStatusCode) continue;
 
                     rssSuccess++;
-                    string xmlText = await resp.Content.ReadAsStringAsync();
+                    string xmlText = await resp.Content.ReadAsStringAsync(cts.Token);
+                    if (!xmlText.Contains("<item", StringComparison.OrdinalIgnoreCase)) continue;
+
                     var doc = XDocument.Parse(xmlText);
                     foreach (var item in doc.Descendants("item").Take(15))
                     {
-                        string title = item.Element("title")?.Value ?? "";
-                        string link = item.Element("link")?.Value ?? "";
+                        string title = WebUtility.HtmlDecode(item.Element("title")?.Value ?? "").Trim();
+                        string desc = WebUtility.HtmlDecode(item.Element("description")?.Value ?? "");
+                        string link = item.Element("link")?.Value?.Trim() ?? "";
                         string pubDate = item.Element("pubDate")?.Value ?? "";
 
-                        if (link.Contains("ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx", StringComparison.OrdinalIgnoreCase) ||
-                            link.Contains("ekap.kik.gov.tr/EKAP/Ortak/BirBakistaIhale.aspx", StringComparison.OrdinalIgnoreCase))
+                        if (TryRegisterEkapLink(link))
                         {
-                            bool addedLink;
-                            lock (_monitoredEkapUrls)
-                            {
-                                addedLink = _monitoredEkapUrls.Add(link);
-                            }
-                            if (addedLink)
-                            {
-                                AddLog("Resmi İndeks Keşfi", "INFO", $"Yeni EKAP resmi karar/ihale bağlantısı keşfedildi: {link}");
-                            }
+                            AddLog("Resmi İndeks Keşfi", "INFO", $"Yeni EKAP resmi karar/ihale bağlantısı keşfedildi: {link}");
+                        }
+
+                        // Açıklama içindeki EKAP bağlantılarını da havuza al
+                        foreach (Match em in Regex.Matches(desc, @"https?://ekap\.kik\.gov\.tr/EKAP/(?:Vatandas/KurulKararGoster|Ortak/BirBakistaIhale)\.aspx\?[^\s""'<>]+", RegexOptions.IgnoreCase))
+                        {
+                            TryRegisterEkapLink(WebUtility.HtmlDecode(em.Value));
                         }
 
                         if (!string.IsNullOrWhiteSpace(title) &&
-                            (title.Contains("DSİ", StringComparison.OrdinalIgnoreCase) ||
-                             title.Contains("Devlet Su İşleri", StringComparison.OrdinalIgnoreCase) ||
-                             title.Contains("Baraj", StringComparison.OrdinalIgnoreCase) ||
-                             title.Contains("Sulama", StringComparison.OrdinalIgnoreCase) ||
-                             title.Contains("Taşkın", StringComparison.OrdinalIgnoreCase)))
+                            !IsNonConstructionNoiseTitle(title) &&
+                            (IsDsiConstructionTitle(title) ||
+                             link.Contains("kik.gov.tr", StringComparison.OrdinalIgnoreCase) ||
+                             link.Contains("taahhuthaber", StringComparison.OrdinalIgnoreCase) ||
+                             !string.IsNullOrWhiteSpace(ExtractIknFromText(title + " " + desc))))
                         {
                             totalRssItems++;
+                            string mappedRegion = MapIdareAndTitleToDsiRegion(title, title + " " + CleanHtmlToPlainText(desc));
                             AddDiscoveredAnnouncement(new OfficialAnnouncementItem
                             {
                                 Date = FormatRssDate(pubDate),
-                                Source = link.Contains("kik.gov.tr") ? "KİK / EKAP Resmi Kayıt" : "Kamu İhale / DSİ Haber Radarı",
-                                RegionId = MapIdareAndTitleToDsiRegion(title, title),
-                                Title = WebUtility.HtmlDecode(title),
+                                Source = link.Contains("kik.gov.tr", StringComparison.OrdinalIgnoreCase)
+                                    ? "KİK / EKAP Resmi Kayıt"
+                                    : (link.Contains("taahhuthaber", StringComparison.OrdinalIgnoreCase) ? "TaahhütHaber İhale İndeksi" : "Kamu İhale / DSİ Haber Radarı"),
+                                RegionId = mappedRegion,
+                                Title = title,
                                 Url = link,
                                 Category = "KAMU_RADAR"
                             });
@@ -845,7 +861,7 @@ namespace DSIIhaleZekasi
             healthList.Add(new SourceHealthItem
             {
                 SourceName = "Kamu İhale & DSİ Yeni İhale Keşif İndeksi (RSS/Atom)",
-                EndpointUrl = "https://ekap.kik.gov.tr / Kamu İndeks",
+                EndpointUrl = "https://ekap.kik.gov.tr / TaahhütHaber / Kamu İndeks",
                 Status = rssSuccess > 0 ? "AKTİF (HTTPS 200 OK)" : "BEKLEMEDE",
                 HttpCode = rssSuccess > 0 ? 200 : 408,
                 LastChecked = DateTime.Now.ToString("HH:mm:ss"),
@@ -861,26 +877,26 @@ namespace DSIIhaleZekasi
             var dsiTargets = new (string RegionId, string Name, string BaseUrl)[]
             {
                 ("DSI-GM", "DSİ Genel Müdürlüğü (dsi.gov.tr)", "https://dsi.gov.tr"),
-                ("DSI-01", "DSİ 1. Bölge (Bursa/Kocaeli/Yalova/Bilecik)", "https://bolge01.dsi.gov.tr"),
+                ("DSI-01", "DSİ 1. Bölge (Bursa/Kocaeli/Yalova)", "https://bolge01.dsi.gov.tr"),
                 ("DSI-02", "DSİ 2. Bölge (İzmir/Manisa/Uşak)", "https://bolge02.dsi.gov.tr"),
-                ("DSI-03", "DSİ 3. Bölge (Eskişehir/Sakarya/Kütahya)", "https://bolge03.dsi.gov.tr"),
+                ("DSI-03", "DSİ 3. Bölge (Eskişehir/Sakarya/Bilecik/Kütahya)", "https://bolge03.dsi.gov.tr"),
                 ("DSI-04", "DSİ 4. Bölge (Konya/Karaman/Aksaray/Niğde)", "https://bolge04.dsi.gov.tr"),
                 ("DSI-05", "DSİ 5. Bölge (Ankara/Çankırı/Bolu/Düzce)", "https://bolge05.dsi.gov.tr"),
                 ("DSI-06", "DSİ 6. Bölge (Adana/Mersin/Osmaniye/Hatay)", "https://bolge06.dsi.gov.tr"),
-                ("DSI-07", "DSİ 7. Bölge (Samsun/Amasya/Ordu/Sinop)", "https://bolge07.dsi.gov.tr"),
-                ("DSI-08", "DSİ 8. Bölge (Erzurum/Ağrı/Erzincan)", "https://bolge08.dsi.gov.tr"),
+                ("DSI-07", "DSİ 7. Bölge (Samsun/Amasya/Tokat/Sinop/Ordu)", "https://bolge07.dsi.gov.tr"),
+                ("DSI-08", "DSİ 8. Bölge (Erzurum/Ağrı/Erzincan/Bayburt)", "https://bolge08.dsi.gov.tr"),
                 ("DSI-09", "DSİ 9. Bölge (Elazığ/Malatya/Tunceli/Bingöl)", "https://bolge09.dsi.gov.tr"),
-                ("DSI-10", "DSİ 10. Bölge (Diyarbakır/Mardin/Batman/Siirt)", "https://bolge10.dsi.gov.tr"),
+                ("DSI-10", "DSİ 10. Bölge (Diyarbakır/Mardin/Batman/Siirt/Şırnak)", "https://bolge10.dsi.gov.tr"),
                 ("DSI-11", "DSİ 11. Bölge (Edirne/Tekirdağ/Kırklareli)", "https://bolge11.dsi.gov.tr"),
                 ("DSI-12", "DSİ 12. Bölge (Kayseri/Nevşehir/Yozgat/Kırşehir)", "https://bolge12.dsi.gov.tr"),
-                ("DSI-13", "DSİ 13. Bölge (Antalya/Alanya/Isparta Sınırı)", "https://bolge13.dsi.gov.tr"),
+                ("DSI-13", "DSİ 13. Bölge (Antalya/Alanya)", "https://bolge13.dsi.gov.tr"),
                 ("DSI-14", "DSİ 14. Bölge (İstanbul/Melen)", "https://bolge14.dsi.gov.tr"),
                 ("DSI-15", "DSİ 15. Bölge (Şanlıurfa/Viranşehir)", "https://bolge15.dsi.gov.tr"),
-                ("DSI-16", "DSİ 16. Bölge (Adıyaman/Atatürk Barajı)", "https://bolge16.dsi.gov.tr"),
+                ("DSI-16", "DSİ 16. Bölge (Ilısu / Arşiv - 2025 Kararnamesi)", "https://bolge16.dsi.gov.tr"),
                 ("DSI-17", "DSİ 17. Bölge (Van/Bitlis/Hakkari/Muş)", "https://bolge17.dsi.gov.tr"),
                 ("DSI-18", "DSİ 18. Bölge (Isparta/Burdur/Afyonkarahisar)", "https://bolge18.dsi.gov.tr"),
                 ("DSI-19", "DSİ 19. Bölge (Sivas)", "https://bolge19.dsi.gov.tr"),
-                ("DSI-20", "DSİ 20. Bölge (Kahramanmaraş/Gaziantep/Kilis)", "https://bolge20.dsi.gov.tr"),
+                ("DSI-20", "DSİ 20. Bölge (Kahramanmaraş/Gaziantep/Adıyaman/Kilis)", "https://bolge20.dsi.gov.tr"),
                 ("DSI-21", "DSİ 21. Bölge (Aydın/Denizli/Muğla)", "https://bolge21.dsi.gov.tr"),
                 ("DSI-22", "DSİ 22. Bölge (Trabzon/Rize/Giresun/Gümüşhane)", "https://bolge22.dsi.gov.tr"),
                 ("DSI-23", "DSİ 23. Bölge (Kastamonu/Karabük/Bartın/Zonguldak)", "https://bolge23.dsi.gov.tr"),
@@ -889,16 +905,18 @@ namespace DSIIhaleZekasi
                 ("DSI-26", "DSİ 26. Bölge (Artvin/Yusufeli/Çoruh)", "https://bolge26.dsi.gov.tr")
             };
 
-            string[] subPaths = { "", "/Duyuru/DuyuruListe", "/Ihale/IhaleListe", "/Haber/Arsiv" };
+            string[] subPaths = { "", "/Ihale/IhaleListe", "/Ihale/Arsiv", "/Duyuru/DuyuruListe" };
 
             int reachableRegions = 0;
+            int archivedRegions = 0;
             int announcementsFound = 0;
 
-            using var throttler = new SemaphoreSlim(10);
+            using var throttler = new SemaphoreSlim(6);
             var tasks = dsiTargets.Select(async target =>
             {
                 await throttler.WaitAsync();
                 bool regionReachable = false;
+                bool saw404 = false;
                 try
                 {
                     foreach (string subPath in subPaths)
@@ -906,18 +924,24 @@ namespace DSIIhaleZekasi
                         try
                         {
                             string pageUrl = target.BaseUrl.TrimEnd('/') + subPath;
-                            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                             var resp = await _httpClient.GetAsync(pageUrl, cts.Token);
+                            if (resp.StatusCode == HttpStatusCode.NotFound)
+                            {
+                                saw404 = true;
+                                continue;
+                            }
                             if (!resp.IsSuccessStatusCode) continue;
 
                             regionReachable = true;
                             string html = await resp.Content.ReadAsStringAsync(cts.Token);
 
                             var linkMatches = Regex.Matches(html,
-                                @"<a[^>]+href=[""']([^""']*?(?:/Duyuru/Detay/|/Haber/Detay/|/Ihale/Detay/)[^""']*)[""'][^>]*>([\s\S]*?)</a>([\s\S]{0,360})",
+                                @"<a[^>]+href=[""']([^""']*?(?:/Ihale/Detay/|/Duyuru/Detay/|/Haber/Detay/)[^""']*)[""'][^>]*>([\s\S]*?)</a>([\s\S]{0,360})",
                                 RegexOptions.IgnoreCase);
 
-                            foreach (Match m in linkMatches.Take(10))
+                            int pageValidCount = 0;
+                            foreach (Match m in linkMatches.Cast<Match>().Take(40))
                             {
                                 string href = m.Groups[1].Value.Trim();
                                 string innerText = WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(m.Groups[2].Value, "<[^>]+>", " "), @"\s+", " ")).Trim();
@@ -933,7 +957,7 @@ namespace DSIIhaleZekasi
                                     }
                                 }
 
-                                if (rawText.Length < 12) continue;
+                                if (!IsDsiConstructionTitle(rawText)) continue;
 
                                 string fullUrl = href.StartsWith("http", StringComparison.OrdinalIgnoreCase)
                                     ? href
@@ -951,6 +975,9 @@ namespace DSIIhaleZekasi
                                         ? "DSİ BÖLGE İHALE"
                                         : (href.Contains("/Duyuru/", StringComparison.OrdinalIgnoreCase) ? "DSİ RESMİ DUYURU" : "DSİ BÖLGE HABER")
                                 });
+
+                                pageValidCount++;
+                                if (pageValidCount >= 6) break;
                             }
                         }
                         catch
@@ -963,6 +990,12 @@ namespace DSIIhaleZekasi
                     {
                         Interlocked.Increment(ref reachableRegions);
                     }
+                    else if (saw404 || target.RegionId == "DSI-16")
+                    {
+                        Interlocked.Increment(ref archivedRegions);
+                        AddLog("DSİ Bölge Siteleri", "INFO",
+                            $"{target.RegionId} ({target.BaseUrl}) arşiv/kapalı bölge portalı (HTTP 404) olarak işaretlendi.");
+                    }
                 }
                 finally
                 {
@@ -972,11 +1005,17 @@ namespace DSIIhaleZekasi
 
             await Task.WhenAll(tasks);
 
+            string statusSummary = reachableRegions > 0
+                ? (archivedRegions > 0
+                    ? $"AKTİF ({reachableRegions}/27 Aktif, {archivedRegions} Arşiv/Kapalı)"
+                    : $"AKTİF ({reachableRegions}/27 Resmi Bölge Portalı)")
+                : "BEKLEMEDE";
+
             healthList.Add(new SourceHealthItem
             {
                 SourceName = "DSİ Genel Müdürlüğü ve 26 Bölge Müdürlüğü Resmi Web Siteleri (bolge01..26.dsi.gov.tr)",
-                EndpointUrl = "https://dsi.gov.tr & https://bolge01..26.dsi.gov.tr (/DuyuruListe, /IhaleListe, /Haber/Arsiv)",
-                Status = reachableRegions > 0 ? $"AKTİF ({reachableRegions}/27 Resmi Bölge Portalı)" : "BEKLEMEDE",
+                EndpointUrl = "https://dsi.gov.tr & https://bolge01..26.dsi.gov.tr (/Ihale/IhaleListe, /Ihale/Arsiv, /Duyuru/DuyuruListe)",
+                Status = statusSummary,
                 HttpCode = reachableRegions > 0 ? 200 : 408,
                 LastChecked = DateTime.Now.ToString("HH:mm:ss"),
                 ItemsFound = announcementsFound
@@ -990,96 +1029,229 @@ namespace DSIIhaleZekasi
             List<SourceHealthItem> healthList,
             List<ParsedOfficialTender> parsedRecords)
         {
-            List<OfficialAnnouncementItem> constructionProjects;
+            var priorityRegions = new[] { "DSI-01", "DSI-02", "DSI-13", "DSI-14", "DSI-23", "DSI-26" };
+            var searchTargets = new List<(string RegionId, string Title, string Source, string Url, bool IsRegionSweep)>();
+            var coveredRegions = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
             lock (_discoveredAnnouncements)
             {
-                constructionProjects = _discoveredAnnouncements
+                // Önce öncelikli bölgelerden, sonra diğer bölgelerden her bölgeden en fazla 1 yapım projesi seç
+                var ordered = _discoveredAnnouncements
                     .Where(a => !_searchedDsiProjectUrls.Contains(a.Url) && IsDsiConstructionTitle(a.Title))
-                    .Take(5)
+                    .OrderByDescending(a => Array.IndexOf(priorityRegions, a.RegionId) >= 0 ? 1 : 0)
                     .ToList();
+
+                foreach (var proj in ordered)
+                {
+                    if (coveredRegions.Add(proj.RegionId))
+                    {
+                        searchTargets.Add((proj.RegionId, proj.Title, proj.Source, proj.Url, false));
+                        if (searchTargets.Count >= 4) break;
+                    }
+                }
             }
+
+            // Eksik/öncelikli bölgeler + 26 bölge arasında round-robin bölge taraması ekle
+            var all26Regions = Enumerable.Range(1, 26).Select(i => $"DSI-{i:D2}").ToArray();
+            foreach (string pri in priorityRegions)
+            {
+                if (searchTargets.Count >= 7) break;
+                if (!coveredRegions.Contains(pri))
+                {
+                    string city = GuessCityFromRegionOrTitle(pri, "");
+                    int regNum = int.Parse(pri.Substring(4), CultureInfo.InvariantCulture);
+                    searchTargets.Add((pri, $"DSİ {regNum}. Bölge {city} baraj gölet sulama yapım ihalesi", $"DSİ {regNum}. Bölge ({city})", $"https://bolge{regNum:D2}.dsi.gov.tr/Ihale/IhaleListe", true));
+                    coveredRegions.Add(pri);
+                }
+            }
+
+            for (int step = 0; step < 26 && searchTargets.Count < 8; step++)
+            {
+                int idx = (_regionSearchCursor + step) % all26Regions.Length;
+                string regId = all26Regions[idx];
+                if (coveredRegions.Add(regId))
+                {
+                    string city = GuessCityFromRegionOrTitle(regId, "");
+                    int regNum = idx + 1;
+                    searchTargets.Add((regId, $"DSİ {regNum}. Bölge {city} yapım ihalesi", $"DSİ {regNum}. Bölge ({city})", $"https://bolge{regNum:D2}.dsi.gov.tr/Ihale/IhaleListe", true));
+                }
+            }
+            _regionSearchCursor = (_regionSearchCursor + 3) % 26;
 
             int queriedCount = 0;
             int contractorMatches = 0;
+            var fetchedPageCache = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            foreach (var proj in constructionProjects)
+            foreach (var target in searchTargets)
             {
-                _searchedDsiProjectUrls.Add(proj.Url);
+                if (!target.IsRegionSweep)
+                {
+                    _searchedDsiProjectUrls.Add(target.Url);
+                }
                 queriedCount++;
 
-                string shortTitle = string.Join(" ", proj.Title.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(7));
-                string encodedQuery = Uri.EscapeDataString($"\"{shortTitle}\" (\"yüklenici\" OR \"müteahhit\" OR \"sözleşme\" OR \"İKN\")");
-                string[] searchFeeds =
-                {
-                    $"https://www.bing.com/search?q={encodedQuery}&format=rss",
-                    $"https://news.google.com/rss/search?q={encodedQuery}&hl=tr&gl=TR&ceid=TR:tr"
-                };
+                string city = GuessCityFromRegionOrTitle(target.RegionId, target.Title);
+                string shortKeywords = BuildShortProjectKeywords(target.Title);
+                string regNumText = target.RegionId.StartsWith("DSI-", StringComparison.OrdinalIgnoreCase) && int.TryParse(target.RegionId.Substring(4), out int rn)
+                    ? $"DSİ {rn}. Bölge"
+                    : "DSİ";
 
+                string[] rawQueries = target.IsRegionSweep
+                    ? new[]
+                    {
+                        $"{regNumText} {city} ihale (ekap OR taahhuthaber OR yüklenici OR sözleşme)",
+                        $"DSİ {city} baraj OR gölet OR sulama OR taşkın ihale"
+                    }
+                    : new[]
+                    {
+                        $"{shortKeywords} {city} DSİ ihale (ekap OR taahhuthaber OR sözleşme)",
+                        $"{shortKeywords} {city} ihale"
+                    };
+
+                var searchFeeds = new List<string>();
+                foreach (string q in rawQueries)
+                {
+                    string eq = Uri.EscapeDataString(q);
+                    searchFeeds.Add($"https://www.bing.com/search?q={eq}&format=rss");
+                    searchFeeds.Add($"https://news.google.com/rss/search?q={eq}&hl=tr&gl=TR&ceid=TR:tr");
+                }
+
+                bool matchedTarget = false;
                 foreach (string feedUrl in searchFeeds)
                 {
+                    if (matchedTarget) break;
+
                     try
                     {
-                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
                         var resp = await _httpClient.GetAsync(feedUrl, cts.Token);
                         if (!resp.IsSuccessStatusCode) continue;
 
                         string xmlText = await resp.Content.ReadAsStringAsync(cts.Token);
-                        if (!xmlText.Contains("<rss", StringComparison.OrdinalIgnoreCase) &&
-                            !xmlText.Contains("<item", StringComparison.OrdinalIgnoreCase))
+                        if (!xmlText.Contains("<item", StringComparison.OrdinalIgnoreCase))
                             continue;
 
                         var doc = XDocument.Parse(xmlText);
-                        foreach (var item in doc.Descendants("item").Take(5))
+                        int pageFetchBudget = 2;
+
+                        foreach (var item in doc.Descendants("item").Take(8))
                         {
-                            string itemTitle = WebUtility.HtmlDecode(item.Element("title")?.Value ?? "");
+                            string itemTitle = WebUtility.HtmlDecode(item.Element("title")?.Value ?? "").Trim();
                             string itemDesc = WebUtility.HtmlDecode(item.Element("description")?.Value ?? "");
-                            string itemLink = item.Element("link")?.Value ?? "";
+                            string itemLink = item.Element("link")?.Value?.Trim() ?? "";
                             string combinedSnippet = itemTitle + " " + CleanHtmlToPlainText(itemDesc);
 
-                            // Eğer arama sonucunda doğrudan EKAP Kurul Kararı / Bir Bakışta İhale linki çıkarsa izlenen havuza ekle
-                            if (itemLink.Contains("ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx", StringComparison.OrdinalIgnoreCase) ||
-                                itemLink.Contains("ekap.kik.gov.tr/EKAP/Ortak/BirBakistaIhale.aspx", StringComparison.OrdinalIgnoreCase))
+                            // Doğrudan EKAP Kurul Kararı / Bir Bakışta İhale linki çıkarsa havuza al ve hemen ayrıştırmayı dene
+                            if (TryRegisterEkapLink(itemLink))
                             {
-                                lock (_monitoredEkapUrls)
+                                AddLog("DSİ Web + İnternet Keşfi", "INFO", $"Arama motorundan yeni EKAP bağlantısı bulundu: {itemLink}");
+                            }
+
+                            if (IsDirectEkapDetailUrl(itemLink) && fetchedPageCache.Add(itemLink))
+                            {
+                                string ekapHtml = await TryFetchRawPageAsync(itemLink, 10);
+                                if (!string.IsNullOrWhiteSpace(ekapHtml))
                                 {
-                                    _monitoredEkapUrls.Add(itemLink);
+                                    ParsedOfficialTender? ekapParsed = itemLink.Contains("KurulKararGoster.aspx", StringComparison.OrdinalIgnoreCase)
+                                        ? ParseKikKurulKararHtml(ekapHtml, itemLink)
+                                        : ParseEkapBirBakistaIhaleHtml(ekapHtml, itemLink);
+
+                                    if (ekapParsed != null && !string.IsNullOrWhiteSpace(ekapParsed.Ikn))
+                                    {
+                                        lock (parsedRecords)
+                                        {
+                                            if (!parsedRecords.Any(r => r.Ikn.Equals(ekapParsed.Ikn, StringComparison.OrdinalIgnoreCase)))
+                                            {
+                                                parsedRecords.Add(ekapParsed);
+                                                contractorMatches++;
+                                                matchedTarget = true;
+                                            }
+                                        }
+                                        if (matchedTarget) break;
+                                    }
                                 }
                             }
 
-                            string foundIkn = ExtractRegexGroup(combinedSnippet, @"(20[12][0-9]\/[0-9]{5,8})");
-                            string foundContractor = ExtractContractorFromSearchSnippet(combinedSnippet);
+                            string foundIkn = ExtractIknFromText(combinedSnippet);
+                            string foundContractor = ExtractContractorFlexible(combinedSnippet);
+                            double approxCost = 0;
+                            double contractPrice = 0;
+
+                            // RSS özeti eksik kaldıysa ve link açık bir sayfa ise (Google News şifreli yönlendirmesi değilse) hedef sayfayı oku
+                            bool hasDsiSignal = combinedSnippet.Contains("DSİ", StringComparison.OrdinalIgnoreCase) ||
+                                                combinedSnippet.Contains("Devlet Su", StringComparison.OrdinalIgnoreCase) ||
+                                                combinedSnippet.Contains(city, StringComparison.OrdinalIgnoreCase) ||
+                                                IsDsiConstructionTitle(itemTitle);
+
+                            if ((string.IsNullOrWhiteSpace(foundIkn) || string.IsNullOrWhiteSpace(foundContractor)) &&
+                                pageFetchBudget > 0 &&
+                                hasDsiSignal &&
+                                CanFetchTargetPageUrl(itemLink) &&
+                                fetchedPageCache.Add(itemLink))
+                            {
+                                pageFetchBudget--;
+                                string pageHtml = await TryFetchRawPageAsync(itemLink, 9);
+                                if (!string.IsNullOrWhiteSpace(pageHtml))
+                                {
+                                    foreach (Match em in Regex.Matches(pageHtml, @"https?://ekap\.kik\.gov\.tr/EKAP/(?:Vatandas/KurulKararGoster|Ortak/BirBakistaIhale)\.aspx\?[^\s""'<>]+", RegexOptions.IgnoreCase))
+                                    {
+                                        TryRegisterEkapLink(WebUtility.HtmlDecode(em.Value));
+                                    }
+
+                                    string pageText = CleanHtmlToPlainText(pageHtml);
+                                    if (string.IsNullOrWhiteSpace(foundIkn))
+                                        foundIkn = ExtractIknFromText(pageText);
+                                    if (string.IsNullOrWhiteSpace(foundContractor))
+                                        foundContractor = ExtractContractorFlexible(pageText);
+
+                                    approxCost = ExtractTurkishCurrencyNearKeyword(pageText, new[]
+                                    {
+                                        @"Yaklaşık\s*Maliyet\s*[:\-]?\s*([0-9]{1,3}(?:\.[0-9]{3})+(?:,[0-9]{1,2})?)\s*(?:TL|TRY)",
+                                        @"([0-9]{1,3}(?:\.[0-9]{3})+(?:,[0-9]{1,2})?)\s*(?:TL|TRY)\s*yaklaşık\s*maliyet"
+                                    });
+                                    contractPrice = ExtractTurkishCurrencyNearKeyword(pageText, new[]
+                                    {
+                                        @"Sözleşme\s*(?:Bedeli|Tutarı)\s*[:\-]?\s*([0-9]{1,3}(?:\.[0-9]{3})+(?:,[0-9]{1,2})?)\s*(?:TL|TRY)",
+                                        @"([0-9]{1,3}(?:\.[0-9]{3})+(?:,[0-9]{1,2})?)\s*(?:TL|TRY)\s*(?:bedelle|sözleşme)"
+                                    });
+                                }
+                            }
+
                             if (!string.IsNullOrWhiteSpace(foundIkn) && !string.IsNullOrWhiteSpace(foundContractor))
                             {
-                                string regionId = proj.RegionId != "DSI-GM"
-                                    ? proj.RegionId
-                                    : MapIdareAndTitleToDsiRegion(proj.Source, proj.Title);
+                                string regionId = target.RegionId != "DSI-GM"
+                                    ? target.RegionId
+                                    : MapIdareAndTitleToDsiRegion(target.Source, itemTitle + " " + target.Title);
 
-                                string authorityName = proj.Source;
+                                string resolvedTitle = !string.IsNullOrWhiteSpace(itemTitle) && itemTitle.Length >= 15
+                                    ? itemTitle
+                                    : target.Title;
+
                                 var newRec = new ParsedOfficialTender
                                 {
                                     Ikn = foundIkn,
                                     KikDecisionNo = "DSİ-WEB-İKN",
                                     DecisionDate = DateTime.Now.ToString("dd.MM.yyyy"),
-                                    Title = proj.Title,
-                                    AuthorityName = authorityName,
+                                    Title = resolvedTitle,
+                                    AuthorityName = target.Source,
                                     RegionId = regionId,
-                                    WorkGroup = DetermineDsiWorkGroup(proj.Title),
+                                    WorkGroup = DetermineDsiWorkGroup(resolvedTitle),
                                     DateIso = DateTime.Now.ToString("yyyy-MM-dd"),
-                                    ApproxCost = 0,
-                                    NCoeff = 1.00,
-                                    BoundaryValue = 0,
+                                    ApproxCost = approxCost,
+                                    NCoeff = 1.20,
+                                    BoundaryValue = contractPrice > 0 ? Math.Round(contractPrice * 0.985, 2) : 0,
                                     OfficialSourceType = "DSI_WEB_SEARCH",
-                                    OfficialSourceUrl = proj.Url,
-                                    DsiSourceUrl = proj.Url,
-                                    DsiProjectTitle = proj.Title,
+                                    OfficialSourceUrl = string.IsNullOrWhiteSpace(itemLink) ? target.Url : itemLink,
+                                    DsiSourceUrl = target.Url,
+                                    DsiProjectTitle = resolvedTitle,
                                     WebSearchSource = string.IsNullOrWhiteSpace(itemLink) ? feedUrl : itemLink,
-                                    VerificationSource = $"DSİ Bölge Sayfası ({proj.Url}) + İnternet Taraması (İKN: {foundIkn})",
+                                    VerificationSource = $"DSİ Web + İndeks Taraması ({(string.IsNullOrWhiteSpace(itemLink) ? target.Url : itemLink)} — İKN: {foundIkn})",
                                     Bids = new List<ParsedBidItem>
                                     {
                                         new ParsedBidItem
                                         {
                                             CompanyName = foundContractor,
-                                            Amount = 0,
+                                            Amount = contractPrice,
                                             IsWinner = true
                                         }
                                     }
@@ -1087,19 +1259,24 @@ namespace DSIIhaleZekasi
 
                                 lock (parsedRecords)
                                 {
-                                    parsedRecords.Add(newRec);
+                                    if (!parsedRecords.Any(r => r.Ikn.Equals(foundIkn, StringComparison.OrdinalIgnoreCase) &&
+                                                                r.Bids.Any(b => b.CompanyName.Equals(foundContractor, StringComparison.OrdinalIgnoreCase))))
+                                    {
+                                        parsedRecords.Add(newRec);
+                                        contractorMatches++;
+                                        matchedTarget = true;
+                                        AddLog("DSİ Web + İnternet Keşfi", "SUCCESS",
+                                            $"DSİ bölge/proje taramasıyla yüklenici doğrulandı: {foundContractor} ({regionId}, İKN: {foundIkn})",
+                                            foundIkn);
+                                    }
                                 }
-                                contractorMatches++;
-                                AddLog("DSİ Web + İnternet Keşfi", "SUCCESS",
-                                    $"DSİ bölge projesinden internet aramasıyla yüklenici doğrulandı: {foundContractor} (İKN: {foundIkn})",
-                                    foundIkn);
-                                break;
+                                if (matchedTarget) break;
                             }
                         }
                     }
                     catch
                     {
-                        // Arama motoru geçici kısıtı/zaman aşımı durumunda sonraki projeye geç
+                        // Arama motoru geçici kısıtı/zaman aşımı durumunda sonraki sorguya geç
                     }
                 }
             }
@@ -1107,45 +1284,154 @@ namespace DSIIhaleZekasi
             healthList.Add(new SourceHealthItem
             {
                 SourceName = "DSİ Bölge Sayfaları + İnternet Yüklenici Arama Motoru",
-                EndpointUrl = "bolge*.dsi.gov.tr → Kamu İhale / Web İndeksi",
-                Status = queriedCount > 0 ? $"AKTİF ({queriedCount} Proje Tarandı)" : "HAZIR (Bekleyen Yeni Duyuru Yok)",
+                EndpointUrl = "bolge*.dsi.gov.tr → EKAP / TaahhütHaber / Web İndeksi",
+                Status = queriedCount > 0 ? $"AKTİF ({queriedCount} Proje/Bölge Tarandı)" : "HAZIR (Bekleyen Yeni Duyuru Yok)",
                 HttpCode = 200,
                 LastChecked = DateTime.Now.ToString("HH:mm:ss"),
                 ItemsFound = contractorMatches
             });
         }
 
+        private bool TryRegisterEkapLink(string url)
+        {
+            if (!IsDirectEkapDetailUrl(url)) return false;
+            lock (_monitoredEkapUrls)
+            {
+                return _monitoredEkapUrls.Add(url);
+            }
+        }
+
+        private static bool IsDirectEkapDetailUrl(string url)
+        {
+            return !string.IsNullOrWhiteSpace(url) &&
+                   (url.Contains("ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx", StringComparison.OrdinalIgnoreCase) ||
+                    url.Contains("ekap.kik.gov.tr/EKAP/Ortak/BirBakistaIhale.aspx", StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool CanFetchTargetPageUrl(string url)
+        {
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)) return false;
+            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) return false;
+            if (uri.Host.Contains("news.google.com", StringComparison.OrdinalIgnoreCase)) return false;
+            return true;
+        }
+
+        private async Task<string> TryFetchRawPageAsync(string url, int timeoutSeconds)
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+                var resp = await _httpClient.GetAsync(url, cts.Token);
+                if (!resp.IsSuccessStatusCode) return "";
+                string html = await resp.Content.ReadAsStringAsync(cts.Token);
+                return html.Length > 300 ? html : "";
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+        private static string BuildShortProjectKeywords(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title)) return "DSİ yapım";
+            var stopWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "DSİ", "İHALESİ", "İHALE", "İLANI", "İLAN", "DUYURU", "DUYURUSU", "YAPILDI",
+                "BAŞLADI", "TAMAMLANDI", "YAPILACAKTIR", "İLE", "VE", "VEYA", "HK", "HAKKINDA",
+                "BÖLGE", "MÜDÜRLÜĞÜ", "YAPIM", "İŞİ", "İŞLERİ", "İNŞAATI"
+            };
+            string cleaned = Regex.Replace(title, @"[^\p{L}\p{N}\s]", " ");
+            var words = cleaned
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Where(w => w.Length >= 3 && !stopWords.Contains(w) && !Regex.IsMatch(w, @"^\d{2,4}$"))
+                .Take(4)
+                .ToArray();
+
+            return words.Length > 0 ? string.Join(" ", words) : "DSİ baraj sulama";
+        }
+
+        private static string ExtractIknFromText(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text)) return "";
+            var labeled = Regex.Match(text, @"(?:İKN|İhale\s*Kayıt\s*(?:No|Numarası))\s*[:\-]?\s*(20[12][0-9]\/[0-9]{4,8})", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (labeled.Success) return labeled.Groups[1].Value.Trim();
+
+            var general = Regex.Match(text, @"\b(20[12][0-9]\/[0-9]{4,8})\b", RegexOptions.CultureInvariant);
+            return general.Success ? general.Groups[1].Value.Trim() : "";
+        }
+
+        private static bool IsNonConstructionNoiseTitle(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title)) return true;
+            string u = title.ToUpper(TrCulture);
+            string[] noiseKeywords =
+            {
+                "İŞÇİ ALIMI", "SÜREKLİ İŞÇİ", "ENGELLİ", "ESKİ HÜKÜMLÜ",
+                "STAJ", "STAJYER",
+                "TAŞINMAZ", "SATIŞ", "SATILMA", "İRTİFAK", "ECRİMİSİL",
+                "KİRALAMA", "KİRAYA",
+                "ZİYARET", "HAYIRLI OLSUN", "BAŞSAĞLIĞI", "TEBRİK", "KUTLAMA", "ANMA",
+                "SEMİNER", "SEMPOZYUM", "KONFERANS", "ÇALIŞTAY", "FUAR",
+                "SINAV", "MÜLAKAT",
+                "NOTER", "KURA",
+                "PERSONEL", "MEMUR", "KPSS", "NAKİL", "GÖREVDE YÜKSELME", "YER DEĞİŞİKLİĞİ",
+                "ATAMA", "GÖREVLENDİRME",
+                "SULAMA BİRLİKLERİ BAŞKAN", "SULAMA BİRLİĞİ BAŞKAN",
+                "MÜHENDİSLİK HARİKASI", "DUYURU METNİ",
+                "YEDEK PARÇA", "AKARYAKIT", "KIRTASİYE", "TEMİZLİK HİZMET", "GÜVENLİK HİZMET", "YEMEK HİZMET", "SERVİS HİZMET", "HURDA"
+            };
+            return noiseKeywords.Any(k => u.Contains(k, StringComparison.Ordinal));
+        }
+
         private static bool IsDsiConstructionTitle(string title)
         {
             if (string.IsNullOrWhiteSpace(title) || title.Length < 15) return false;
-            string u = title.ToUpper(new CultureInfo("tr-TR"));
+            if (IsNonConstructionNoiseTitle(title)) return false;
+
+            string u = title.ToUpper(TrCulture);
             return u.Contains("BARAJ") || u.Contains("GÖLET") || u.Contains("SULAMA") ||
                    u.Contains("TAŞKIN") || u.Contains("İSALE") || u.Contains("İÇMESUYU") ||
                    u.Contains("İKMAL") || u.Contains("YAPIM") || u.Contains("İNŞAAT") ||
-                   u.Contains("ISLAH") || u.Contains("REGÜLATÖR");
+                   u.Contains("ISLAH") || u.Contains("REGÜLATÖR") || u.Contains("DERE") ||
+                   u.Contains("POMPAJ") || u.Contains("DRENAJ") || u.Contains("TOPLULAŞTIRMA") ||
+                   u.Contains("TİGH") || u.Contains("DERİVASYON") || u.Contains("ARITMA");
         }
 
-        private static string ExtractContractorFromSearchSnippet(string text)
+        private static string ExtractContractorFlexible(string text)
         {
             if (string.IsNullOrWhiteSpace(text)) return "";
-            var m = Regex.Match(
-                text,
-                @"(?:Yüklenici|Müteahhit|Firma|Üzerinde\s+Bırakılan)\s*[:\-]\s*([A-ZÇĞİÖŞÜ0-9][A-Za-zÇĞİÖŞÜçğıöşü0-9\s\.\-&/]{8,88}?(?:A\.?\s*Ş\.?|Ltd\.?\s*Şti\.?|İş\s*Ortaklığı))",
-                RegexOptions.IgnoreCase);
-            if (!m.Success) return "";
 
-            string candidate = CleanCompanyName(m.Groups[1].Value);
-            return IsValidDsiWebCompanyName(candidate) ? candidate : "";
+            string[] patterns =
+            {
+                @"(?:Yüklenici|Müteahhit|Firma|İstekli|Üzerinde\s+Bırakılan|İhaleyi\s+Kazanan|Kazanan\s+Firma|Sözleşme\s+İmzalanan)\s*[:\-]\s*([A-ZÇĞİÖŞÜ0-9][A-Za-zÇĞİÖŞÜçğıöşü0-9\s\.\-&/\+]{6,90}?(?:A\.?\s*Ş\.?|Ltd\.?\s*Şti\.?|İş\s*Ortaklığı))",
+                @"([A-ZÇĞİÖŞÜ0-9][A-Za-zÇĞİÖŞÜçğıöşü0-9\s\.\-&/\+]{6,85}?(?:A\.?\s*Ş\.?|Ltd\.?\s*Şti\.?|İş\s*Ortaklığı))\s+(?:kazandı|üstlendi|imzaladı|üzerinde\s+kaldı|üzerinde\s+bırakıldı|uhdesinde|ile\s+sözleşme)",
+                @"([A-ZÇĞİÖŞÜ][A-Za-zÇĞİÖŞÜçğıöşü0-9\.\-&/\s]{6,85}?(?:İnşaat|Taahhüt|Yapı|Mühendislik|Müşavirlik|Sanayi|Ticaret)[A-Za-zÇĞİÖŞÜçğıöşü0-9\.\-&/\s]{0,45}?(?:A\.?\s*Ş\.?|Ltd\.?\s*Şti\.?|İş\s*Ortaklığı))"
+            };
+
+            foreach (string pat in patterns)
+            {
+                var matches = Regex.Matches(text, pat, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                foreach (Match m in matches)
+                {
+                    string candidate = CleanCompanyName(m.Groups[1].Value);
+                    if (IsValidDsiWebCompanyName(candidate))
+                        return candidate;
+                }
+            }
+            return "";
         }
 
         private static bool IsValidDsiWebCompanyName(string name)
         {
             if (!IsValidExtractedCompanyName(name)) return false;
             if (name.Length < 10 || name.Length > 95) return false;
-            string u = name.ToUpper(new CultureInfo("tr-TR"));
-            if (!u.Contains("A.Ş") && !u.Contains("LTD") && !u.Contains("ŞTİ") && !u.Contains("İŞ ORTAKLIĞI"))
+            string u = name.ToUpper(TrCulture);
+            if (!u.Contains("A.Ş") && !u.Contains("A. Ş") && !u.Contains("LTD") && !u.Contains("ŞTİ") && !u.Contains("İŞ ORTAKLIĞI"))
                 return false;
-            if (u.Contains("TAMAMLANDI") || u.Contains("BAŞLADI") || u.Contains("İMZALANDI") || u.Contains("YAPILACAKTIR"))
+            if (u.Contains("DEVLET SU") || u.Contains("KAMU İHALE") || u.Contains("ANADOLU AJANSI") || u.Contains("İHLAS HABER"))
+                return false;
+            if (u.Contains("TAMAMLANDI") || u.Contains("BAŞLADI") || u.Contains("İMZALANDI") || u.Contains("YAPILACAKTIR") || u.Contains("DUYURULDU"))
                 return false;
             return true;
         }
@@ -1290,7 +1576,7 @@ namespace DSIIhaleZekasi
                 if (newTendersCount > 0 || newCompetitorsCount > 0 || updatedTendersCount > 0)
                 {
                     var meta = root["metadata"]?.AsObject() ?? new JsonObject();
-                    meta["version"] = "2.4.0";
+                    meta["version"] = "2.5.0";
                     meta["officialSourcesOnly"] = true;
                     meta["officialCompetitorCount"] = competitorsArr.Count;
                     meta["officialTenderCount"] = tendersArr.Count;
@@ -1446,10 +1732,18 @@ namespace DSIIhaleZekasi
 
         private static void EnsureCompetitorHasRegion(JsonObject comp, ParsedOfficialTender tender, double bidAmount, bool isWinner)
         {
+            var (subeId, subeName) = MapIdareAndTitleToDsiBranch(tender.AuthorityName, tender.Title, tender.RegionId);
+
             var primaryRegions = comp["primaryRegions"]?.AsArray();
             if (primaryRegions != null && !primaryRegions.Any(r => string.Equals(r?.GetValue<string>(), tender.RegionId, StringComparison.OrdinalIgnoreCase)))
             {
                 primaryRegions.Add(tender.RegionId);
+            }
+
+            var primaryBranches = comp["primaryBranches"]?.AsArray();
+            if (primaryBranches != null && !primaryBranches.Any(b => string.Equals(b?.GetValue<string>(), subeId, StringComparison.OrdinalIgnoreCase)))
+            {
+                primaryBranches.Add(subeId);
             }
 
             var breakdown = comp["regionalBreakdown"]?.AsArray();
@@ -1462,13 +1756,15 @@ namespace DSIIhaleZekasi
             bool hasRegion = breakdown.Any(b => string.Equals(b?["regionId"]?.GetValue<string>(), tender.RegionId, StringComparison.OrdinalIgnoreCase));
             if (!hasRegion)
             {
-                double discPct = tender.ApproxCost > 0
+                double discPct = tender.ApproxCost > 0 && bidAmount > 0
                     ? Math.Round(((tender.ApproxCost - bidAmount) / tender.ApproxCost) * 100.0, 2)
                     : 25.0;
 
                 breakdown.Add(new JsonObject
                 {
                     ["regionId"] = tender.RegionId,
+                    ["subeId"] = subeId,
+                    ["subeName"] = subeName,
                     ["role"] = isWinner ? "Bölge Yüklenicisi" : "Bölge İsteklisi",
                     ["tenderCount"] = 1,
                     ["winCount"] = isWinner ? 1 : 0,
@@ -1542,9 +1838,133 @@ namespace DSIIhaleZekasi
             return DateTime.Now.ToString("yyyy-MM-dd");
         }
 
+        private sealed record DsiBranchDef(
+            string SubeId,
+            string RegionId,
+            string Code,
+            string SubeName,
+            string[] Keywords);
+
+        // kik-engine.js DSI_BRANCHES tablosu ile birebir uyumlu resmi DSİ şube listesi
+        private static readonly DsiBranchDef[] RealDsiBranches =
+        {
+            // DSİ 1. Bölge (Bursa)
+            new("DSI-01-11", "DSI-01", "11. Şube", "DSİ 11. Şube Müdürlüğü (Bursa)", new[] { "BURSA", "DEMİRTAŞ", "KARACABEY", "İNEGÖL", "KELES", "GÖLECİK", "KARADERE", "BEDRE", "HOCAKÖY" }),
+            new("DSI-01-12", "DSI-01", "12. Şube", "DSİ 12. Şube Müdürlüğü (Yalova)", new[] { "YALOVA" }),
+            new("DSI-01-15", "DSI-01", "15. Şube", "DSİ 15. Şube Müdürlüğü (Kocaeli)", new[] { "KOCAELİ", "KANDIRA", "ARIKLAR" }),
+            // DSİ 2. Bölge (İzmir)
+            new("DSI-02-21", "DSI-02", "21. Şube", "DSİ 21. Şube Müdürlüğü (İzmir)", new[] { "İZMİR", "BERGAMA", "KINIK", "DİKİLİ", "BÖLÜMÇAM" }),
+            new("DSI-02-22", "DSI-02", "22. Şube", "DSİ 22. Şube Müdürlüğü (Manisa)", new[] { "MANİSA", "AKHİSAR", "GÜRDÜK" }),
+            new("DSI-02-23", "DSI-02", "23. Şube", "DSİ 23. Şube Müdürlüğü (Uşak)", new[] { "UŞAK", "BANAZ", "BALTALI", "BAYBUYAN", "KÜÇÜKLER" }),
+            // DSİ 3. Bölge (Eskişehir)
+            new("DSI-03-31", "DSI-03", "31. Şube", "DSİ 31. Şube Müdürlüğü (Eskişehir)", new[] { "ESKİŞEHİR" }),
+            new("DSI-03-32", "DSI-03", "32. Şube", "DSİ 32. Şube Müdürlüğü (Sakarya)", new[] { "SAKARYA", "ARİFİYE", "BALLIKAYA" }),
+            new("DSI-03-33", "DSI-03", "33. Şube", "DSİ 33. Şube Müdürlüğü (Bilecik)", new[] { "BİLECİK" }),
+            new("DSI-03-34", "DSI-03", "34. Şube", "DSİ 34. Şube Müdürlüğü (Kütahya)", new[] { "KÜTAHYA", "EMET", "SİMAV", "KIZILCIK", "GÜNLÜCE" }),
+            // DSİ 4. Bölge (Konya)
+            new("DSI-04-41", "DSI-04", "41. Şube", "DSİ 41. Şube Müdürlüğü (Konya)", new[] { "KONYA" }),
+            new("DSI-04-42", "DSI-04", "42. Şube", "DSİ 42. Şube Müdürlüğü (Karaman)", new[] { "KARAMAN" }),
+            new("DSI-04-43", "DSI-04", "43. Şube", "DSİ 43. Şube Müdürlüğü (Aksaray)", new[] { "AKSARAY", "ULUIRMAK", "MAMASIN" }),
+            new("DSI-04-44", "DSI-04", "44. Şube", "DSİ 44. Şube Müdürlüğü (Niğde)", new[] { "NİĞDE" }),
+            // DSİ 5. Bölge (Ankara)
+            new("DSI-05-51", "DSI-05", "51. Şube", "DSİ 51. Şube Müdürlüğü (Ankara)", new[] { "ANKARA" }),
+            new("DSI-05-52", "DSI-05", "52. Şube", "DSİ 52. Şube Müdürlüğü (Çankırı)", new[] { "ÇANKIRI", "KIZLARYOLU", "KOYUNBABA", "ŞABANÖZÜ" }),
+            new("DSI-05-53", "DSI-05", "53. Şube", "DSİ 53. Şube Müdürlüğü (Bolu)", new[] { "BOLU" }),
+            new("DSI-05-55", "DSI-05", "55. Şube", "DSİ 55. Şube Müdürlüğü (Düzce)", new[] { "DÜZCE", "EFTENİ" }),
+            new("DSI-05-56", "DSI-05", "56. Şube", "DSİ 56. Şube Müdürlüğü (Kırıkkale)", new[] { "KIRIKKALE" }),
+            // DSİ 6. Bölge (Adana)
+            new("DSI-06-61", "DSI-06", "61. Şube", "DSİ 61. Şube Müdürlüğü (Adana)", new[] { "ADANA" }),
+            new("DSI-06-62", "DSI-06", "62. Şube", "DSİ 62. Şube Müdürlüğü (Mersin)", new[] { "MERSİN", "TARSUS", "KARAEVLİ", "SORGUN" }),
+            new("DSI-06-63", "DSI-06", "63. Şube", "DSİ 63. Şube Müdürlüğü (Hatay)", new[] { "HATAY", "TAHTAKÖPRÜ" }),
+            new("DSI-06-64", "DSI-06", "64. Şube", "DSİ 64. Şube Müdürlüğü (Osmaniye)", new[] { "OSMANİYE", "KARAÇAY", "SAVRUN", "KADİRLİ" }),
+            // DSİ 7. Bölge (Samsun)
+            new("DSI-07-71", "DSI-07", "71. Şube", "DSİ 71. Şube Müdürlüğü (Samsun)", new[] { "SAMSUN", "BAFRA", "TEKKEKÖY", "19 MAYIS", "ENGİZ" }),
+            new("DSI-07-72", "DSI-07", "72. Şube", "DSİ 72. Şube Müdürlüğü (Amasya)", new[] { "AMASYA" }),
+            new("DSI-07-73", "DSI-07", "73. Şube", "DSİ 73. Şube Müdürlüğü (Tokat)", new[] { "TOKAT" }),
+            new("DSI-07-74", "DSI-07", "74. Şube", "DSİ 74. Şube Müdürlüğü (Sinop)", new[] { "SİNOP" }),
+            new("DSI-07-75", "DSI-07", "75. Şube", "DSİ 75. Şube Müdürlüğü (Ordu)", new[] { "ORDU", "FATSA", "ILICA DERESİ" }),
+            // DSİ 8. Bölge (Erzurum)
+            new("DSI-08-81", "DSI-08", "81. Şube", "DSİ 81. Şube Müdürlüğü (Erzurum)", new[] { "ERZURUM", "PASİNLER", "AZİZİYE", "KÖPRÜKÖY", "PULUR" }),
+            new("DSI-08-82", "DSI-08", "82. Şube", "DSİ 82. Şube Müdürlüğü (Erzincan)", new[] { "ERZİNCAN" }),
+            new("DSI-08-83", "DSI-08", "83. Şube", "DSİ 83. Şube Müdürlüğü (Bayburt)", new[] { "BAYBURT" }),
+            new("DSI-08-85", "DSI-08", "85. Şube", "DSİ 85. Şube Müdürlüğü (Ağrı)", new[] { "AĞRI" }),
+            // DSİ 9. Bölge (Elazığ)
+            new("DSI-09-91", "DSI-09", "91. Şube", "DSİ 91. Şube Müdürlüğü (Elazığ)", new[] { "ELAZIĞ", "ULUOVA", "BASKİL" }),
+            new("DSI-09-92", "DSI-09", "92. Şube", "DSİ 92. Şube Müdürlüğü (Malatya)", new[] { "MALATYA" }),
+            new("DSI-09-93", "DSI-09", "93. Şube", "DSİ 93. Şube Müdürlüğü (Tunceli)", new[] { "TUNCELİ", "PERTEK" }),
+            new("DSI-09-94", "DSI-09", "94. Şube", "DSİ 94. Şube Müdürlüğü (Bingöl)", new[] { "BİNGÖL" }),
+            // DSİ 10. Bölge (Diyarbakır)
+            new("DSI-10-101", "DSI-10", "101. Şube", "DSİ 101. Şube Müdürlüğü (Diyarbakır)", new[] { "DİYARBAKIR" }),
+            new("DSI-10-102", "DSI-10", "102. Şube", "DSİ 102. Şube Müdürlüğü (Mardin)", new[] { "MARDİN" }),
+            new("DSI-10-103", "DSI-10", "103. Şube", "DSİ 103. Şube Müdürlüğü (Batman)", new[] { "BATMAN" }),
+            new("DSI-10-104", "DSI-10", "104. Şube", "DSİ 104. Şube Müdürlüğü (Siirt)", new[] { "SİİRT" }),
+            new("DSI-10-105", "DSI-10", "105. Şube", "DSİ 105. Şube Müdürlüğü (Şırnak)", new[] { "ŞIRNAK" }),
+            // DSİ 11. Bölge (Edirne)
+            new("DSI-11-111", "DSI-11", "111. Şube", "DSİ 111. Şube Müdürlüğü (Edirne)", new[] { "EDİRNE", "ÇÖMLEKKÖY" }),
+            new("DSI-11-112", "DSI-11", "112. Şube", "DSİ 112. Şube Müdürlüğü (Kırklareli)", new[] { "KIRKLARELİ", "KOFÇAZ", "LÜLEBURGAZ" }),
+            new("DSI-11-113", "DSI-11", "113. Şube", "DSİ 113. Şube Müdürlüğü (Tekirdağ)", new[] { "TEKİRDAĞ", "İNECİK", "DEDECİK" }),
+            // DSİ 12. Bölge (Kayseri)
+            new("DSI-12-121", "DSI-12", "121. Şube", "DSİ 121. Şube Müdürlüğü (Kayseri)", new[] { "KAYSERİ" }),
+            new("DSI-12-122", "DSI-12", "122. Şube", "DSİ 122. Şube Müdürlüğü (Nevşehir)", new[] { "NEVŞEHİR", "BAYRAMHACILI", "SARIHIDIR" }),
+            new("DSI-12-123", "DSI-12", "123. Şube", "DSİ 123. Şube Müdürlüğü (Yozgat)", new[] { "YOZGAT", "AYDINCIK", "KÖSRELİK" }),
+            new("DSI-12-124", "DSI-12", "124. Şube", "DSİ 124. Şube Müdürlüğü (Kırşehir)", new[] { "KIRŞEHİR" }),
+            // DSİ 13. Bölge (Antalya)
+            new("DSI-13-131", "DSI-13", "131. Şube", "DSİ 131. Şube Müdürlüğü (Antalya)", new[] { "ANTALYA", "MANAVGAT", "KUMLUCA" }),
+            new("DSI-13-132", "DSI-13", "132. Şube", "DSİ 132. Şube Müdürlüğü (Alanya)", new[] { "ALANYA" }),
+            // DSİ 14. Bölge (İstanbul)
+            new("DSI-14-141", "DSI-14", "141. Şube", "DSİ 141. Şube Müdürlüğü (İstanbul Avrupa)", new[] { "İSTANBUL AVRUPA", "BÜYÜKÇEKMECE", "TERKOS", "SİLİVRİ" }),
+            new("DSI-14-142", "DSI-14", "142. Şube", "DSİ 142. Şube Müdürlüğü (İstanbul Anadolu)", new[] { "BEYKOZ", "RİVA", "ÇIRÇIR", "MELEN", "İSTANBUL ANADOLU", "İSTANBUL" }),
+            // DSİ 15. Bölge (Şanlıurfa)
+            new("DSI-15-151", "DSI-15", "151. Şube", "DSİ 151. Şube Müdürlüğü (Şanlıurfa / Viranşehir)", new[] { "ŞANLIURFA", "VİRANŞEHİR", "FIRAT" }),
+            new("DSI-15-152", "DSI-15", "152. Şube", "DSİ 152. Şube Müdürlüğü (Suruç / Akçakale)", new[] { "SURUÇ", "AKÇAKALE" }),
+            // DSİ 16. Bölge (Ilısu / Arşiv)
+            new("DSI-16-161", "DSI-16", "161. Şube", "DSİ 161. Şube Müdürlüğü (Ilısu Projesi / Arşiv)", new[] { "ILISU", "ATATÜRK BARAJI" }),
+            // DSİ 17. Bölge (Van)
+            new("DSI-17-171", "DSI-17", "171. Şube", "DSİ 171. Şube Müdürlüğü (Van)", new[] { "VAN" }),
+            new("DSI-17-172", "DSI-17", "172. Şube", "DSİ 172. Şube Müdürlüğü (Muş)", new[] { "MUŞ" }),
+            new("DSI-17-173", "DSI-17", "173. Şube", "DSİ 173. Şube Müdürlüğü (Bitlis)", new[] { "BİTLİS", "AHLAT" }),
+            new("DSI-17-174", "DSI-17", "174. Şube", "DSİ 174. Şube Müdürlüğü (Hakkari)", new[] { "HAKKARİ", "YÜKSEKOVA", "DİLİMLİ" }),
+            // DSİ 18. Bölge (Isparta)
+            new("DSI-18-181", "DSI-18", "181. Şube", "DSİ 181. Şube Müdürlüğü (Isparta)", new[] { "ISPARTA" }),
+            new("DSI-18-182", "DSI-18", "182. Şube", "DSİ 182. Şube Müdürlüğü (Burdur)", new[] { "BURDUR", "ÇAVDIR", "GÖLHİSAR" }),
+            new("DSI-18-183", "DSI-18", "183. Şube", "DSİ 183. Şube Müdürlüğü (Afyonkarahisar)", new[] { "AFYONKARAHİSAR", "AFYON", "ÇOBANLAR" }),
+            // DSİ 19. Bölge (Sivas)
+            new("DSI-19-191", "DSI-19", "191. Şube", "DSİ 191. Şube Müdürlüğü (Sivas)", new[] { "SİVAS" }),
+            // DSİ 20. Bölge (Kahramanmaraş)
+            new("DSI-20-201", "DSI-20", "201. Şube", "DSİ 201. Şube Müdürlüğü (Kahramanmaraş)", new[] { "KAHRAMANMARAŞ", "ONİKİŞUBAT", "TEKİR" }),
+            new("DSI-20-202", "DSI-20", "202. Şube", "DSİ 202. Şube Müdürlüğü (Gaziantep)", new[] { "GAZİANTEP", "NİZİP" }),
+            new("DSI-20-203", "DSI-20", "203. Şube", "DSİ 203. Şube Müdürlüğü (Adıyaman)", new[] { "ADIYAMAN" }),
+            new("DSI-20-204", "DSI-20", "204. Şube", "DSİ 204. Şube Müdürlüğü (Kilis)", new[] { "KİLİS", "MUSABEYLİ" }),
+            // DSİ 21. Bölge (Aydın)
+            new("DSI-21-211", "DSI-21", "211. Şube", "DSİ 211. Şube Müdürlüğü (Aydın)", new[] { "AYDIN", "KUŞADASI", "SÖKE", "SARIÇAY", "NAZİLLİ", "KOZDERE" }),
+            new("DSI-21-212", "DSI-21", "212. Şube", "DSİ 212. Şube Müdürlüğü (Denizli)", new[] { "DENİZLİ", "SARAYKÖY", "PAMUKKALE" }),
+            new("DSI-21-213", "DSI-21", "213. Şube", "DSİ 213. Şube Müdürlüğü (Muğla)", new[] { "MUĞLA" }),
+            // DSİ 22. Bölge (Trabzon)
+            new("DSI-22-221", "DSI-22", "221. Şube", "DSİ 221. Şube Müdürlüğü (Trabzon)", new[] { "TRABZON" }),
+            new("DSI-22-222", "DSI-22", "222. Şube", "DSİ 222. Şube Müdürlüğü (Gümüşhane)", new[] { "GÜMÜŞHANE", "KELKİT" }),
+            new("DSI-22-224", "DSI-22", "224. Şube", "DSİ 224. Şube Müdürlüğü (Rize)", new[] { "RİZE", "SALARHA", "GÜNEYSU", "POTAMYA" }),
+            new("DSI-22-226", "DSI-22", "226. Şube", "DSİ 226. Şube Müdürlüğü (Giresun)", new[] { "GİRESUN" }),
+            // DSİ 23. Bölge (Kastamonu)
+            new("DSI-23-231", "DSI-23", "231. Şube", "DSİ 231. Şube Müdürlüğü (Kastamonu)", new[] { "KASTAMONU", "TAŞKÖPRÜ", "OBRUCAK" }),
+            new("DSI-23-232", "DSI-23", "232. Şube", "DSİ 232. Şube Müdürlüğü (Zonguldak)", new[] { "ZONGULDAK", "KARABÜK", "BARTIN" }),
+            // DSİ 24. Bölge (Kars)
+            new("DSI-24-241", "DSI-24", "241. Şube", "DSİ 241. Şube Müdürlüğü (Kars)", new[] { "KARS" }),
+            new("DSI-24-242", "DSI-24", "242. Şube", "DSİ 242. Şube Müdürlüğü (Iğdır)", new[] { "IĞDIR" }),
+            new("DSI-24-243", "DSI-24", "243. Şube", "DSİ 243. Şube Müdürlüğü (Ardahan)", new[] { "ARDAHAN" }),
+            // DSİ 25. Bölge (Balıkesir)
+            new("DSI-25-251", "DSI-25", "251. Şube", "DSİ 251. Şube Müdürlüğü (Balıkesir)", new[] { "BALIKESİR", "KEPSUT", "MANYAS", "SAVAŞTEPE", "SARIBEYLER" }),
+            new("DSI-25-252", "DSI-25", "252. Şube", "DSİ 252. Şube Müdürlüğü (Çanakkale)", new[] { "ÇANAKKALE", "BİGA", "TAŞOLUK" }),
+            // DSİ 26. Bölge (Artvin)
+            new("DSI-26-261", "DSI-26", "261. Şube", "DSİ 261. Şube Müdürlüğü (Artvin)", new[] { "ARTVİN", "YUSUFELİ", "ÇORUH" }),
+            // DSİ Genel Müdürlüğü
+            new("DSI-GM-BARAJ", "DSI-GM", "Barajlar ve HES Dairesi", "DSİ Genel Müdürlüğü Barajlar ve HES Dairesi Başkanlığı", new[] { "BARAJLAR VE HES" }),
+            new("DSI-GM-SULAMA", "DSI-GM", "Sulama Dairesi", "DSİ Genel Müdürlüğü Sulama Dairesi Başkanlığı", new[] { "SULAMA DAİRESİ" }),
+            new("DSI-GM-ICMESUYU", "DSI-GM", "İçmesuyu Dairesi", "DSİ Genel Müdürlüğü İçmesuyu Dairesi Başkanlığı", new[] { "İÇMESUYU DAİRESİ" })
+        };
+
         private static string MapIdareAndTitleToDsiRegion(string idare, string title)
         {
-            string combined = (idare + " " + title).ToUpper(new CultureInfo("tr-TR"));
+            string combined = (idare + " " + title).ToUpper(TrCulture);
 
             var regNumMatch = Regex.Match(combined, @"([0-9]{1,2})\s*\.?\s*BÖLGE");
             if (regNumMatch.Success && int.TryParse(regNumMatch.Groups[1].Value, out int rNum) && rNum >= 1 && rNum <= 26)
@@ -1553,80 +1973,73 @@ namespace DSIIhaleZekasi
             }
 
             if (combined.Contains("BURSA") || combined.Contains("KOCAELİ") || combined.Contains("YALOVA")) return "DSI-01";
-            if (combined.Contains("İZMİR") || combined.Contains("MANİSA")) return "DSI-02";
-            if (combined.Contains("ESKİŞEHİR") || combined.Contains("KÜTAHYA")) return "DSI-03";
-            if (combined.Contains("KONYA") || combined.Contains("AKSARAY") || combined.Contains("KARAMAN")) return "DSI-04";
-            if (combined.Contains("ANKARA") || combined.Contains("ÇANKIRI") || combined.Contains("BOLU")) return "DSI-05";
+            if (combined.Contains("İZMİR") || combined.Contains("MANİSA") || combined.Contains("UŞAK")) return "DSI-02";
+            if (combined.Contains("ESKİŞEHİR") || combined.Contains("SAKARYA") || combined.Contains("BİLECİK") || combined.Contains("KÜTAHYA")) return "DSI-03";
+            if (combined.Contains("KONYA") || combined.Contains("AKSARAY") || combined.Contains("KARAMAN") || combined.Contains("NİĞDE")) return "DSI-04";
+            if (combined.Contains("ANKARA") || combined.Contains("ÇANKIRI") || combined.Contains("BOLU") || combined.Contains("DÜZCE") || combined.Contains("KIRIKKALE")) return "DSI-05";
             if (combined.Contains("ADANA") || combined.Contains("MERSİN") || combined.Contains("OSMANİYE") || combined.Contains("HATAY")) return "DSI-06";
-            if (combined.Contains("SAMSUN") || combined.Contains("ORDU") || combined.Contains("AMASYA")) return "DSI-07";
-            if (combined.Contains("ERZURUM") || combined.Contains("AĞRI") || combined.Contains("ERZİNCAN")) return "DSI-08";
-            if (combined.Contains("ELAZIĞ") || combined.Contains("TUNCELİ") || combined.Contains("MALATYA")) return "DSI-09";
-            if (combined.Contains("DİYARBAKIR") || combined.Contains("MARDİN") || combined.Contains("BATMAN")) return "DSI-10";
+            if (combined.Contains("SAMSUN") || combined.Contains("ORDU") || combined.Contains("AMASYA") || combined.Contains("TOKAT") || combined.Contains("SİNOP")) return "DSI-07";
+            if (combined.Contains("ERZURUM") || combined.Contains("AĞRI") || combined.Contains("ERZİNCAN") || combined.Contains("BAYBURT")) return "DSI-08";
+            if (combined.Contains("ELAZIĞ") || combined.Contains("TUNCELİ") || combined.Contains("MALATYA") || combined.Contains("BİNGÖL")) return "DSI-09";
+            if (combined.Contains("DİYARBAKIR") || combined.Contains("MARDİN") || combined.Contains("BATMAN") || combined.Contains("SİİRT") || combined.Contains("ŞIRNAK")) return "DSI-10";
             if (combined.Contains("EDİRNE") || combined.Contains("KIRKLARELİ") || combined.Contains("TEKİRDAĞ")) return "DSI-11";
             if (combined.Contains("KAYSERİ") || combined.Contains("NEVŞEHİR") || combined.Contains("YOZGAT") || combined.Contains("KIRŞEHİR")) return "DSI-12";
-            if (combined.Contains("ANTALYA") || combined.Contains("BURDUR")) return "DSI-13";
-            if (combined.Contains("İSTANBUL")) return "DSI-14";
-            if (combined.Contains("ŞANLIURFA")) return "DSI-15";
-            if (combined.Contains("ATATÜRK BARAJI") || combined.Contains("ADIYAMAN")) return "DSI-16";
-            if (combined.Contains("VAN") || combined.Contains("HAKKARİ")) return "DSI-17";
-            if (combined.Contains("ISPARTA") || combined.Contains("AFYON")) return "DSI-18";
+            if (combined.Contains("ANTALYA") || combined.Contains("ALANYA") || combined.Contains("MANAVGAT") || combined.Contains("KUMLUCA")) return "DSI-13";
+            if (combined.Contains("İSTANBUL") || combined.Contains("BEYKOZ")) return "DSI-14";
+            if (combined.Contains("ŞANLIURFA") || combined.Contains("VİRANŞEHİR") || combined.Contains("SURUÇ")) return "DSI-15";
+            if (combined.Contains("ILISU") || combined.Contains("ATATÜRK BARAJI")) return "DSI-16";
+            if (combined.Contains("VAN") || combined.Contains("MUŞ") || combined.Contains("BİTLİS") || combined.Contains("HAKKARİ")) return "DSI-17";
+            if (combined.Contains("ISPARTA") || combined.Contains("BURDUR") || combined.Contains("AFYON")) return "DSI-18";
             if (combined.Contains("SİVAS")) return "DSI-19";
-            if (combined.Contains("KAHRAMANMARAŞ") || combined.Contains("KİLİS") || combined.Contains("GAZİANTEP")) return "DSI-20";
+            if (combined.Contains("KAHRAMANMARAŞ") || combined.Contains("GAZİANTEP") || combined.Contains("ADIYAMAN") || combined.Contains("KİLİS")) return "DSI-20";
             if (combined.Contains("AYDIN") || combined.Contains("DENİZLİ") || combined.Contains("MUĞLA")) return "DSI-21";
-            if (combined.Contains("TRABZON") || combined.Contains("RİZE") || combined.Contains("GİRESUN")) return "DSI-22";
-            if (combined.Contains("KASTAMONU") || combined.Contains("ZONGULDAK")) return "DSI-23";
+            if (combined.Contains("TRABZON") || combined.Contains("RİZE") || combined.Contains("GİRESUN") || combined.Contains("GÜMÜŞHANE")) return "DSI-22";
+            if (combined.Contains("KASTAMONU") || combined.Contains("ZONGULDAK") || combined.Contains("KARABÜK") || combined.Contains("BARTIN")) return "DSI-23";
             if (combined.Contains("KARS") || combined.Contains("ARDAHAN") || combined.Contains("IĞDIR")) return "DSI-24";
             if (combined.Contains("BALIKESİR") || combined.Contains("ÇANAKKALE")) return "DSI-25";
-            if (combined.Contains("ARTVİN") || combined.Contains("ÇORUH")) return "DSI-26";
+            if (combined.Contains("ARTVİN") || combined.Contains("YUSUFELİ") || combined.Contains("ÇORUH")) return "DSI-26";
 
             return "DSI-GM";
         }
 
         private static (string SubeId, string SubeName) MapIdareAndTitleToDsiBranch(string idare, string title, string regionId)
         {
-            string combined = (idare + " " + title).ToUpper(new CultureInfo("tr-TR"));
+            string combined = (idare + " " + title).ToUpper(TrCulture);
 
-            if (combined.Contains("YALOVA")) return ("DSI-01-12", "DSİ 12. Şube Müdürlüğü (Yalova)");
-            if (combined.Contains("KOCAELİ") || combined.Contains("KANDIRA")) return ("DSI-01-15", "DSİ 15. Şube Müdürlüğü (Kocaeli)");
-            if (combined.Contains("BURSA") || combined.Contains("DEMİRTAŞ")) return ("DSI-01-11", "DSİ 11. Şube Müdürlüğü (Bursa)");
-            if (combined.Contains("KÜTAHYA") || combined.Contains("EMET")) return ("DSI-03-34", "DSİ 34. Şube Müdürlüğü (Kütahya)");
-            if (combined.Contains("SAKARYA") || combined.Contains("ARİFİYE")) return ("DSI-03-32", "DSİ 32. Şube Müdürlüğü (Sakarya)");
-            if (combined.Contains("AKSARAY") || combined.Contains("ULUIRMAK") || combined.Contains("MAMASIN")) return ("DSI-04-43", "DSİ 43. Şube Müdürlüğü (Aksaray)");
-            if (combined.Contains("KONYA")) return ("DSI-04-41", "DSİ 41. Şube Müdürlüğü (Konya)");
-            if (combined.Contains("ÇANKIRI") || combined.Contains("KIZLARYOLU") || combined.Contains("KOYUNBABA")) return ("DSI-05-52", "DSİ 52. Şube Müdürlüğü (Çankırı)");
-            if (combined.Contains("MERSİN") || combined.Contains("TARSUS") || combined.Contains("KARAEVLİ") || combined.Contains("SORGUN")) return ("DSI-06-62", "DSİ 62. Şube Müdürlüğü (Mersin)");
-            if (combined.Contains("OSMANİYE") || combined.Contains("KARAÇAY") || combined.Contains("SAVRUN")) return ("DSI-06-64", "DSİ 64. Şube Müdürlüğü (Osmaniye)");
-            if (combined.Contains("HATAY") || combined.Contains("TAHTAKÖPRÜ")) return ("DSI-06-63", "DSİ 63. Şube Müdürlüğü (Hatay)");
-            if (combined.Contains("SAMSUN") || combined.Contains("19 MAYIS")) return ("DSI-07-71", "DSİ 71. Şube Müdürlüğü (Samsun)");
-            if (combined.Contains("ERZURUM") || combined.Contains("PASİNLER") || combined.Contains("AZİZİYE") || combined.Contains("KÖPRÜKÖY")) return ("DSI-08-81", "DSİ 81. Şube Müdürlüğü (Erzurum)");
-            if (combined.Contains("TUNCELİ") || combined.Contains("PERTEK")) return ("DSI-09-93", "DSİ 93. Şube Müdürlüğü (Tunceli)");
-            if (combined.Contains("DİYARBAKIR")) return ("DSI-10-101", "DSİ 101. Şube Müdürlüğü (Diyarbakır)");
-            if (combined.Contains("KIRKLARELİ") || combined.Contains("KOFÇAZ")) return ("DSI-11-112", "DSİ 112. Şube Müdürlüğü (Kırklareli)");
-            if (combined.Contains("TEKİRDAĞ") || combined.Contains("İNECİK")) return ("DSI-11-113", "DSİ 113. Şube Müdürlüğü (Tekirdağ)");
-            if (combined.Contains("NEVŞEHİR") || combined.Contains("BAYRAMHACILI") || combined.Contains("SARIHIDIR")) return ("DSI-12-122", "DSİ 122. Şube Müdürlüğü (Nevşehir)");
-            if (combined.Contains("YOZGAT") || combined.Contains("AYDINCIK")) return ("DSI-12-123", "DSİ 123. Şube Müdürlüğü (Yozgat)");
-            if (combined.Contains("ŞANLIURFA") || combined.Contains("VİRANŞEHİR") || combined.Contains("FIRAT")) return ("DSI-15-151", "DSİ 151. Şube Müdürlüğü (Şanlıurfa / Viranşehir)");
-            if (combined.Contains("BİTLİS") || combined.Contains("AHLAT")) return ("DSI-17-173", "DSİ 173. Şube Müdürlüğü (Bitlis)");
-            if (combined.Contains("HAKKARİ") || combined.Contains("YÜKSEKOVA")) return ("DSI-17-174", "DSİ 174. Şube Müdürlüğü (Hakkari)");
-            if (combined.Contains("BURDUR") || combined.Contains("ÇAVDIR") || combined.Contains("GÖLHİSAR")) return ("DSI-18-182", "DSİ 182. Şube Müdürlüğü (Burdur)");
-            if (combined.Contains("SİVAS")) return ("DSI-19-191", "DSİ 191. Şube Müdürlüğü (Sivas)");
-            if (combined.Contains("KİLİS") || combined.Contains("MUSABEYLİ")) return ("DSI-20-204", "DSİ 204. Şube Müdürlüğü (Kilis)");
-            if (combined.Contains("GAZİANTEP") || combined.Contains("NİZİP")) return ("DSI-20-202", "DSİ 202. Şube Müdürlüğü (Gaziantep)");
-            if (combined.Contains("KAHRAMANMARAŞ") || combined.Contains("ONİKİŞUBAT")) return ("DSI-20-201", "DSİ 201. Şube Müdürlüğü (Kahramanmaraş)");
-            if (combined.Contains("DENİZLİ") || combined.Contains("SARAYKÖY") || combined.Contains("PAMUKKALE")) return ("DSI-21-212", "DSİ 212. Şube Müdürlüğü (Denizli)");
-            if (combined.Contains("AYDIN") || combined.Contains("KUŞADASI") || combined.Contains("SÖKE") || combined.Contains("NAZİLLİ")) return ("DSI-21-211", "DSİ 211. Şube Müdürlüğü (Aydın)");
-            if (combined.Contains("RİZE") || combined.Contains("SALARHA") || combined.Contains("GÜNEYSU")) return ("DSI-22-224", "DSİ 224. Şube Müdürlüğü (Rize)");
-            if (combined.Contains("KASTAMONU") || combined.Contains("TAŞKÖPRÜ")) return ("DSI-23-231", "DSİ 231. Şube Müdürlüğü (Kastamonu)");
-            if (combined.Contains("KARS")) return ("DSI-24-241", "DSİ 241. Şube Müdürlüğü (Kars)");
-            if (combined.Contains("ÇANAKKALE") || combined.Contains("BİGA")) return ("DSI-25-252", "DSİ 252. Şube Müdürlüğü (Çanakkale)");
-            if (combined.Contains("BALIKESİR") || combined.Contains("KEPSUT") || combined.Contains("MANYAS") || combined.Contains("SAVAŞTEPE"))
+            // 1. Açık Şube numarası eşleşmesi (ör. "211. ŞUBE", "33. ŞUBE")
+            var numMatch = Regex.Match(combined, @"(\d{2,3})\.\s*ŞUBE");
+            if (numMatch.Success)
             {
-                return regionId == "DSI-GM"
-                    ? ("DSI-GM-BARAJ", "DSİ Genel Müdürlüğü Barajlar ve HES Dairesi Başkanlığı")
-                    : ("DSI-25-251", "DSİ 251. Şube Müdürlüğü (Balıkesir)");
+                string codeStr = $"{numMatch.Groups[1].Value}. Şube";
+                var byCode = RealDsiBranches.FirstOrDefault(b => b.Code.Equals(codeStr, StringComparison.OrdinalIgnoreCase));
+                if (byCode != null) return (byCode.SubeId, byCode.SubeName);
             }
 
-            return (regionId + "-MERKEZ", $"{regionId} Merkez Şube Müdürlüğü");
+            // 2. DSİ Genel Müdürlüğü Daireleri özel kontrolü
+            if (regionId == "DSI-GM")
+            {
+                if (combined.Contains("İÇMESUYU") || combined.Contains("İSALE") || combined.Contains("ARITMA"))
+                    return ("DSI-GM-ICMESUYU", "DSİ Genel Müdürlüğü İçmesuyu Dairesi Başkanlığı");
+                if (combined.Contains("SULAMA") && !combined.Contains("BARAJ"))
+                    return ("DSI-GM-SULAMA", "DSİ Genel Müdürlüğü Sulama Dairesi Başkanlığı");
+                if (combined.Contains("BARAJ") || combined.Contains("HES"))
+                    return ("DSI-GM-BARAJ", "DSİ Genel Müdürlüğü Barajlar ve HES Dairesi Başkanlığı");
+            }
+
+            // 3. Önce bölge içindeki şubelerde il/ilçe/proje anahtar kelimesi ara, yoksa tüm şubelerde ara
+            var regionMatch = RealDsiBranches
+                .Where(b => b.RegionId.Equals(regionId, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault(b => b.Keywords.Any(k => combined.Contains(k, StringComparison.Ordinal)));
+            if (regionMatch != null) return (regionMatch.SubeId, regionMatch.SubeName);
+
+            var globalMatch = RealDsiBranches
+                .FirstOrDefault(b => b.Keywords.Any(k => combined.Contains(k, StringComparison.Ordinal)));
+            if (globalMatch != null) return (globalMatch.SubeId, globalMatch.SubeName);
+
+            // 4. Bölgenin varsayılan gerçek ana şubesi (asla sahte DSI-XX-MERKEZ üretme)
+            var defaultBranch = RealDsiBranches.FirstOrDefault(b => b.RegionId.Equals(regionId, StringComparison.OrdinalIgnoreCase))
+                                ?? RealDsiBranches.First(b => b.SubeId == "DSI-GM-BARAJ");
+            return (defaultBranch.SubeId, defaultBranch.SubeName);
         }
 
         private static string DetermineDsiWorkGroup(string title)
@@ -1680,20 +2093,45 @@ namespace DSIIhaleZekasi
 
         private static string GuessCityFromRegionOrTitle(string regionId, string title)
         {
+            string u = (title ?? "").ToUpper(TrCulture);
+            var branchHint = RealDsiBranches.FirstOrDefault(b =>
+                b.RegionId.Equals(regionId, StringComparison.OrdinalIgnoreCase) &&
+                b.Keywords.Any(k => u.Contains(k, StringComparison.Ordinal)));
+            if (branchHint != null)
+            {
+                var parenMatch = Regex.Match(branchHint.SubeName, @"\(([^/)]+)");
+                if (parenMatch.Success) return parenMatch.Groups[1].Value.Trim();
+            }
+
             return regionId switch
             {
-                "DSI-01" => "Bursa / Kocaeli",
-                "DSI-04" => "Konya / Aksaray",
+                "DSI-01" => "Bursa",
+                "DSI-02" => "İzmir",
+                "DSI-03" => "Eskişehir",
+                "DSI-04" => "Konya",
                 "DSI-05" => "Ankara",
-                "DSI-06" => "Adana / Mersin",
+                "DSI-06" => "Adana",
                 "DSI-07" => "Samsun",
                 "DSI-08" => "Erzurum",
                 "DSI-09" => "Elazığ",
-                "DSI-11" => "Edirne / Tekirdağ",
-                "DSI-12" => "Kayseri / Yozgat",
-                "DSI-20" => "Kahramanmaraş / Kilis",
-                "DSI-21" => "Aydın / Denizli",
+                "DSI-10" => "Diyarbakır",
+                "DSI-11" => "Edirne",
+                "DSI-12" => "Kayseri",
+                "DSI-13" => "Antalya",
+                "DSI-14" => "İstanbul",
+                "DSI-15" => "Şanlıurfa",
+                "DSI-16" => "Mardin",
+                "DSI-17" => "Van",
+                "DSI-18" => "Isparta",
+                "DSI-19" => "Sivas",
+                "DSI-20" => "Kahramanmaraş",
+                "DSI-21" => "Aydın",
+                "DSI-22" => "Trabzon",
+                "DSI-23" => "Kastamonu",
+                "DSI-24" => "Kars",
                 "DSI-25" => "Balıkesir",
+                "DSI-26" => "Artvin",
+                "DSI-GM" => "Ankara",
                 _ => "Ankara"
             };
         }
@@ -1726,15 +2164,50 @@ namespace DSIIhaleZekasi
 
         private void AddDiscoveredAnnouncement(OfficialAnnouncementItem item)
         {
+            if (string.IsNullOrWhiteSpace(item.Title) || IsNonConstructionNoiseTitle(item.Title))
+                return;
+
             lock (_discoveredAnnouncements)
             {
-                if (_discoveredAnnouncements.Any(a => a.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase)))
+                if (_discoveredAnnouncements.Any(a =>
+                        a.Title.Equals(item.Title, StringComparison.OrdinalIgnoreCase) ||
+                        (!string.IsNullOrWhiteSpace(item.Url) && a.Url.Equals(item.Url, StringComparison.OrdinalIgnoreCase))))
+                {
                     return;
+                }
+
+                // Bölge çeşitliliğini koru: aynı bölgeden en fazla 3 kayıt tut (böylece sonraki bölgeler öncekileri ezmez)
+                int sameRegionCount = _discoveredAnnouncements.Count(a => a.RegionId.Equals(item.RegionId, StringComparison.OrdinalIgnoreCase));
+                if (sameRegionCount >= 3)
+                {
+                    if (item.Category == "DSİ BÖLGE İHALE")
+                    {
+                        int nonTenderIdx = _discoveredAnnouncements.FindLastIndex(a =>
+                            a.RegionId.Equals(item.RegionId, StringComparison.OrdinalIgnoreCase) &&
+                            a.Category != "DSİ BÖLGE İHALE");
+                        if (nonTenderIdx < 0) return;
+                        _discoveredAnnouncements.RemoveAt(nonTenderIdx);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
 
                 _discoveredAnnouncements.Insert(0, item);
-                if (_discoveredAnnouncements.Count > 60)
+
+                // 60 kayıt sınırında her zaman en yoğun bölgenin en eski kaydını çıkar; tekil bölgeleri koru
+                while (_discoveredAnnouncements.Count > 60)
                 {
-                    _discoveredAnnouncements.RemoveRange(60, _discoveredAnnouncements.Count - 60);
+                    var crowdedRegion = _discoveredAnnouncements
+                        .GroupBy(a => a.RegionId, StringComparer.OrdinalIgnoreCase)
+                        .OrderByDescending(g => g.Count())
+                        .First().Key;
+
+                    int removeIdx = _discoveredAnnouncements.FindLastIndex(a =>
+                        a.RegionId.Equals(crowdedRegion, StringComparison.OrdinalIgnoreCase));
+                    if (removeIdx < 0) removeIdx = _discoveredAnnouncements.Count - 1;
+                    _discoveredAnnouncements.RemoveAt(removeIdx);
                 }
             }
         }
