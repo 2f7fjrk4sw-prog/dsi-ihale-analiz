@@ -46,13 +46,13 @@ const App = {
         const data = await resp.json();
         if (data && Array.isArray(data.competitors) && Array.isArray(data.tenders)) {
           if (data.metadata && data.metadata.officialSourcesOnly === true &&
-              data.metadata.version === '2.5.1') {
+              data.metadata.version === '2.6.0') {
             this.db = data;
             localStorage.setItem('dsi_ihale_official_kik_db_v2_1', JSON.stringify(this.db));
             await this.updateDatabaseHash();
             return;
           } else {
-            // Eski sürüm veritabanını v2.5.1 doğrulanmış firma web siteli DSİ veritabanına yükselt
+            // Eski sürüm veritabanını v2.6.0 birleşik rakip, DSİ keşfi ve web sorgulama veritabanına yükselt
             this.db = createInitialVerifiedDatabase();
             await this.saveDatabase();
             return;
@@ -66,7 +66,7 @@ const App = {
       try {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.metadata && parsed.metadata.officialSourcesOnly === true &&
-            parsed.metadata.version === '2.5.1') {
+            parsed.metadata.version === '2.6.0') {
           this.db = parsed;
         } else {
           this.db = createInitialVerifiedDatabase();
@@ -97,7 +97,7 @@ const App = {
 
   async saveDatabase() {
     this.db.metadata = this.db.metadata || {};
-    this.db.metadata.version = '2.5.0';
+    this.db.metadata.version = '2.6.0';
     this.db.metadata.officialSourcesOnly = true;
     this.db.metadata.lastUpdated = new Date().toISOString();
 
@@ -216,7 +216,6 @@ const App = {
 
     this.populateSimBranches();
     this.populateCompetitorBranchFilter();
-    this.populateDsiDiscoveredFilters();
 
     const groupSelects = ['simWorkGroup', 'tFormWorkGroup'];
     groupSelects.forEach(selId => {
@@ -246,7 +245,6 @@ const App = {
     this.renderSimulatorCompetitorToggles();
     this.runMonteCarloSimulation();
     this.renderCompetitorsTab();
-    this.renderDsiCompetitorsTab();
     this.renderRegionalAnalysisTab();
     this.renderDatacenterTable();
     this.previewManualTenderMath();
@@ -303,21 +301,40 @@ const App = {
     return list;
   },
 
-  async openExternalUrl(rawUrl) {
+  openExternalUrl(rawUrl) {
     const clean = this.normalizeWebsiteUrl(rawUrl);
-    if (!clean) return false;
-    try {
-      const resp = await fetch('/api/open-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: clean })
-      });
-      if (resp.ok) {
-        const data = await resp.json().catch(() => null);
-        if (data && data.ok) return false;
+    if (!clean) {
+      alert('Geçerli bir internet adresi (http:// veya https://) bulunamadı.');
+      return false;
+    }
+
+    // Masaüstü arka plan sunucusu üzerinden Google Chrome ile aç; sunucuya ulaşılamazsa tarayıcıda yeni sekme aç
+    const openViaDesktopApi = async () => {
+      try {
+        const resp = await fetch('/api/open-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: clean })
+        });
+        if (resp.ok) {
+          const data = await resp.json().catch(() => null);
+          if (data && data.ok) return true;
+        }
+      } catch (_) {}
+      return false;
+    };
+
+    openViaDesktopApi().then(opened => {
+      if (!opened) {
+        const link = document.createElement('a');
+        link.href = clean;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
       }
-    } catch (_) {}
-    window.open(clean, '_blank', 'noopener');
+    });
     return false;
   },
 
@@ -329,7 +346,7 @@ const App = {
       const domain = this.extractDomainLabel(s.url);
       const safeUrl = this.escapeHtml(s.url);
       const safeTitle = this.escapeHtml(`${s.name} — Google Chrome ile aç (${s.url})`);
-      return `<a href="${safeUrl}" target="_blank" rel="noopener" onclick="${stopExpr}App.openExternalUrl('${safeUrl}'); return false;" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; background:#f0f9ff; color:#0369a1; border-color:#7dd3fc;" title="${safeTitle}">🌐 ${this.escapeHtml(domain)}</a>`;
+      return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" onclick="${stopExpr}return App.openExternalUrl(this.href);" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; background:#f0f9ff; color:#0369a1; border-color:#7dd3fc;" title="${safeTitle}">🌐 ${this.escapeHtml(domain)}</a>`;
     }).join(' ');
   },
 
@@ -371,6 +388,11 @@ const App = {
     const val = Number(discPct || 0);
     if (val >= 0) return `%${val.toFixed(2)} İndirim`;
     return `YM +%${Math.abs(val).toFixed(2)} Üzeri`;
+  },
+
+  formatSignedPct(pct) {
+    const val = Number(pct || 0);
+    return val >= 0 ? `+%${val.toFixed(2)}` : `-%${Math.abs(val).toFixed(2)}`;
   },
 
   populateSimBranches() {
@@ -486,7 +508,7 @@ const App = {
       tbodyTenders.innerHTML = sorted.map(t => {
         const sdDisc = ((t.approxCost - t.reportedBoundaryValue) / t.approxCost) * 100;
         const winBid = (t.bids || []).find(b => b.competitorId === t.winnerCompetitorId);
-        const winDisc = winBid ? (((t.approxCost - winBid.amount) / t.approxCost) * 100).toFixed(2) : '-';
+        const winDisc = winBid ? (((t.approxCost - winBid.amount) / t.approxCost) * 100) : null;
         const winName = winBid ? this.getCompetitorName(t.winnerCompetitorId) : 'Belirlenmedi';
 
         return `
@@ -504,11 +526,13 @@ const App = {
             <td style="font-weight:600;">${this.formatTL(t.approxCost)}</td>
             <td>
               <div style="font-weight:700; color:#b45309;">${this.formatTL(t.reportedBoundaryValue)}</div>
-              <div style="font-size:11.5px; color:var(--text-muted);">%${sdDisc.toFixed(2)} İndirim (N=${Number(t.nCoeff || 1.2).toFixed(2)})</div>
+              <div style="font-size:11.5px; color:var(--text-muted);">${this.formatDiscountText(sdDisc)} (N=${Number(t.nCoeff || 1.2).toFixed(2)})</div>
             </td>
             <td>
               <span class="badge badge-verified">${winName}</span>
-              <div style="font-size:11.5px; color:#15803d; margin-top:3px; font-weight:700;">%${winDisc} İndirim (${winBid ? this.formatMillionsTL(winBid.amount) : '-'})</div>
+              <div style="font-size:11.5px; color:#15803d; margin-top:3px; font-weight:700;">
+                ${winBid ? `${this.formatTL(winBid.amount)} • ${this.formatDiscountText(winDisc)}` : '-'}
+              </div>
             </td>
           </tr>
         `;
@@ -989,8 +1013,19 @@ const App = {
     const enriched = this.db.competitors.map(c => {
       const prof = CompetitorPredictionEngine.analyzeCompetitor(c, tenders);
       const isDsiWeb = c.discoveredFromDsi === true || c.officialSourceType === 'DSI_WEB_SEARCH';
-      return { comp: c, prof, isDsiWeb };
+      const hasWebsite = this.getCompetitorWebsites(c).length > 0;
+      return { comp: c, prof, isDsiWeb, hasWebsite };
     });
+
+    // Birleşik Rakip KPI Kartlarını Güncelle
+    const kpiTotal = document.getElementById('compKpiTotal');
+    const kpiKik = document.getElementById('compKpiKik');
+    const kpiDsi = document.getElementById('compKpiDsi');
+    const kpiWeb = document.getElementById('compKpiWebsites');
+    if (kpiTotal) kpiTotal.textContent = enriched.length;
+    if (kpiKik) kpiKik.textContent = enriched.filter(x => !x.isDsiWeb).length;
+    if (kpiDsi) kpiDsi.textContent = enriched.filter(x => x.isDsiWeb).length;
+    if (kpiWeb) kpiWeb.textContent = enriched.filter(x => x.hasWebsite).length;
 
     let filtered = (this.competitorRegionFilter && this.competitorRegionFilter !== 'ALL')
       ? enriched.filter(x => (x.prof.allActiveRegions || []).includes(this.competitorRegionFilter))
@@ -1004,6 +1039,8 @@ const App = {
       filtered = filtered.filter(x => x.isDsiWeb);
     } else if (originFilter === 'KIK_EKAP') {
       filtered = filtered.filter(x => !x.isDsiWeb);
+    } else if (originFilter === 'HAS_WEBSITE') {
+      filtered = filtered.filter(x => x.hasWebsite);
     }
 
     if (searchVal) {
@@ -1013,6 +1050,7 @@ const App = {
           x.comp.shortName,
           x.comp.hqCity,
           x.comp.taxId,
+          x.comp.website,
           x.comp.dsiProjectTitle,
           x.comp.verificationSource
         ].filter(Boolean).join(' ').toLocaleLowerCase('tr-TR');
@@ -1078,6 +1116,11 @@ const App = {
           .map(bb => `<span class="badge badge-blue" style="font-size:10px; padding:1px 5px; background:#f0f9ff; color:#0369a1; border-color:#bae6fd;">${bb.subeCode}</span>`)
           .join(' ');
 
+        const dsiLinkUrl = this.normalizeWebsiteUrl(c.dsiSourceUrl);
+        const dsiSourcePill = dsiLinkUrl
+          ? `<a href="${this.escapeHtml(dsiLinkUrl)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation(); return App.openExternalUrl(this.href);" class="btn btn-secondary btn-sm" style="font-size:10.5px; padding:2px 7px; text-decoration:none; background:#ecfdf5; color:#047857; border-color:#a7f3d0;" title="DSİ Bölge Resmi Sayfasını Chrome'da Aç">🏛 DSİ Sayfası</a>`
+          : '';
+
         return `
           <div onclick="App.selectCompetitor('${c.id}')"
             style="padding:10px 12px; border-radius:6px; cursor:pointer; transition:all 0.15s;
@@ -1091,7 +1134,7 @@ const App = {
                 </div>
                 <div style="font-size:11px; color:var(--text-muted); margin-top:2px;">${this.escapeHtml(c.name)}</div>
               </div>
-              <span class="badge badge-blue" style="white-space:nowrap;">%${prof.expectedDiscountPct.toFixed(2)} İndirim</span>
+              <span class="badge badge-blue" style="white-space:nowrap;">${this.formatDiscountText(prof.expectedDiscountPct)}</span>
             </div>
             <div style="font-size:11.5px; color:var(--text-secondary); margin-top:5px;">
               Merkez: ${this.escapeHtml(c.hqCity || '-')} • Kayıt: ${this.escapeHtml(c.taxId || '-')} • Gruplar: ${(c.workGroups || []).join(', ')}
@@ -1100,6 +1143,7 @@ const App = {
               ${regionBadges || '<span style="font-size:11px; color:var(--text-muted);">Bölge Belirtilmedi</span>'}
               ${branchBadges}
               ${this.renderWebsiteButtonsHtml(c, true)}
+              ${dsiSourcePill}
             </div>
             <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted); margin-top:5px;">
               <span>İhale: <strong style="color:#15803d;">${prof.verifiedTenderCount}</strong> (Kazanılan: ${prof.winCount})</span>
@@ -1113,161 +1157,118 @@ const App = {
     this.renderSelectedCompetitorDetail();
   },
 
-  populateDsiDiscoveredFilters() {
-    const regSel = document.getElementById('dsiDiscRegionFilter');
-    if (regSel && typeof DSI_REGIONS !== 'undefined') {
-      regSel.innerHTML = `<option value="ALL">Tüm DSİ Bölgeleri</option>` +
-        DSI_REGIONS.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-    }
-    const brSel = document.getElementById('dsiDiscBranchFilter');
-    if (brSel && typeof DSI_BRANCHES !== 'undefined') {
-      brSel.innerHTML = `<option value="ALL">Tüm DSİ Şubeleri</option>` +
-        DSI_BRANCHES.map(b => `<option value="${b.id}">${b.code} (${b.city})</option>`).join('');
-    }
-  },
-
-  renderDsiCompetitorsTab() {
-    const tbody = document.getElementById('dsiDiscoveredCompetitorsBody');
-    if (!tbody || !this.db || !Array.isArray(this.db.competitors)) return;
-
-    const tenders = this.getActiveVerifiedTenders();
-    const searchVal = (document.getElementById('dsiDiscSearchInput')?.value || '').trim().toLocaleLowerCase('tr-TR');
-    const regFilter = document.getElementById('dsiDiscRegionFilter')?.value || 'ALL';
-    const brFilter = document.getElementById('dsiDiscBranchFilter')?.value || 'ALL';
-
-    const dsiComps = this.db.competitors
-      .filter(c => c.discoveredFromDsi === true || c.officialSourceType === 'DSI_WEB_SEARCH')
-      .map(c => ({
-        comp: c,
-        prof: CompetitorPredictionEngine.analyzeCompetitor(c, tenders)
-      }));
-
-    // KPI Özeti (filtreden bağımsız tüm DSİ keşif özeti)
-    const activeRegionsSet = new Set();
-    const activeBranchesSet = new Set();
-    let totalContractVolume = 0;
-    let discSum = 0;
-
-    dsiComps.forEach(({ comp, prof }) => {
-      (prof.allActiveRegions || []).forEach(r => activeRegionsSet.add(r));
-      (prof.allActiveBranches || []).forEach(b => activeBranchesSet.add(b));
-      totalContractVolume += prof.totalWonVolume || prof.totalBidVolume || 0;
-      discSum += prof.expectedDiscountPct || 0;
-    });
-
-    const elCount = document.getElementById('dsiDiscKpiCount');
-    const elRegs = document.getElementById('dsiDiscKpiRegions');
-    const elVol = document.getElementById('dsiDiscKpiVolume');
-    const elAvg = document.getElementById('dsiDiscKpiAvgDisc');
-
-    if (elCount) elCount.textContent = dsiComps.length;
-    if (elRegs) elRegs.textContent = `${activeRegionsSet.size} Bölge / ${activeBranchesSet.size} Şube`;
-    if (elVol) elVol.textContent = this.formatMillionsTL(totalContractVolume);
-    if (elAvg) elAvg.textContent = dsiComps.length > 0 ? `%${(discSum / dsiComps.length).toFixed(2)}` : '%0.00';
-
-    let filtered = dsiComps;
-    if (regFilter !== 'ALL') {
-      filtered = filtered.filter(x => (x.prof.allActiveRegions || []).includes(regFilter));
-    }
-    if (brFilter !== 'ALL') {
-      filtered = filtered.filter(x => (x.prof.allActiveBranches || []).includes(brFilter));
-    }
-    if (searchVal) {
-      filtered = filtered.filter(({ comp }) => {
-        const hay = [
-          comp.name,
-          comp.shortName,
-          comp.hqCity,
-          comp.dsiProjectTitle,
-          comp.verificationSource
-        ].filter(Boolean).join(' ').toLocaleLowerCase('tr-TR');
-        return hay.includes(searchVal);
-      });
-    }
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:18px; color:var(--text-muted);">Seçilen kriterlere uygun DSİ kaynaklı rakip bulunamadı.</td></tr>`;
+  async inspectCompetitorWebsite(inputId = 'globalWebsiteInspectInput', compId = null, fillNewCompForm = false) {
+    const inputEl = document.getElementById(inputId);
+    const resultEl = document.getElementById(compId ? 'detailWebsiteInspectResult' : 'globalWebsiteInspectResult');
+    const rawUrl = (inputEl?.value || '').trim();
+    const normalized = this.normalizeWebsiteUrl(rawUrl);
+    if (!normalized) {
+      alert('Lütfen geçerli bir internet sayfası linki giriniz (Örn: https://www.firmaadi.com.tr).');
       return;
     }
 
-    tbody.innerHTML = filtered.map(({ comp: c, prof }) => {
-      const regionId = (prof.allActiveRegions && prof.allActiveRegions[0]) || (c.primaryRegions && c.primaryRegions[0]) || 'DSI-GM';
-      const subeId = (prof.allActiveBranches && prof.allActiveBranches[0]) || (c.primaryBranches && c.primaryBranches[0]) || 'ALL';
-      const branchLabel = subeId !== 'ALL' ? this.getBranchName(subeId) : `${regionId} Bölge`;
+    if (resultEl) {
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = `<div style="padding:10px; font-size:12.5px; color:#1e40af; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px;">⏳ <strong>${this.escapeHtml(normalized)}</strong> kurumsal sayfası taranıyor (Hakkımızda / Projeler / İletişim alt sayfaları dahil)...</div>`;
+    }
 
-      const compTenders = tenders.filter(t =>
-        t.winnerCompetitorId === c.id || (t.bids || []).some(b => b.competitorId === c.id)
-      );
-      const primaryTender = compTenders[0];
-      const projectTitle = c.dsiProjectTitle || primaryTender?.title || 'DSİ Yapım İşi';
-      const iknLabel = primaryTender?.ikn || (c.taxId || '').replace('EKAP-İKN-', '');
-      const contractVol = prof.totalWonVolume || prof.totalBidVolume || (primaryTender?.approxCost || 0);
+    try {
+      const resp = await fetch('/api/competitor/inspect-website', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: normalized, competitorId: compId })
+      });
+      const data = await resp.json().catch(() => null);
+      if (!resp.ok || !data || !data.ok) {
+        const errMsg = (data && data.error) ? data.error : 'Web sayfası sorgulanırken bağlantı hatası oluştu.';
+        if (resultEl) {
+          resultEl.style.display = 'block';
+          resultEl.innerHTML = `<div style="padding:10px; font-size:12.5px; color:#991b1b; background:#fef2f2; border:1px solid #fecaca; border-radius:6px;">⚠️ <strong>Sorgulama Tamamlanamadı:</strong> ${this.escapeHtml(errMsg)}</div>`;
+        } else {
+          alert(errMsg);
+        }
+        return;
+      }
 
-      const dsiUrl = c.dsiSourceUrl || c.officialSourceUrl || 'https://dsi.gov.tr';
-      const webSearchUrl = c.webSearchSource || c.officialSourceUrl || dsiUrl;
+      const p = data.profile || {};
+      if (fillNewCompForm) {
+        const nameEl = document.getElementById('newCompName');
+        const shortEl = document.getElementById('newCompShort');
+        const cityEl = document.getElementById('newCompCity');
+        const srcEl = document.getElementById('newCompSource');
+        if (nameEl && !nameEl.value.trim() && p.detectedCompanyName) nameEl.value = p.detectedCompanyName;
+        if (shortEl && !shortEl.value.trim() && p.detectedCompanyName) shortEl.value = p.detectedCompanyName;
+        if (cityEl && p.detectedCity) cityEl.value = p.detectedCity;
+        if (srcEl && !srcEl.value.trim()) srcEl.value = `Firma Web Sitesi (${p.domain || normalized})`;
+      }
 
-      return `
-        <tr>
-          <td>
-            <div style="font-weight:700; color:var(--corp-navy);">${this.escapeHtml(c.shortName || c.name)}</div>
-            <div style="font-size:11px; color:var(--text-muted);">${this.escapeHtml(c.name)} • ${this.escapeHtml(c.hqCity || '')}</div>
-          </td>
-          <td>
-            <span class="badge badge-verified" style="font-size:10.5px;">${this.escapeHtml(regionId)}</span>
-            <div style="font-size:11.5px; color:var(--text-secondary); margin-top:3px;">${this.escapeHtml(branchLabel)}</div>
-          </td>
-          <td style="max-width:290px;">
-            <div style="font-size:12px; font-weight:600; color:var(--text-primary);">${this.escapeHtml(projectTitle)}</div>
-            <div style="font-size:11px; color:#1d4ed8; font-family:monospace; margin-top:2px;">İKN: ${this.escapeHtml(iknLabel || '-')}</div>
-          </td>
-          <td style="white-space:nowrap;">
-            <div style="font-weight:700; color:#15803d;">${contractVol > 0 ? this.formatMillionsTL(contractVol) : 'İlan / Yapım'}</div>
-            <div style="font-size:11px; color:var(--text-muted);">${prof.verifiedTenderCount} Doğrulanmış İş</div>
-          </td>
-          <td>
-            <span class="badge badge-blue">%${prof.expectedDiscountPct.toFixed(2)}</span>
-          </td>
-          <td style="white-space:nowrap;">
-            <div style="display:flex; flex-direction:column; gap:4px;">
-              ${this.renderWebsiteButtonsHtml(c, false)}
-              <a href="${this.escapeHtml(dsiUrl)}" target="_blank" rel="noopener" onclick="App.openExternalUrl('${this.escapeHtml(dsiUrl)}'); return false;" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; text-align:center;">
-                DSİ Bölge Sayfası
-              </a>
-              <a href="${this.escapeHtml(webSearchUrl)}" target="_blank" rel="noopener" onclick="App.openExternalUrl('${this.escapeHtml(webSearchUrl)}'); return false;" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; text-align:center;">
-                İnternet / İKN Kaynağı
-              </a>
+      if (compId && data.updatedCompetitorId) {
+        await this.reloadDatabaseFromServer();
+      }
+
+      const targetResult = document.getElementById(compId ? 'detailWebsiteInspectResult' : 'globalWebsiteInspectResult');
+      if (targetResult) {
+        const kwHtml = (p.sectorKeywords || []).length > 0
+          ? p.sectorKeywords.map(k => `<span class="badge badge-blue" style="font-size:10.5px;">${this.escapeHtml(k)}</span>`).join(' ')
+          : '<span style="color:var(--text-muted); font-size:11.5px;">Belirgin su/altyapı etiketi saptanmadı</span>';
+        const projHtml = (p.projectMentions || []).length > 0
+          ? `<ul style="margin:6px 0 0 18px; font-size:12px;">${p.projectMentions.map(pm => `<li>${this.escapeHtml(pm)}</li>`).join('')}</ul>`
+          : '<div style="font-size:11.5px; color:var(--text-muted); margin-top:4px;">Web sitesi metninde doğrudan proje başlığı eşleşmedi.</div>';
+
+        const matchedLocal = (this.db?.competitors || []).find(c =>
+          this.getCompetitorWebsites(c).some(w => this.extractDomainLabel(w.url) === this.extractDomainLabel(p.url))
+        );
+
+        targetResult.style.display = 'block';
+        targetResult.innerHTML = `
+          <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:6px; padding:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
+              <div>
+                <strong style="color:#14532d; font-size:14px;">✅ ${this.escapeHtml(p.detectedCompanyName || p.title || p.domain)}</strong>
+                <div style="font-size:12px; color:#166534; margin-top:2px;">
+                  Sayfa Başlığı: ${this.escapeHtml(p.title || '-')} • İl: <strong>${this.escapeHtml(p.detectedCity || 'Belirtilmedi')}</strong> • Taranan Alt Sayfa: ${p.subpagesScanned || 0}
+                </div>
+              </div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <a href="${this.escapeHtml(p.url)}" target="_blank" rel="noopener noreferrer" onclick="return App.openExternalUrl(this.href);" class="btn btn-secondary btn-sm" style="font-size:11px; text-decoration:none;">Chrome'da Aç</a>
+                ${matchedLocal ? `<button class="btn btn-primary btn-sm" style="font-size:11px;" onclick="App.selectCompetitor('${matchedLocal.id}')">Kayıtlı Rakibi Aç (${this.escapeHtml(matchedLocal.shortName)})</button>` : `<button class="btn btn-emerald btn-sm" style="font-size:11px;" onclick="App.prefillCompetitorFromInspect('${this.escapeHtml(p.url)}', '${this.escapeHtml(p.detectedCompanyName || '')}', '${this.escapeHtml(p.detectedCity || '')}')">+ Yeni Rakip Formuna Aktar</button>`}
+              </div>
             </div>
-          </td>
-          <td style="white-space:nowrap;">
-            <div style="display:flex; flex-direction:column; gap:4px;">
-              <button class="btn btn-secondary btn-sm" style="font-size:11px;" onclick="App.openCompetitorDetailFromDashboard('${c.id}')">
-                Detay
-              </button>
-              <button class="btn btn-primary btn-sm" style="font-size:11px;" onclick="App.openSimulatorForDsiCompetitor('${regionId}', '${subeId}')">
-                Teklif Hesapla
-              </button>
+            <div style="font-size:12px; margin-top:8px; color:var(--text-primary);">
+              <strong>İletişim:</strong> ${(p.phones || []).join(', ') || 'Telefon bulunamadı'} | <strong>E-posta:</strong> ${(p.emails || []).join(', ') || 'E-posta bulunamadı'}
             </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
+            <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+              <strong style="font-size:11.5px;">Su/İnşaat Alanları:</strong> ${kwHtml}
+            </div>
+            <div style="margin-top:6px;">
+              <strong style="font-size:11.5px;">Web Sitesinde Tespit Edilen Proje / Referans İzleri:</strong>
+              ${projHtml}
+            </div>
+          </div>
+        `;
+      }
+    } catch (err) {
+      if (resultEl) {
+        resultEl.style.display = 'block';
+        resultEl.innerHTML = `<div style="padding:10px; font-size:12.5px; color:#991b1b; background:#fef2f2; border:1px solid #fecaca; border-radius:6px;">⚠️ Sunucuya ulaşılamadı: ${this.escapeHtml(err?.message || 'Bilinmeyen hata')}</div>`;
+      }
+    }
   },
 
-  openSimulatorForDsiCompetitor(regionId, subeId) {
-    const simRegion = document.getElementById('simRegion');
-    if (simRegion && regionId) {
-      simRegion.value = regionId;
-      this.populateSimBranches();
-    }
-    const simBranch = document.getElementById('simBranch');
-    if (simBranch && subeId && subeId !== 'ALL') {
-      const opt = Array.from(simBranch.options).find(o => o.value === subeId);
-      if (opt) simBranch.value = subeId;
-    }
-    const btn = document.querySelector('[data-tab="tab-simulator"]');
-    this.switchTab('tab-simulator', btn);
-    this.onSimParamsChanged();
-    this.runMonteCarloSimulation();
+  prefillCompetitorFromInspect(url, firmName, city) {
+    const box = document.getElementById('newCompetitorBox');
+    if (box && box.style.display === 'none') this.toggleNewCompetitorBox();
+    const nEl = document.getElementById('newCompName');
+    const sEl = document.getElementById('newCompShort');
+    const cEl = document.getElementById('newCompCity');
+    const wEl = document.getElementById('newCompWebsite');
+    const srcEl = document.getElementById('newCompSource');
+    if (nEl && firmName) nEl.value = firmName;
+    if (sEl && firmName) sEl.value = firmName;
+    if (cEl && city) cEl.value = city;
+    if (wEl && url) wEl.value = url;
+    if (srcEl && !srcEl.value.trim()) srcEl.value = `Firma Kurumsal Web Sitesi (${this.extractDomainLabel(url)})`;
+    box?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   },
 
   selectCompetitor(compId) {
@@ -1334,7 +1335,7 @@ const App = {
             <td><strong>${rb.tenderCount}</strong> İhale (<strong>${rb.winCount}</strong> Kazanılan)</td>
             <td>
               <strong style="color:#b45309;">${this.formatDiscountText(rb.avgDiscountPct)}</strong>
-              <div style="font-size:11px; color:var(--text-muted);">SD Farkı: ${rb.avgRelToSdPct >= 0 ? '+' : ''}%${rb.avgRelToSdPct.toFixed(2)}</div>
+              <div style="font-size:11px; color:var(--text-muted);">SD Farkı: ${this.formatSignedPct(rb.avgRelToSdPct)}</div>
             </td>
             <td>
               <span style="font-weight:700;">${rb.wonVolumeTL > 0 ? this.formatTL(rb.wonVolumeTL) : (rb.totalBidVolumeTL > 0 ? this.formatTL(rb.totalBidVolumeTL) : '-')}</span>
@@ -1375,7 +1376,7 @@ const App = {
               <div style="font-size:11px; color:#1e40af; font-weight:600;">${this.getRegionName(h.regionId)}${h.subeName ? ` • ${h.subeName}` : ''}</div>
             </td>
             <td style="font-weight:600;">${this.formatTL(h.bidAmount)}</td>
-            <td><strong style="color:#b45309;">%${h.discountPct.toFixed(2)}</strong></td>
+            <td><strong style="color:#b45309;">${this.formatDiscountText(h.discountPct)}</strong></td>
             <td>
               <span class="badge ${h.isWinner ? 'badge-verified' : (h.belowSD ? 'badge-rose' : 'badge-blue')}">
                 ${h.isWinner ? 'İhaleyi Kazandı (Sözleşme)' : (h.belowSD ? 'Sınır Değer Altı' : `Sınır Değerin +%${h.relToSdPct.toFixed(2)} Üzeri`)}
@@ -1383,6 +1384,18 @@ const App = {
             </td>
           </tr>
         `).join('');
+
+    const dsiLinkClean = this.normalizeWebsiteUrl(comp.dsiSourceUrl);
+    const webSourceClean = this.normalizeWebsiteUrl(comp.webSearchSource);
+    const wp = comp.websiteProfile;
+    const savedProfileHtml = wp ? `
+      <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:6px; padding:10px 12px; margin-bottom:10px; font-size:12px;">
+        <strong>🌐 Kayıtlı Web Profili (${this.escapeHtml(wp.domain || '')} — ${this.escapeHtml(wp.inspectedAt || '')}):</strong>
+        ${wp.detectedCompanyName ? `<div>Ünvan: <strong>${this.escapeHtml(wp.detectedCompanyName)}</strong>${wp.detectedCity ? ` (${this.escapeHtml(wp.detectedCity)})` : ''}</div>` : ''}
+        <div>İletişim: ${(wp.phones || []).join(', ') || '-'} | E-posta: ${(wp.emails || []).join(', ') || '-'}</div>
+        ${(wp.sectorKeywords || []).length ? `<div style="margin-top:4px;">Alanlar: ${wp.sectorKeywords.map(k => `<span class="badge badge-blue" style="font-size:10px; margin-right:3px;">${this.escapeHtml(k)}</span>`).join('')}</div>` : ''}
+      </div>
+    ` : '';
 
     container.innerHTML = `
       <div class="card-header" style="flex-wrap:wrap; gap:10px;">
@@ -1396,6 +1409,8 @@ const App = {
           </div>
           <div style="display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:6px;">
             ${this.renderWebsiteButtonsHtml(comp, false) || '<span style="font-size:11.5px; color:var(--text-muted);">Kayıtlı kurumsal web sayfası henüz eklenmedi</span>'}
+            ${dsiLinkClean ? `<a href="${this.escapeHtml(dsiLinkClean)}" target="_blank" rel="noopener noreferrer" onclick="return App.openExternalUrl(this.href);" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; background:#ecfdf5; color:#047857; border-color:#a7f3d0;">🏛 DSİ Bölge Sayfası</a>` : ''}
+            ${webSourceClean ? `<a href="${this.escapeHtml(webSourceClean)}" target="_blank" rel="noopener noreferrer" onclick="return App.openExternalUrl(this.href);" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none;">🔗 EKAP / Resmi Kaynak</a>` : ''}
           </div>
         </div>
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
@@ -1404,29 +1419,32 @@ const App = {
         </div>
       </div>
 
-      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:#f8fafc; border:1px solid var(--border-color); padding:8px 12px; border-radius:6px; margin-bottom:12px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:#f8fafc; border:1px solid var(--border-color); padding:8px 12px; border-radius:6px; margin-bottom:10px;">
         <span style="font-size:12px; font-weight:700; color:var(--corp-navy);">🌐 Firma İnternet Sayfası:</span>
-        <input type="url" id="detailCompWebsiteInput" value="${this.escapeHtml(comp.website || '')}" placeholder="https://www.firmaadi.com.tr" style="flex:1 1 240px; min-width:190px; padding:5px 9px; font-size:12px;">
+        <input type="url" id="detailCompWebsiteInput" value="${this.escapeHtml(comp.website || '')}" placeholder="https://www.firmaadi.com.tr" style="flex:1 1 220px; min-width:170px; padding:5px 9px; font-size:12px;">
         <button class="btn btn-secondary btn-sm" onclick="App.updateCompetitorWebsite('${comp.id}')">Web Sitesini Kaydet</button>
+        <button class="btn btn-primary btn-sm" onclick="App.inspectCompetitorWebsite('detailCompWebsiteInput', '${comp.id}')">🔍 Sitesinden Bilgileri Sorgula</button>
       </div>
+      <div id="detailWebsiteInspectResult" style="display:none; margin-bottom:10px;"></div>
+      ${savedProfileHtml}
 
       ${comp.notes ? `<div style="background:#f0fdf4; border:1px solid #86efac; color:#14532d; padding:10px 12px; border-radius:6px; font-size:12.5px; margin-bottom:14px;"><strong>Resmi İhale Özeti:</strong> ${comp.notes}</div>` : ''}
 
       <div class="form-row-3" style="margin-bottom:14px;">
         <div style="background:#f8fafc; padding:12px; border-radius:6px; border:1px solid var(--border-color);">
           <div style="font-size:11.5px; color:var(--text-secondary); font-weight:600;">Geçmiş Ortalama İndirimi</div>
-          <div style="font-size:19px; font-weight:800; color:var(--corp-navy); margin-top:2px;">%${prof.historicalMeanDiscountPct.toFixed(2)}</div>
+          <div style="font-size:19px; font-weight:800; color:var(--corp-navy); margin-top:2px;">${this.formatDiscountText(prof.historicalMeanDiscountPct)}</div>
           <div style="font-size:11.5px; color:var(--text-muted);">±%${prof.historicalStdDiscountPct.toFixed(2)} Sapma Aralığı</div>
         </div>
         <div style="background:#f8fafc; padding:12px; border-radius:6px; border:1px solid var(--border-color);">
           <div style="font-size:11.5px; color:var(--text-secondary); font-weight:600;">Sınır Değere Göre Farkı</div>
-          <div style="font-size:19px; font-weight:800; color:#15803d; margin-top:2px;">${prof.relToSdMeanPct >= 0 ? '+' : ''}%${prof.relToSdMeanPct.toFixed(2)}</div>
+          <div style="font-size:19px; font-weight:800; color:#15803d; margin-top:2px;">${this.formatSignedPct(prof.relToSdMeanPct)}</div>
           <div style="font-size:11.5px; color:var(--text-muted);">Sınır Değere Ortalama Uzaklık</div>
         </div>
         <div style="background:#eff6ff; padding:12px; border-radius:6px; border:1px solid #93c5fd;">
           <div style="font-size:11.5px; color:#1e40af; font-weight:700;">Güncel Beklenen İndirimi</div>
-          <div style="font-size:19px; font-weight:800; color:#1d4ed8; margin-top:2px;">%${prof.expectedDiscountPct.toFixed(2)}</div>
-          <div style="font-size:11.5px; color:var(--text-secondary);">Şantiye Durum Etkisi: ${prof.signalDiscountShift >= 0 ? '+' : ''}%${prof.signalDiscountShift.toFixed(2)}</div>
+          <div style="font-size:19px; font-weight:800; color:#1d4ed8; margin-top:2px;">${this.formatDiscountText(prof.expectedDiscountPct)}</div>
+          <div style="font-size:11.5px; color:var(--text-secondary);">Şantiye Durum Etkisi: ${this.formatSignedPct(prof.signalDiscountShift)}</div>
         </div>
       </div>
 
@@ -1782,7 +1800,7 @@ const App = {
               </td>
               <td>
                 <div style="font-weight:800; color:#b45309; font-size:14px;">${this.formatDiscountText(c.regionAvgDiscountPct)}</div>
-                <div style="font-size:11px; color:var(--text-muted);">SD Farkı: ${c.regionAvgRelToSdPct >= 0 ? '+' : ''}%${c.regionAvgRelToSdPct.toFixed(2)}</div>
+                <div style="font-size:11px; color:var(--text-muted);">SD Farkı: ${this.formatSignedPct(c.regionAvgRelToSdPct)}</div>
               </td>
               <td style="font-weight:700;">
                 ${c.regionWonVolumeTL > 0 ? this.formatTL(c.regionWonVolumeTL) : (c.regionTotalBidVolumeTL > 0 ? this.formatTL(c.regionTotalBidVolumeTL) : '-')}
@@ -1811,7 +1829,7 @@ const App = {
           tenderTbody.innerHTML = filteredRegTenders.map(t => {
             const sdDisc = ((t.approxCost - t.reportedBoundaryValue) / t.approxCost) * 100;
             const winBid = (t.bids || []).find(b => b.competitorId === t.winnerCompetitorId) || (t.bids || [])[0];
-            const winDisc = winBid ? (((t.approxCost - winBid.amount) / t.approxCost) * 100).toFixed(2) : '-';
+            const winDisc = winBid ? (((t.approxCost - winBid.amount) / t.approxCost) * 100) : null;
             const winName = t.winnerCompetitorId ? this.getCompetitorName(t.winnerCompetitorId) : '-';
 
             return `
@@ -1828,11 +1846,13 @@ const App = {
                 <td style="font-weight:600;">${this.formatTL(t.approxCost)}</td>
                 <td>
                   <strong style="color:#b45309;">${this.formatTL(t.reportedBoundaryValue)}</strong>
-                  <div style="font-size:11px; color:var(--text-muted);">%${sdDisc.toFixed(2)} İndirim</div>
+                  <div style="font-size:11px; color:var(--text-muted);">${this.formatDiscountText(sdDisc)}</div>
                 </td>
                 <td>
                   <span class="badge badge-verified">${winName}</span>
-                  <div style="font-size:11px; color:#15803d; font-weight:700; margin-top:2px;">%${winDisc} İndirim</div>
+                  <div style="font-size:11px; color:#15803d; font-weight:700; margin-top:2px;">
+                    ${winBid ? `${this.formatTL(winBid.amount)} • ${this.formatDiscountText(winDisc)}` : '-'}
+                  </div>
                 </td>
               </tr>
             `;
@@ -2211,7 +2231,7 @@ Sınır Değer Katsayısı (N): 1,20
           <td style="font-weight:600;">${this.formatTL(t.approxCost)}</td>
           <td>
             <strong style="color:#b45309;">${this.formatTL(t.reportedBoundaryValue)}</strong>
-            <div style="font-size:11.5px; color:var(--text-muted);">%${sdDisc.toFixed(2)} İndirim</div>
+            <div style="font-size:11.5px; color:var(--text-muted);">${this.formatDiscountText(sdDisc)}</div>
           </td>
           <td>
             <span class="badge ${audit.isMathematicallyConsistent ? 'badge-verified' : 'badge-rose'}" title="${audit.message}">

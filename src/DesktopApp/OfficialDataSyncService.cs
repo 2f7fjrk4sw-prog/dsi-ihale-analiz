@@ -913,7 +913,7 @@ namespace DSIIhaleZekasi
                 ("DSI-26", "DSİ 26. Bölge (Artvin/Yusufeli/Çoruh)", "https://bolge26.dsi.gov.tr")
             };
 
-            string[] subPaths = { "", "/Ihale/IhaleListe", "/Ihale/Arsiv", "/Duyuru/DuyuruListe" };
+            string[] subPaths = { "", "/Ihale/IhaleListe", "/Ihale/IhaleSonuc", "/Ihale/Arsiv", "/Duyuru/DuyuruListe", "/Duyuru/TumDuyurular" };
 
             int reachableRegions = 0;
             int archivedRegions = 0;
@@ -1022,12 +1022,254 @@ namespace DSIIhaleZekasi
             healthList.Add(new SourceHealthItem
             {
                 SourceName = "DSİ Genel Müdürlüğü ve 26 Bölge Müdürlüğü Resmi Web Siteleri (bolge01..26.dsi.gov.tr)",
-                EndpointUrl = "https://dsi.gov.tr & https://bolge01..26.dsi.gov.tr (/Ihale/IhaleListe, /Ihale/Arsiv, /Duyuru/DuyuruListe)",
+                EndpointUrl = "https://dsi.gov.tr & https://bolge01..26.dsi.gov.tr (/Ihale/IhaleListe, /Ihale/IhaleSonuc, /Ihale/Arsiv, /Duyuru/DuyuruListe)",
                 Status = statusSummary,
                 HttpCode = reachableRegions > 0 ? 200 : 408,
                 LastChecked = DateTime.Now.ToString("HH:mm:ss"),
                 ItemsFound = announcementsFound
             });
+        }
+
+        // =====================================================================
+        // YÜKLENİCİ FİRMA WEB SİTESİNDEN OTOMATİK ANALİZ VE PROFİL SORGULAMA
+        // =====================================================================
+        public async Task<string> InspectCompanyWebsiteAsync(string rawUrl, string? competitorId = null)
+        {
+            string candidate = (rawUrl ?? "").Trim();
+            if (string.IsNullOrWhiteSpace(candidate))
+            {
+                return new JsonObject { ["ok"] = false, ["error"] = "Web adresi boş olamaz." }.ToJsonString();
+            }
+
+            if (!candidate.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !candidate.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                candidate = "https://" + candidate.TrimStart('/');
+            }
+
+            if (!Uri.TryCreate(candidate, UriKind.Absolute, out Uri? baseUri) ||
+                (baseUri.Scheme != Uri.UriSchemeHttp && baseUri.Scheme != Uri.UriSchemeHttps))
+            {
+                return new JsonObject { ["ok"] = false, ["error"] = "Yalnızca geçerli http:// veya https:// adresleri sorgulanabilir." }.ToJsonString();
+            }
+
+            // SSRF koruması: yerel ağ ve loopback adreslerini reddet
+            string host = baseUri.Host;
+            if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase) || host.EndsWith(".local", StringComparison.OrdinalIgnoreCase))
+            {
+                return new JsonObject { ["ok"] = false, ["error"] = "Yerel ağ adresleri sorgulanamaz." }.ToJsonString();
+            }
+            if (IPAddress.TryParse(host, out var directIp) && IsPrivateOrLoopbackIp(directIp))
+            {
+                return new JsonObject { ["ok"] = false, ["error"] = "Özel veya loopback IP adresleri sorgulanamaz." }.ToJsonString();
+            }
+            try
+            {
+                var resolved = await Dns.GetHostAddressesAsync(host);
+                if (resolved.Any(IsPrivateOrLoopbackIp))
+                {
+                    return new JsonObject { ["ok"] = false, ["error"] = "Alan adı özel ağ IP adresine çözümlendiği için engellendi." }.ToJsonString();
+                }
+            }
+            catch (Exception dnsEx)
+            {
+                return new JsonObject { ["ok"] = false, ["error"] = $"Alan adı çözümlenemedi ({host}): {dnsEx.Message}" }.ToJsonString();
+            }
+
+            string homeHtml = await TryFetchRawPageAsync(baseUri.AbsoluteUri, 10);
+            if (string.IsNullOrWhiteSpace(homeHtml))
+            {
+                return new JsonObject { ["ok"] = false, ["error"] = $"{baseUri.Host} web sitesine bağlanılamadı veya sayfa boş döndü." }.ToJsonString();
+            }
+
+            var combinedText = new StringBuilder();
+            combinedText.AppendLine(ExtractVisibleTextFromHtml(homeHtml));
+
+            // Hakkımızda, Kurumsal, Projeler, İletişim alt sayfalarından ek bilgi topla (en fazla 3 alt sayfa)
+            string origin = $"{baseUri.Scheme}://{baseUri.Authority}";
+            string[] subCandidates = { "/hakkimizda", "/kurumsal", "/projeler", "/projelerimiz", "/referanslar", "/iletisim" };
+            int subSuccess = 0;
+            foreach (string sp in subCandidates)
+            {
+                if (subSuccess >= 3) break;
+                string subHtml = await TryFetchRawPageAsync(origin + sp, 6);
+                if (!string.IsNullOrWhiteSpace(subHtml) && subHtml.Length > 400)
+                {
+                    combinedText.AppendLine(ExtractVisibleTextFromHtml(subHtml));
+                    subSuccess++;
+                }
+            }
+
+            string fullText = combinedText.ToString();
+            string title = ExtractHtmlTagText(homeHtml, "title");
+            string metaDesc = ExtractMetaDescription(homeHtml);
+            string h1 = ExtractHtmlTagText(homeHtml, "h1");
+
+            string detectedCompanyName = InferCompanyNameFromWeb(title, h1, fullText, host);
+            string detectedCity = InferTurkishCityFromWeb(fullText);
+            var emails = Regex.Matches(fullText, @"\b[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}\b", RegexOptions.IgnoreCase)
+                .Select(m => m.Value.ToLowerInvariant())
+                .Distinct()
+                .Take(4)
+                .ToList();
+            var phones = Regex.Matches(fullText, @"(?:\+90|0)\s*\(?\s*\d{3}\s*\)?[\s.\-]*\d{3}[\s.\-]*\d{2}[\s.\-]*\d{2}")
+                .Select(m => Regex.Replace(m.Value, @"\s+", " ").Trim())
+                .Distinct()
+                .Take(4)
+                .ToList();
+
+            string[] dsiKeywords = { "DSİ", "Devlet Su İşleri", "Baraj", "Gölet", "Sulama", "Taşkın", "Dere Islahı", "İsale", "İçmesuyu", "Altyapı", "Tünel", "Regülatör", "Kanalizasyon", "HES" };
+            var matchedKeywords = dsiKeywords
+                .Where(kw => fullText.Contains(kw, StringComparison.OrdinalIgnoreCase))
+                .Distinct()
+                .ToList();
+
+            var projectMentions = Regex.Matches(fullText, @"([A-ZÇĞİÖŞÜ0-9][^.\n]{6,90}(?:Barajı|Göleti|Sulaması|Islahı|Taşkın|İkmali|İnşaatı))", RegexOptions.IgnoreCase)
+                .Select(m => Regex.Replace(m.Groups[1].Value, @"\s+", " ").Trim())
+                .Where(s => s.Length >= 14 && s.Length <= 110)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(6)
+                .ToList();
+
+            var profileObj = new JsonObject
+            {
+                ["url"] = baseUri.AbsoluteUri,
+                ["domain"] = host.Replace("www.", "", StringComparison.OrdinalIgnoreCase),
+                ["title"] = title,
+                ["metaDescription"] = metaDesc,
+                ["detectedCompanyName"] = detectedCompanyName,
+                ["detectedCity"] = detectedCity,
+                ["emails"] = new JsonArray(emails.Select(e => JsonValue.Create(e)).ToArray()),
+                ["phones"] = new JsonArray(phones.Select(p => JsonValue.Create(p)).ToArray()),
+                ["sectorKeywords"] = new JsonArray(matchedKeywords.Select(k => JsonValue.Create(k)).ToArray()),
+                ["projectMentions"] = new JsonArray(projectMentions.Select(p => JsonValue.Create(p)).ToArray()),
+                ["inspectedAt"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                ["subpagesScanned"] = subSuccess
+            };
+
+            string? updatedCompId = null;
+            if (!string.IsNullOrWhiteSpace(competitorId))
+            {
+                await DbFileLock.WaitAsync();
+                try
+                {
+                    if (File.Exists(_dbFilePath))
+                    {
+                        string rawDb = await File.ReadAllTextAsync(_dbFilePath, Encoding.UTF8);
+                        var root = JsonNode.Parse(rawDb)?.AsObject();
+                        var comps = root?["competitors"]?.AsArray();
+                        var targetComp = comps?
+                            .Select(n => n as JsonObject)
+                            .FirstOrDefault(c => c != null && string.Equals(c["id"]?.GetValue<string>(), competitorId, StringComparison.OrdinalIgnoreCase));
+
+                        if (root != null && targetComp != null)
+                        {
+                            targetComp["website"] = baseUri.AbsoluteUri;
+                            targetComp["websiteOwner"] = targetComp["shortName"]?.GetValue<string>() ?? detectedCompanyName;
+                            targetComp["websiteProfile"] = JsonNode.Parse(profileObj.ToJsonString());
+                            if (!string.IsNullOrWhiteSpace(detectedCity) && string.IsNullOrWhiteSpace(targetComp["hqCity"]?.GetValue<string>()))
+                            {
+                                targetComp["hqCity"] = detectedCity;
+                            }
+                            var partnersArr = targetComp["partnerWebsites"]?.AsArray() ?? new JsonArray();
+                            if (!partnersArr.Any(x => string.Equals(x?["url"]?.GetValue<string>(), baseUri.AbsoluteUri, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                partnersArr.Insert(0, new JsonObject
+                                {
+                                    ["name"] = targetComp["shortName"]?.GetValue<string>() ?? detectedCompanyName,
+                                    ["url"] = baseUri.AbsoluteUri
+                                });
+                            }
+                            targetComp["partnerWebsites"] = partnersArr;
+
+                            string updatedJson = root.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
+                            await File.WriteAllTextAsync(_dbFilePath, updatedJson, Utf8NoBom);
+                            byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(updatedJson));
+                            await File.WriteAllTextAsync(_dbFilePath + ".sha256", Convert.ToHexString(hash), Utf8NoBom);
+                            updatedCompId = competitorId;
+                        }
+                    }
+                }
+                finally
+                {
+                    DbFileLock.Release();
+                }
+            }
+
+            AddLog("Web Sitesi Sorgulama", "SUCCESS",
+                $"Kurumsal web sitesi analiz edildi: {detectedCompanyName} ({baseUri.Host}) — {matchedKeywords.Count} DSİ/altyapı anahtar kelimesi, {projectMentions.Count} proje referansı bulundu.");
+
+            return new JsonObject
+            {
+                ["ok"] = true,
+                ["updatedCompetitorId"] = updatedCompId ?? "",
+                ["profile"] = profileObj
+            }.ToJsonString();
+        }
+
+        private static bool IsPrivateOrLoopbackIp(IPAddress ip)
+        {
+            if (IPAddress.IsLoopback(ip)) return true;
+            if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+            {
+                return ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal || ip.IsIPv6Multicast;
+            }
+            byte[] b = ip.GetAddressBytes();
+            if (b.Length != 4) return false;
+            return b[0] == 10 ||
+                   (b[0] == 172 && b[1] >= 16 && b[1] <= 31) ||
+                   (b[0] == 192 && b[1] == 168) ||
+                   (b[0] == 169 && b[1] == 254) ||
+                   b[0] == 0;
+        }
+
+        private static string ExtractVisibleTextFromHtml(string html)
+        {
+            string noScripts = Regex.Replace(html, @"<(?:script|style|noscript|svg)[^>]*>[\s\S]*?</(?:script|style|noscript|svg)>", " ", RegexOptions.IgnoreCase);
+            string stripped = Regex.Replace(noScripts, @"<[^>]+>", "\n");
+            return WebUtility.HtmlDecode(Regex.Replace(stripped, @"[ \t\r]+", " "));
+        }
+
+        private static string ExtractHtmlTagText(string html, string tagName)
+        {
+            var m = Regex.Match(html, $@"<{tagName}[^>]*>([\s\S]*?)</{tagName}>", RegexOptions.IgnoreCase);
+            if (!m.Success) return "";
+            return WebUtility.HtmlDecode(Regex.Replace(Regex.Replace(m.Groups[1].Value, "<[^>]+>", " "), @"\s+", " ")).Trim();
+        }
+
+        private static string ExtractMetaDescription(string html)
+        {
+            var m = Regex.Match(html, @"<meta[^>]+name=[""']description[""'][^>]+content=[""']([^""']*)[""']", RegexOptions.IgnoreCase);
+            if (!m.Success) m = Regex.Match(html, @"<meta[^>]+content=[""']([^""']*)[""'][^>]+name=[""']description[""']", RegexOptions.IgnoreCase);
+            return m.Success ? WebUtility.HtmlDecode(m.Groups[1].Value).Trim() : "";
+        }
+
+        private static string InferCompanyNameFromWeb(string title, string h1, string fullText, string host)
+        {
+            var legalMatch = Regex.Match(fullText, @"([A-ZÇĞİÖŞÜ][^\n|•]{4,85}?(?:A\.Ş\.|Anonim Şirketi|Ltd\. Şti\.|Limited Şirketi|İnşaat[^\n|•]{0,30}))");
+            if (legalMatch.Success)
+            {
+                string found = Regex.Replace(legalMatch.Groups[1].Value, @"\s+", " ").Trim();
+                if (found.Length >= 6 && found.Length <= 100) return found;
+            }
+            if (!string.IsNullOrWhiteSpace(title) && title.Length >= 4)
+            {
+                string firstPart = title.Split(new[] { '|', '-', '—', '•' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault()?.Trim() ?? title;
+                if (firstPart.Length >= 4) return firstPart;
+            }
+            if (!string.IsNullOrWhiteSpace(h1) && h1.Length >= 4) return h1;
+            return host.Replace("www.", "", StringComparison.OrdinalIgnoreCase).ToUpperInvariant();
+        }
+
+        private static string InferTurkishCityFromWeb(string fullText)
+        {
+            string[] cities = { "Ankara", "İstanbul", "İzmir", "Bursa", "Antalya", "Adana", "Konya", "Gaziantep", "Şanlıurfa", "Diyarbakır", "Mersin", "Kayseri", "Eskişehir", "Samsun", "Trabzon", "Elazığ", "Malatya", "Erzurum", "Van", "Kahramanmaraş", "Isparta", "Balıkesir", "Kocaeli", "Tekirdağ", "Edirne", "Sivas", "Denizli", "Aydın", "Muğla", "Kastamonu" };
+            foreach (string c in cities)
+            {
+                if (Regex.IsMatch(fullText, $@"\b{Regex.Escape(c)}\b", RegexOptions.IgnoreCase))
+                    return c;
+            }
+            return "";
         }
 
         // =====================================================================

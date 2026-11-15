@@ -111,7 +111,7 @@ namespace DSIIhaleZekasi
                 try
                 {
                     string existingJson = File.ReadAllText(appDataDbFile, Encoding.UTF8);
-                    if (existingJson.Contains("\"version\": \"2.5.1\""))
+                    if (existingJson.Contains("\"version\": \"2.6.0\""))
                     {
                         forceUpgradeDb = false;
                     }
@@ -137,7 +137,7 @@ namespace DSIIhaleZekasi
                 try
                 {
                     string localJson = File.ReadAllText(localDb, Encoding.UTF8);
-                    if (!localJson.Contains("\"officialSourcesOnly\": true") || !localJson.Contains("\"version\": \"2.5.1\""))
+                    if (!localJson.Contains("\"officialSourcesOnly\": true") || !localJson.Contains("\"version\": \"2.6.0\""))
                     {
                         ExtractEmbeddedResource("data/verified_db.json", localDb, overwrite: true);
                     }
@@ -277,6 +277,13 @@ namespace DSIIhaleZekasi
                     return;
                 }
 
+                if (path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase))
+                {
+                    resp.StatusCode = 204;
+                    resp.Close();
+                    return;
+                }
+
                 if (path.Equals("/api/browser-provider", StringComparison.OrdinalIgnoreCase))
                 {
                     string? chromePath = FindChromeExecutablePath();
@@ -309,6 +316,22 @@ namespace DSIIhaleZekasi
                     };
                     if (!opened) resp.StatusCode = 400;
                     byte[] bytes = Encoding.UTF8.GetBytes(resObj.ToJsonString());
+                    resp.ContentType = "application/json; charset=utf-8";
+                    resp.ContentLength64 = bytes.Length;
+                    await resp.OutputStream.WriteAsync(bytes);
+                    resp.Close();
+                    return;
+                }
+
+                if (path.Equals("/api/competitor/inspect-website", StringComparison.OrdinalIgnoreCase) && req.HttpMethod == "POST")
+                {
+                    using var reader = new StreamReader(req.InputStream, Encoding.UTF8);
+                    string body = await reader.ReadToEndAsync();
+                    var node = JsonNode.Parse(body)?.AsObject();
+                    string targetUrl = node?["url"]?.GetValue<string>() ?? "";
+                    string? competitorId = node?["competitorId"]?.GetValue<string>();
+                    string resultJson = await _syncService.InspectCompanyWebsiteAsync(targetUrl, competitorId);
+                    byte[] bytes = Encoding.UTF8.GetBytes(resultJson);
                     resp.ContentType = "application/json; charset=utf-8";
                     resp.ContentLength64 = bytes.Length;
                     await resp.OutputStream.WriteAsync(bytes);
@@ -479,15 +502,21 @@ namespace DSIIhaleZekasi
             {
                 try
                 {
-                    string args = asAppWindow
-                        ? $"--new-window --app=\"{normalized}\""
-                        : $"\"{normalized}\"";
-                    Process.Start(new ProcessStartInfo
+                    var psi = new ProcessStartInfo
                     {
                         FileName = chromePath,
-                        Arguments = args,
                         UseShellExecute = false
-                    });
+                    };
+                    if (asAppWindow)
+                    {
+                        psi.ArgumentList.Add("--new-window");
+                        psi.ArgumentList.Add($"--app={normalized}");
+                    }
+                    else
+                    {
+                        psi.ArgumentList.Add(normalized);
+                    }
+                    Process.Start(psi);
                     return (true, "Google Chrome", null);
                 }
                 catch { }

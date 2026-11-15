@@ -41,7 +41,7 @@ dsi-ihale-analiz/
 ├── PROJECT.md                              # AI & Geliştirici Mimari ve Matematik Referans Belgesi
 ├── DSIIhaleZekasi_Kurulum_Setup.exe        # Tek Tıkla Kurulabilir Windows Setup Sihirbazı
 ├── data/
-│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale, Rakip ve Kurumsal Web Sitesi Veritabanı (v2.5.1)
+│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale, Rakip ve Kurumsal Web Sitesi Veritabanı (v2.6.0)
 │   └── verified_db.json.sha256             # SHA-256 Veri Bütünlük Mührü
 ├── src/
 │   ├── ui/

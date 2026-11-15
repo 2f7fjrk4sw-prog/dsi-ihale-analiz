@@ -67,28 +67,24 @@
         <div class="nav-section-label">Kayıt ve Veri Yönetimi</div>
         <button class="nav-btn" data-tab="tab-competitors" onclick="App.switchTab('tab-competitors', this)">
           <span class="nav-num">3</span>
-          <span>Rakip Firma Kayıtları</span>
-        </button>
-        <button class="nav-btn" data-tab="tab-dsi-competitors" onclick="App.switchTab('tab-dsi-competitors', this)">
-          <span class="nav-num">4</span>
-          <span>DSİ Kaynaklarından Bulunan Rakipler</span>
+          <span>Rakip Firma Kayıtları (Tümü)</span>
         </button>
         <button class="nav-btn" data-tab="tab-regional" onclick="App.switchTab('tab-regional', this)">
-          <span class="nav-num">5</span>
+          <span class="nav-num">4</span>
           <span>Bölge ve Şube Bazlı Rakip Analizi</span>
         </button>
         <button class="nav-btn" data-tab="tab-datacenter" onclick="App.switchTab('tab-datacenter', this)">
-          <span class="nav-num">6</span>
+          <span class="nav-num">5</span>
           <span>İhale Tutanağı ve Veri Girişi</span>
         </button>
         <button class="nav-btn" data-tab="tab-officialsync" onclick="App.switchTab('tab-officialsync', this)">
-          <span class="nav-num">7</span>
+          <span class="nav-num">6</span>
           <span>Otomatik Resmi Veri Tarama</span>
         </button>
 
         <div class="nav-section-label">Mevzuat Hesap Cetveli</div>
         <button class="nav-btn" data-tab="tab-kikcalc" onclick="App.switchTab('tab-kikcalc', this)">
-          <span class="nav-num">8</span>
+          <span class="nav-num">7</span>
           <span>KİK Sınır Değer Hesap Cetveli</span>
         </button>
       </div>
@@ -418,16 +414,61 @@
       <section id="tab-competitors" class="tab-pane">
         <div class="page-header">
           <div>
-            <h2>3. Rakip Firma (İstekli) Kayıtları ve Şantiye Durum Analizi</h2>
-            <p>Rakip müteahhit firmaların geçmiş DSİ ihalelerindeki tekliflerini, mevcut şantiye doluluk oranlarını ve resmi sicil/sözleşme bilgilerini inceleyin</p>
+            <h2>3. Birleşik Rakip Firma Kayıtları, DSİ Keşifleri ve Web Sorgulama Merkezi</h2>
+            <p>KİK / EKAP kararları, DSİ Bölge Müdürlükleri (bolge01..26.dsi.gov.tr) ve firma web sitelerinden doğrulanan tüm rakipleri tek ekranda inceleyin veya yüklenici web sitesi linkinden firma profili sorgulayın</p>
           </div>
-          <button class="btn btn-primary" onclick="App.toggleNewCompetitorBox()">
-            + Yeni Rakip Firma Kaydı Ekle
-          </button>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-emerald" onclick="App.triggerOfficialSyncNow()">
+              ↻ DSİ Sitelerini Tara ve Rakipleri Yenile
+            </button>
+            <button class="btn btn-primary" onclick="App.toggleNewCompetitorBox()">
+              + Yeni Rakip Firma Kaydı Ekle
+            </button>
+          </div>
         </div>
 
         <div class="info-guide-banner">
-          <strong>Resmi Kaynak Zorunluluğu:</strong> Bu bölümde yer alan tüm rakip firmalar ve üstlendikleri işler, doğrudan <strong>Kamu İhale Kurulu (KİK) Resmi Uyuşmazlık Kararları (kik.gov.tr)</strong> ve <strong>EKAP Resmi İhale Sonuç İlanları (ekap.kik.gov.tr)</strong> kayıtlarından alınmıştır. Yeni bir firma veya şantiye bilgisi eklerken resmi kaynak türü ve İKN / KİK Karar Numarası girilmesi zorunludur.
+          <strong>Birleşik Resmi Rakip Dizini:</strong> KİK Uyuşmazlık Kararları, EKAP İhale Sonuçları ve DSİ 1–26. Bölge Müdürlüklerinin kendi portallarından çekilip internette doğrulanan tüm yüklenici firmalar tek bir merkezde toplanmıştır. Tüm kurumsal web sitesi, DSİ ve EKAP bağlantıları Google Chrome ile doğrudan açılır.
+        </div>
+
+        <div class="kpi-grid" style="margin-bottom:16px;">
+          <div class="kpi-card navy">
+            <div class="kpi-label">Toplam Doğrulanmış Rakip</div>
+            <div class="kpi-value" id="compKpiTotal">-</div>
+            <div class="kpi-sub">Tüm resmi kaynaklar birleşik</div>
+          </div>
+          <div class="kpi-card blue">
+            <div class="kpi-label">KİK / EKAP Karar Kayıtlı</div>
+            <div class="kpi-value" id="compKpiKik">-</div>
+            <div class="kpi-sub">Kurul kararı ve sonuç ilanı</div>
+          </div>
+          <div class="kpi-card emerald">
+            <div class="kpi-label">DSİ Web Portalı Keşfi</div>
+            <div class="kpi-value" id="compKpiDsi">-</div>
+            <div class="kpi-sub">Bölge ihale + internet doğrulamalı</div>
+          </div>
+          <div class="kpi-card amber">
+            <div class="kpi-label">Doğrulanmış Kurumsal Web Sitesi</div>
+            <div class="kpi-value" id="compKpiWebsites">-</div>
+            <div class="kpi-sub">Canlı HTTP 200 kontrollü</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:16px; border:1px solid #bfdbfe; background:#f8fbff;">
+          <div class="card-header" style="margin-bottom:8px;">
+            <div class="card-title">🌐 Yüklenici İnternet Sitesi Linkinden Firma Sorgula ve Analiz Et</div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+            <input type="url" id="globalWebsiteInspectInput" placeholder="Örn: https://www.firmaadi.com.tr — Firma internet sitesi linkini yapıştırıp sorgulayın"
+              style="flex:1 1 360px; padding:8px 12px; font-size:13px;">
+            <button class="btn btn-primary" onclick="App.inspectCompetitorWebsite('globalWebsiteInspectInput')">
+              🔍 Web Sitesinden Firmayı Sorgula
+            </button>
+            <button class="btn btn-secondary" onclick="App.openExternalUrl(document.getElementById('globalWebsiteInspectInput').value)">
+              Chrome'da Aç
+            </button>
+          </div>
+          <div id="globalWebsiteInspectResult" style="margin-top:10px; display:none;"></div>
         </div>
 
         <!-- YENİ RAKİP EKLEME FORMU -->
@@ -480,7 +521,10 @@
           <div class="form-row-2">
             <div class="form-group">
               <label>Firma Resmi İnternet Sayfası (Opsiyonel)</label>
-              <input type="url" id="newCompWebsite" placeholder="Örn: https://www.firmaadi.com.tr">
+              <div style="display:flex; gap:6px;">
+                <input type="url" id="newCompWebsite" placeholder="Örn: https://www.firmaadi.com.tr" style="flex:1;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="App.inspectCompetitorWebsite('newCompWebsite', null, true)" title="Web sitesini tarayıp ünvan ve şehir alanlarını doldurur">🔍 Webden Doldur</button>
+              </div>
             </div>
             <div class="form-group">
               <label>Web Sayfası Doğrulama Notu</label>
@@ -511,10 +555,11 @@
                 <select id="competitorBranchFilterSelect" style="width:175px; padding:5px 8px; font-size:12px;" onchange="App.onCompetitorBranchFilterChanged(this.value)">
                   <option value="ALL">Tüm DSİ Şubeleri</option>
                 </select>
-                <select id="competitorOriginFilter" style="width:165px; padding:5px 8px; font-size:12px;" onchange="App.onCompetitorFilterOrSortChanged()">
+                <select id="competitorOriginFilter" style="width:175px; padding:5px 8px; font-size:12px;" onchange="App.onCompetitorFilterOrSortChanged()">
                   <option value="ALL">Tüm Kaynaklar</option>
                   <option value="KIK_EKAP">KİK / EKAP Kaynaklı</option>
                   <option value="DSI_WEB">DSİ Web Keşfi</option>
+                  <option value="HAS_WEBSITE">Web Sitesi Mevcut</option>
                 </select>
                 <select id="competitorSortSelect" style="width:175px; padding:5px 8px; font-size:12px;" onchange="App.onCompetitorFilterOrSortChanged()">
                   <option value="TENDERS_DESC">İhale Sayısına Göre</option>
@@ -535,89 +580,12 @@
       </section>
 
       <!-- ======================================================================= -->
-      <!-- 4. BÖLÜM: DSİ KAYNAKLARINDAN BULUNAN RAKİPLER                           -->
-      <!-- ======================================================================= -->
-      <section id="tab-dsi-competitors" class="tab-pane">
-        <div class="page-header">
-          <div>
-            <h2>4. DSİ Kaynaklarından Bulunan Rakipler</h2>
-            <p>DSİ Bölge Müdürlüklerinin kendi resmi web sayfalarından (bolge01..26.dsi.gov.tr) çekilen yapım işi ve ihale ilanlarının internette aratılarak yüklenici firmalarının doğrulanmasıyla oluşturulan rakip dizini</p>
-          </div>
-          <div style="display:flex; gap:10px;">
-            <button class="btn btn-emerald" onclick="App.triggerOfficialSyncNow()">
-              ↻ DSİ Bölge Sayfalarını Tara ve İnternette Ara
-            </button>
-          </div>
-        </div>
-
-        <div class="info-guide-banner">
-          <strong>DSİ Bölge Web Sayfaları + İnternet Doğrulama Yöntemi:</strong> Burada listelenen yüklenici müteahhit firmalar, doğrudan ilgili <strong>DSİ Bölge ve Şube Müdürlüğünün resmi haber/duyuru/ihale sayfalarından (<code>bolge*.dsi.gov.tr</code>)</strong> tespit edilen yapım işlerinin internet üzerinden (EKAP, TaahhütHaber, Herpoz, Yatırımlar ve KİK kayıtları) aratılarak resmi İKN ve sözleşme yüklenicisi doğrulanan rakiplerdir.
-        </div>
-
-        <div class="kpi-grid">
-          <div class="kpi-card emerald">
-            <div class="kpi-label">DSİ Kaynaklı Doğrulanmış Rakip</div>
-            <div class="kpi-value" id="dsiDiscKpiCount">0</div>
-            <div class="kpi-sub">bolge01..26.dsi.gov.tr + İnternet Taraması</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Kapsanan DSİ Bölgesi / Şubesi</div>
-            <div class="kpi-value" id="dsiDiscKpiRegions">0 Bölge / 0 Şube</div>
-            <div class="kpi-sub">Aktif Bölge ve Şube Dağılımı</div>
-          </div>
-          <div class="kpi-card amber">
-            <div class="kpi-label">Toplam Doğrulanmış Sözleşme Hacmi</div>
-            <div class="kpi-value" id="dsiDiscKpiVolume">0 TL</div>
-            <div class="kpi-sub">EKAP / KİK / TaahhütHaber Sözleşme Toplamı</div>
-          </div>
-          <div class="kpi-card purple">
-            <div class="kpi-label">Ortalama Beklenen Tenkisat (Kırım)</div>
-            <div class="kpi-value" id="dsiDiscKpiAvgDisc">%0.00</div>
-            <div class="kpi-sub">Doğrulanmış İhaleler Bazında</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header" style="flex-wrap:wrap; gap:10px;">
-            <div class="card-title">DSİ Bölge Sayfalarından ve İnternet Aramasından Doğrulanan Yüklenici Firmalar</div>
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <input type="text" id="dsiDiscSearchInput" placeholder="Firma adı, proje veya İKN ara..."
-                style="width:230px; padding:5px 10px; font-size:12px;"
-                oninput="App.renderDsiCompetitorsTab()">
-              <select id="dsiDiscRegionFilter" style="width:190px; padding:5px 8px; font-size:12px;" onchange="App.renderDsiCompetitorsTab()">
-                <option value="ALL">Tüm DSİ Bölgeleri</option>
-              </select>
-              <select id="dsiDiscBranchFilter" style="width:205px; padding:5px 8px; font-size:12px;" onchange="App.renderDsiCompetitorsTab()">
-                <option value="ALL">Tüm DSİ Şubeleri</option>
-              </select>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Rakip Firma (Yüklenici)</th>
-                  <th>DSİ Bölge ve Şube Müdürlüğü</th>
-                  <th>DSİ Sayfasından Alınan Proje / İKN</th>
-                  <th>Sözleşme / YM Tutarı</th>
-                  <th>Beklenen Kırım</th>
-                  <th>Firma Sitesi & Resmi Kaynaklar</th>
-                  <th>İşlem</th>
-                </tr>
-              </thead>
-              <tbody id="dsiDiscoveredCompetitorsBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ======================================================================= -->
-      <!-- 5. BÖLÜM: DSİ BÖLGE MÜDÜRLÜKLERİNE GÖRE RAKİP VE REKABET ANALİZİ         -->
+      <!-- 4. BÖLÜM: DSİ BÖLGE MÜDÜRLÜKLERİNE GÖRE RAKİP VE REKABET ANALİZİ         -->
       <!-- ======================================================================= -->
       <section id="tab-regional" class="tab-pane">
         <div class="page-header">
           <div>
-            <h2>5. DSİ Bölge Müdürlüklerine Göre Rakip ve Rekabet Analizi</h2>
+            <h2>4. DSİ Bölge Müdürlüklerine Göre Rakip ve Rekabet Analizi</h2>
             <p>Rakip müteahhit firmaların iş yaptıkları DSİ Bölge Müdürlüklerine göre ayrıştırılması, bölgesel sınır değer ortalamaları ve bölgeye özel teklif stratejisi</p>
           </div>
           <div style="display:flex; gap:10px;">
@@ -785,7 +753,7 @@
       <section id="tab-datacenter" class="tab-pane">
         <div class="page-header">
           <div>
-            <h2>6. Resmi İhale Tutanağı ve Veri Giriş Merkezi</h2>
+            <h2>5. Resmi İhale Tutanağı ve Veri Giriş Merkezi</h2>
             <p>Geçmiş DSİ ihalelerine ait Yaklaşık Maliyet, Sınır Değer ve Rakip Teklif bilgilerini sisteme ekleyin</p>
           </div>
         </div>
@@ -957,7 +925,7 @@ Sınır Değer Katsayısı N: 1,20
       <section id="tab-officialsync" class="tab-pane">
         <div class="page-header">
           <div>
-            <h2>7. Periyodik Resmi Veri Toplama ve Otomatik Veritabanı Güncelleme Sistemi</h2>
+            <h2>6. Periyodik Resmi Veri Toplama ve Otomatik Veritabanı Güncelleme Sistemi</h2>
             <p>KİK Resmi Kurul Kararları (ekap.kik.gov.tr), EKAP Bir Bakışta İhale Sonuçları ve DSİ Bölge Müdürlükleri (dsi.gov.tr) resmi kaynaklarından düzenli aralıklarla yeni ihale ve rakip verisi toplama merkezi</p>
           </div>
           <div style="display:flex; gap:10px;">
@@ -1128,7 +1096,7 @@ Sınır Değer Katsayısı N: 1,20
       <section id="tab-kikcalc" class="tab-pane">
         <div class="page-header">
           <div>
-            <h2>8. Kamu İhale Genel Tebliği (Madde 45.1.1) Resmi Sınır Değer Hesaplama Cetveli</h2>
+            <h2>7. Kamu İhale Genel Tebliği (Madde 45.1.1) Resmi Sınır Değer Hesaplama Cetveli</h2>
             <p>Herhangi bir yapım işi ihalesinde açıklanan Yaklaşık Maliyet ve sunulan teklifleri girerek resmi Sınır Değer hesabını adım adım kontrol edin</p>
           </div>
         </div>
