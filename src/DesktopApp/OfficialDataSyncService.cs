@@ -68,7 +68,15 @@ namespace DSIIhaleZekasi
             };
             _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
                 "User-Agent",
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
+            );
+            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                "Sec-Ch-Ua",
+                "\"Chromium\";v=\"136\", \"Google Chrome\";v=\"136\", \"Not.A/Brand\";v=\"99\""
+            );
+            _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
+                "Sec-Ch-Ua-Platform",
+                "\"Windows\""
             );
             _httpClient.DefaultRequestHeaders.TryAddWithoutValidation(
                 "Accept",
@@ -1672,6 +1680,9 @@ namespace DSIIhaleZekasi
                 ["officialSourceType"] = tender.OfficialSourceType,
                 ["officialSourceUrl"] = tender.OfficialSourceUrl,
                 ["verificationSource"] = tender.VerificationSource,
+                ["website"] = "",
+                ["websiteOwner"] = "",
+                ["partnerWebsites"] = new JsonArray(),
                 ["discoveredFromDsi"] = fromDsiWeb,
                 ["dsiSourceUrl"] = tender.DsiSourceUrl,
                 ["dsiProjectTitle"] = tender.DsiProjectTitle,

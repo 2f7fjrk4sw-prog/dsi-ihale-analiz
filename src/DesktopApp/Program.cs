@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
+using Microsoft.Win32;
 
 namespace DSIIhaleZekasi
 {
@@ -30,6 +31,7 @@ namespace DSIIhaleZekasi
 
             bool smokeTest = Array.Exists(args, a => a.Equals("--smoke-test", StringComparison.OrdinalIgnoreCase));
             bool syncTest = Array.Exists(args, a => a.Equals("--sync-test", StringComparison.OrdinalIgnoreCase));
+            bool forceWebView = Array.Exists(args, a => a.Equals("--webview", StringComparison.OrdinalIgnoreCase));
 
             ResolveAndExtractResources();
             _syncService = new OfficialDataSyncService(_dbFilePath);
@@ -78,7 +80,7 @@ namespace DSIIhaleZekasi
                 return;
             }
 
-            Application.Run(new MainDesktopForm(baseUrl, _dbFilePath));
+            Application.Run(new MainDesktopForm(baseUrl, _dbFilePath, forceWebView));
 
             _running = false;
             try { _listener.Stop(); } catch { }
@@ -109,7 +111,7 @@ namespace DSIIhaleZekasi
                 try
                 {
                     string existingJson = File.ReadAllText(appDataDbFile, Encoding.UTF8);
-                    if (existingJson.Contains("\"version\": \"2.5.0\""))
+                    if (existingJson.Contains("\"version\": \"2.5.1\""))
                     {
                         forceUpgradeDb = false;
                     }
@@ -135,7 +137,7 @@ namespace DSIIhaleZekasi
                 try
                 {
                     string localJson = File.ReadAllText(localDb, Encoding.UTF8);
-                    if (!localJson.Contains("\"officialSourcesOnly\": true") || !localJson.Contains("\"version\": \"2.5.0\""))
+                    if (!localJson.Contains("\"officialSourcesOnly\": true") || !localJson.Contains("\"version\": \"2.5.1\""))
                     {
                         ExtractEmbeddedResource("data/verified_db.json", localDb, overwrite: true);
                     }
@@ -275,6 +277,45 @@ namespace DSIIhaleZekasi
                     return;
                 }
 
+                if (path.Equals("/api/browser-provider", StringComparison.OrdinalIgnoreCase))
+                {
+                    string? chromePath = FindChromeExecutablePath();
+                    var infoObj = new JsonObject
+                    {
+                        ["provider"] = chromePath != null ? "Google Chrome" : "Sistem Varsayılan Tarayıcısı",
+                        ["chromeAvailable"] = chromePath != null,
+                        ["chromePath"] = chromePath ?? ""
+                    };
+                    byte[] bytes = Encoding.UTF8.GetBytes(infoObj.ToJsonString());
+                    resp.ContentType = "application/json; charset=utf-8";
+                    resp.ContentLength64 = bytes.Length;
+                    await resp.OutputStream.WriteAsync(bytes);
+                    resp.Close();
+                    return;
+                }
+
+                if (path.Equals("/api/open-url", StringComparison.OrdinalIgnoreCase) && req.HttpMethod == "POST")
+                {
+                    using var reader = new StreamReader(req.InputStream, Encoding.UTF8);
+                    string body = await reader.ReadToEndAsync();
+                    var node = JsonNode.Parse(body)?.AsObject();
+                    string targetUrl = node?["url"]?.GetValue<string>() ?? "";
+                    var (opened, providerName, errorMsg) = LaunchUrlInChromeOrDefault(targetUrl, asAppWindow: false);
+                    var resObj = new JsonObject
+                    {
+                        ["ok"] = opened,
+                        ["provider"] = providerName,
+                        ["error"] = errorMsg ?? ""
+                    };
+                    if (!opened) resp.StatusCode = 400;
+                    byte[] bytes = Encoding.UTF8.GetBytes(resObj.ToJsonString());
+                    resp.ContentType = "application/json; charset=utf-8";
+                    resp.ContentLength64 = bytes.Length;
+                    await resp.OutputStream.WriteAsync(bytes);
+                    resp.Close();
+                    return;
+                }
+
                 if (path.Equals("/api/db", StringComparison.OrdinalIgnoreCase))
                 {
                     if (req.HttpMethod == "GET")
@@ -385,6 +426,84 @@ namespace DSIIhaleZekasi
             }
         }
 
+        internal static string? FindChromeExecutablePath()
+        {
+            string[] candidates =
+            {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application", "chrome.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Google", "Chrome", "Application", "chrome.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "Application", "chrome.exe")
+            };
+
+            foreach (string path in candidates)
+            {
+                if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
+                {
+                    return path;
+                }
+            }
+
+            string[] regKeys =
+            {
+                @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
+                @"HKEY_CURRENT_USER\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"
+            };
+
+            foreach (string key in regKeys)
+            {
+                try
+                {
+                    object? val = Registry.GetValue(key, null, null);
+                    if (val is string regPath && File.Exists(regPath))
+                    {
+                        return regPath;
+                    }
+                }
+                catch { }
+            }
+
+            return null;
+        }
+
+        internal static (bool Opened, string Provider, string? Error) LaunchUrlInChromeOrDefault(string targetUrl, bool asAppWindow)
+        {
+            if (!Uri.TryCreate(targetUrl, UriKind.Absolute, out Uri? uri) ||
+                (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            {
+                return (false, "Geçersiz URL", "Yalnızca http veya https adresleri açılabilir.");
+            }
+
+            string normalized = uri.AbsoluteUri;
+            string? chromePath = FindChromeExecutablePath();
+            if (chromePath != null)
+            {
+                try
+                {
+                    string args = asAppWindow
+                        ? $"--new-window --app=\"{normalized}\""
+                        : $"\"{normalized}\"";
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = chromePath,
+                        Arguments = args,
+                        UseShellExecute = false
+                    });
+                    return (true, "Google Chrome", null);
+                }
+                catch { }
+            }
+
+            try
+            {
+                Process.Start(new ProcessStartInfo(normalized) { UseShellExecute = true });
+                return (true, "Sistem Varsayılan Tarayıcısı", null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Hata", ex.Message);
+            }
+        }
+
         private static string GetMimeType(string filePath)
         {
             return Path.GetExtension(filePath).ToLowerInvariant() switch
@@ -405,35 +524,56 @@ namespace DSIIhaleZekasi
     {
         private readonly string _url;
         private readonly string _dbPath;
+        private readonly bool _forceWebView;
+        private readonly string? _chromePath;
         private WebView2? _webView;
 
-        public MainDesktopForm(string url, string dbPath)
+        public MainDesktopForm(string url, string dbPath, bool forceWebView = false)
         {
             _url = url;
             _dbPath = dbPath;
+            _forceWebView = forceWebView;
+            _chromePath = Program.FindChromeExecutablePath();
 
             Text = "DSİ Yapım İhaleleri Teklif Analiz ve Sınır Değer Hesaplama Sistemi";
             Size = new Size(1460, 920);
-            MinimumSize = new Size(1024, 700);
+            MinimumSize = new Size(560, 320);
             StartPosition = FormStartPosition.CenterScreen;
-            WindowState = FormWindowState.Maximized;
+            WindowState = (!forceWebView && _chromePath != null) ? FormWindowState.Normal : FormWindowState.Maximized;
             BackColor = Color.FromArgb(241, 245, 249);
             ForeColor = Color.FromArgb(15, 23, 42);
 
             Load += OnFormLoadAsync;
             Shown += (_, _) =>
             {
-                TopMost = true;
-                Activate();
-                BringToFront();
-                TopMost = false;
+                if (_forceWebView || _chromePath == null)
+                {
+                    TopMost = true;
+                    Activate();
+                    BringToFront();
+                    TopMost = false;
+                }
             };
         }
 
         private async void OnFormLoadAsync(object? sender, EventArgs e)
         {
+            if (!_forceWebView && _chromePath != null)
+            {
+                BuildChromeProviderUI();
+                Program.LaunchUrlInChromeOrDefault(_url, asAppWindow: true);
+                return;
+            }
+
+            await InitializeEmbeddedWebViewAsync();
+        }
+
+        private async Task InitializeEmbeddedWebViewAsync()
+        {
             try
             {
+                Controls.Clear();
+                WindowState = FormWindowState.Maximized;
                 _webView = new WebView2
                 {
                     Dock = DockStyle.Fill,
@@ -453,58 +593,99 @@ namespace DSIIhaleZekasi
 
                 _webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
                 _webView.CoreWebView2.Settings.IsStatusBarEnabled = false;
+                _webView.CoreWebView2.NewWindowRequested += (_, args) =>
+                {
+                    args.Handled = true;
+                    if (!string.IsNullOrWhiteSpace(args.Uri))
+                    {
+                        Program.LaunchUrlInChromeOrDefault(args.Uri, asAppWindow: false);
+                    }
+                };
                 _webView.CoreWebView2.Navigate(_url);
             }
             catch
             {
-                // WebView2 başlatılamazsa varsayılan tarayıcıda aç ve pencereyi sunucu kontrolcüsüne dönüştür
                 Controls.Clear();
-                BuildFallbackUI();
-                try
-                {
-                    Process.Start(new ProcessStartInfo(_url) { UseShellExecute = true });
-                }
-                catch { }
+                BuildChromeProviderUI();
+                Program.LaunchUrlInChromeOrDefault(_url, asAppWindow: false);
             }
         }
 
-        private void BuildFallbackUI()
+        private void BuildChromeProviderUI()
         {
+            Controls.Clear();
             WindowState = FormWindowState.Normal;
-            Size = new Size(520, 250);
+            Size = new Size(640, 310);
+            BackColor = Color.FromArgb(15, 23, 42);
+            ForeColor = Color.White;
+
+            bool hasChrome = _chromePath != null;
 
             var lblTitle = new Label
             {
-                Text = "DSİ İhale Zekası Çalışıyor",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Text = hasChrome
+                    ? "DSİ İhale Zekası — İnternet Sağlayıcısı: Google Chrome"
+                    : "DSİ İhale Zekası Çalışıyor",
+                Font = new Font("Segoe UI", 13.5f, FontStyle.Bold),
                 ForeColor = Color.FromArgb(56, 189, 248),
                 AutoSize = true,
-                Location = new Point(24, 24)
+                Location = new Point(24, 22)
             };
 
             var lblInfo = new Label
             {
-                Text = $"Yerel Sunucu Adresi: {_url}\nVeritabanı: {_dbPath}",
+                Text = $"Yerel Sunucu: {_url}\n" +
+                       $"Tarayıcı Motoru: {(hasChrome ? _chromePath : "Sistem Varsayılan Tarayıcısı")}\n" +
+                       $"Veritabanı: {_dbPath}\n\n" +
+                       "Tüm firma web siteleri ve EKAP/KİK/DSİ bağlantıları Google Chrome üzerinden açılır.\n" +
+                       "Sunucunun açık kalması için bu pencereyi açık veya simge durumunda tutunuz.",
                 Font = new Font("Segoe UI", 9.5f),
                 ForeColor = Color.FromArgb(203, 213, 225),
-                Size = new Size(460, 60),
-                Location = new Point(24, 64)
+                Size = new Size(585, 118),
+                Location = new Point(24, 62)
             };
 
-            var btnOpen = new Button
+            var btnChromeApp = new Button
             {
-                Text = "Arayüzü Tarayıcıda Aç",
-                Size = new Size(190, 40),
-                Location = new Point(24, 140),
+                Text = "Google Chrome Uygulama Penceresi",
+                Size = new Size(245, 38),
+                Location = new Point(24, 196),
                 BackColor = Color.FromArgb(14, 165, 233),
                 ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
             };
-            btnOpen.Click += (_, _) => Process.Start(new ProcessStartInfo(_url) { UseShellExecute = true });
+            btnChromeApp.Click += (_, _) => Program.LaunchUrlInChromeOrDefault(_url, asAppWindow: true);
+
+            var btnChromeTab = new Button
+            {
+                Text = "Chrome Sekmesinde Aç",
+                Size = new Size(175, 38),
+                Location = new Point(280, 196),
+                BackColor = Color.FromArgb(16, 185, 129),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            btnChromeTab.Click += (_, _) => Program.LaunchUrlInChromeOrDefault(_url, asAppWindow: false);
+
+            var btnEmbedded = new Button
+            {
+                Text = "Uygulama İçi Pencere",
+                Size = new Size(145, 38),
+                Location = new Point(466, 196),
+                BackColor = Color.FromArgb(51, 65, 85),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            btnEmbedded.Click += async (_, _) => await InitializeEmbeddedWebViewAsync();
 
             Controls.Add(lblTitle);
             Controls.Add(lblInfo);
-            Controls.Add(btnOpen);
+            Controls.Add(btnChromeApp);
+            Controls.Add(btnChromeTab);
+            Controls.Add(btnEmbedded);
         }
     }
 }

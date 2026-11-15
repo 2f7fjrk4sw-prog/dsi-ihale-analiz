@@ -24,6 +24,10 @@
         <span id="verifiedStatusText">Otomatik Resmi Veri Senkronizasyonu: Aktif</span>
       </div>
 
+      <span class="badge badge-blue" id="chromeProviderBadge" style="background:#e0f2fe; color:#0369a1; border:1px solid #7dd3fc; font-weight:700; padding:5px 9px;" title="Tüm firma web siteleri ve resmi portallar Google Chrome üzerinden açılır">
+        🌐 Tarayıcı: Google Chrome
+      </span>
+
       <button class="btn btn-emerald btn-sm" id="btnTopbarSyncNow" onclick="App.triggerOfficialSyncNow()" title="KİK Kurul Kararları, EKAP Bir Bakışta İhale ve DSİ Bölge Müdürlükleri resmi kaynaklarını şimdi tara ve veritabanını güncelle">
         ↻ Resmi Kaynakları Şimdi Tara
       </button>
@@ -473,6 +477,16 @@
               <input type="text" id="newCompSource" placeholder="Örn: KİK Karar No: 2024/UY.II-553 veya İKN: 2023/1241906">
             </div>
           </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Firma Resmi İnternet Sayfası (Opsiyonel)</label>
+              <input type="url" id="newCompWebsite" placeholder="Örn: https://www.firmaadi.com.tr">
+            </div>
+            <div class="form-group">
+              <label>Web Sayfası Doğrulama Notu</label>
+              <input type="text" value="Tüm harici bağlantılar Google Chrome üzerinden açılır" disabled style="background:#f8fafc; color:var(--text-muted);">
+            </div>
+          </div>
           <div style="display:flex; gap:10px; justify-content:flex-end;">
             <button class="btn btn-secondary" onclick="App.toggleNewCompetitorBox()">Vazgeç</button>
             <button class="btn btn-emerald" onclick="App.saveNewCompetitor()">Resmi Kaynaklı Firma Olarak Kaydet</button>
@@ -587,7 +601,7 @@
                   <th>DSİ Sayfasından Alınan Proje / İKN</th>
                   <th>Sözleşme / YM Tutarı</th>
                   <th>Beklenen Kırım</th>
-                  <th>Resmi Kaynaklar</th>
+                  <th>Firma Sitesi & Resmi Kaynaklar</th>
                   <th>İşlem</th>
                 </tr>
               </thead>

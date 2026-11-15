@@ -46,13 +46,13 @@ const App = {
         const data = await resp.json();
         if (data && Array.isArray(data.competitors) && Array.isArray(data.tenders)) {
           if (data.metadata && data.metadata.officialSourcesOnly === true &&
-              data.metadata.version === '2.5.0') {
+              data.metadata.version === '2.5.1') {
             this.db = data;
             localStorage.setItem('dsi_ihale_official_kik_db_v2_1', JSON.stringify(this.db));
             await this.updateDatabaseHash();
             return;
           } else {
-            // Eski sürüm veritabanını v2.5.0 DSİ Bölge, Şube ve DSİ Web Keşif veritabanına yükselt
+            // Eski sürüm veritabanını v2.5.1 doğrulanmış firma web siteli DSİ veritabanına yükselt
             this.db = createInitialVerifiedDatabase();
             await this.saveDatabase();
             return;
@@ -66,7 +66,7 @@ const App = {
       try {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.metadata && parsed.metadata.officialSourcesOnly === true &&
-            parsed.metadata.version === '2.5.0') {
+            parsed.metadata.version === '2.5.1') {
           this.db = parsed;
         } else {
           this.db = createInitialVerifiedDatabase();
@@ -260,6 +260,101 @@ const App = {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+  },
+
+  normalizeWebsiteUrl(rawUrl) {
+    if (!rawUrl) return '';
+    const trimmed = String(rawUrl).trim();
+    if (!trimmed) return '';
+    const candidate = /^https?:\/\//i.test(trimmed) ? trimmed : ('https://' + trimmed.replace(/^\/+/, ''));
+    try {
+      const parsed = new URL(candidate);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+      return parsed.href;
+    } catch (_) {
+      return '';
+    }
+  },
+
+  extractDomainLabel(rawUrl) {
+    try {
+      const parsed = new URL(this.normalizeWebsiteUrl(rawUrl));
+      return parsed.hostname.replace(/^www\./i, '');
+    } catch (_) {
+      return String(rawUrl || '');
+    }
+  },
+
+  getCompetitorWebsites(comp) {
+    if (!comp) return [];
+    const list = [];
+    if (Array.isArray(comp.partnerWebsites)) {
+      for (const pw of comp.partnerWebsites) {
+        const clean = this.normalizeWebsiteUrl(pw && pw.url);
+        if (clean && !list.some(x => x.url === clean)) {
+          list.push({ name: (pw && pw.name) || comp.shortName || comp.name, url: clean });
+        }
+      }
+    }
+    const primary = this.normalizeWebsiteUrl(comp.website);
+    if (primary && !list.some(x => x.url === primary)) {
+      list.unshift({ name: comp.websiteOwner || comp.shortName || comp.name, url: primary });
+    }
+    return list;
+  },
+
+  async openExternalUrl(rawUrl) {
+    const clean = this.normalizeWebsiteUrl(rawUrl);
+    if (!clean) return false;
+    try {
+      const resp = await fetch('/api/open-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: clean })
+      });
+      if (resp.ok) {
+        const data = await resp.json().catch(() => null);
+        if (data && data.ok) return false;
+      }
+    } catch (_) {}
+    window.open(clean, '_blank', 'noopener');
+    return false;
+  },
+
+  renderWebsiteButtonsHtml(comp, stopCardClick = false) {
+    const sites = this.getCompetitorWebsites(comp);
+    if (sites.length === 0) return '';
+    const stopExpr = stopCardClick ? 'event.stopPropagation(); ' : '';
+    return sites.map(s => {
+      const domain = this.extractDomainLabel(s.url);
+      const safeUrl = this.escapeHtml(s.url);
+      const safeTitle = this.escapeHtml(`${s.name} — Google Chrome ile aç (${s.url})`);
+      return `<a href="${safeUrl}" target="_blank" rel="noopener" onclick="${stopExpr}App.openExternalUrl('${safeUrl}'); return false;" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; background:#f0f9ff; color:#0369a1; border-color:#7dd3fc;" title="${safeTitle}">🌐 ${this.escapeHtml(domain)}</a>`;
+    }).join(' ');
+  },
+
+  async updateCompetitorWebsite(compId) {
+    if (!this.db) return;
+    const comp = this.db.competitors.find(c => c.id === compId);
+    const input = document.getElementById('detailCompWebsiteInput');
+    if (!comp || !input) return;
+    const raw = input.value.trim();
+    if (!raw) {
+      comp.website = '';
+      comp.websiteOwner = '';
+      comp.partnerWebsites = [];
+    } else {
+      const normalized = this.normalizeWebsiteUrl(raw);
+      if (!normalized) {
+        alert('Geçerli bir web adresi giriniz (Örn: https://www.firma.com.tr)');
+        return;
+      }
+      comp.website = normalized;
+      comp.websiteOwner = comp.shortName || comp.name;
+      comp.partnerWebsites = [{ name: comp.websiteOwner, url: normalized }];
+    }
+    await this.saveDatabase();
+    this.refreshAllViews();
   },
 
   formatTL(num) {
@@ -808,6 +903,13 @@ const App = {
     const groupsRaw = document.getElementById('newCompGroups').value || 'A/III';
     const sourceTypeCode = document.getElementById('newCompSourceType')?.value || 'KIK_KARAR';
     const sourceRef = document.getElementById('newCompSource').value.trim();
+    const rawWebsite = document.getElementById('newCompWebsite')?.value || '';
+    const website = this.normalizeWebsiteUrl(rawWebsite);
+
+    if (rawWebsite.trim() && !website) {
+      alert('Geçerli bir internet sayfası adresi giriniz (Örn: https://www.firma.com.tr).');
+      return;
+    }
 
     if (!name) {
       alert('Lütfen firmanın resmi ticaret ünvanını giriniz.');
@@ -842,9 +944,15 @@ const App = {
       officialSourceType: sourceTypeCode,
       officialSourceUrl: srcObj ? srcObj.url : 'https://ekap.kik.gov.tr',
       verificationSource: fullOfficialSource,
+      website,
+      websiteOwner: website ? shortName : '',
+      partnerWebsites: website ? [{ name: shortName, url: website }] : [],
       notes: 'Resmi kamu kaynağı referansı ile eklenen müteahhit firma kaydı.',
       signals: []
     };
+
+    const webInput = document.getElementById('newCompWebsite');
+    if (webInput) webInput.value = '';
 
     this.db.competitors.push(newComp);
     this.selectedCompetitorId = newId;
@@ -991,6 +1099,7 @@ const App = {
             <div style="margin-top:5px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
               ${regionBadges || '<span style="font-size:11px; color:var(--text-muted);">Bölge Belirtilmedi</span>'}
               ${branchBadges}
+              ${this.renderWebsiteButtonsHtml(c, true)}
             </div>
             <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--text-muted); margin-top:5px;">
               <span>İhale: <strong style="color:#15803d;">${prof.verifiedTenderCount}</strong> (Kazanılan: ${prof.winCount})</span>
@@ -1120,10 +1229,11 @@ const App = {
           </td>
           <td style="white-space:nowrap;">
             <div style="display:flex; flex-direction:column; gap:4px;">
-              <a href="${this.escapeHtml(dsiUrl)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; text-align:center;">
+              ${this.renderWebsiteButtonsHtml(c, false)}
+              <a href="${this.escapeHtml(dsiUrl)}" target="_blank" rel="noopener" onclick="App.openExternalUrl('${this.escapeHtml(dsiUrl)}'); return false;" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; text-align:center;">
                 DSİ Bölge Sayfası
               </a>
-              <a href="${this.escapeHtml(webSearchUrl)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; text-align:center;">
+              <a href="${this.escapeHtml(webSearchUrl)}" target="_blank" rel="noopener" onclick="App.openExternalUrl('${this.escapeHtml(webSearchUrl)}'); return false;" class="btn btn-secondary btn-sm" style="font-size:11px; padding:2px 8px; text-decoration:none; text-align:center;">
                 İnternet / İKN Kaynağı
               </a>
             </div>
@@ -1275,20 +1385,29 @@ const App = {
         `).join('');
 
     container.innerHTML = `
-      <div class="card-header">
+      <div class="card-header" style="flex-wrap:wrap; gap:10px;">
         <div>
-          <div class="card-title">${comp.name} — Resmi Firma Detay ve Teklif Analizi</div>
+          <div class="card-title">${this.escapeHtml(comp.name)} — Resmi Firma Detay ve Teklif Analizi</div>
           <div style="font-size:12px; color:#1e40af; font-weight:600; margin-top:2px;">
-            Resmi Doğrulama Kaynağı: ${comp.verificationSource || 'Kamu İhale Kurulu / EKAP Resmi Kaydı'}
+            Resmi Doğrulama Kaynağı: ${this.escapeHtml(comp.verificationSource || 'Kamu İhale Kurulu / EKAP Resmi Kaydı')}
           </div>
           <div style="font-size:12px; color:var(--text-secondary); margin-top:2px;">
-            Merkez: ${comp.hqCity} • Teklif Eğilimi: <strong style="color:#1d4ed8;">${prof.archetype}</strong>
+            Merkez: ${this.escapeHtml(comp.hqCity || '-')} • Teklif Eğilimi: <strong style="color:#1d4ed8;">${this.escapeHtml(prof.archetype)}</strong>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:6px;">
+            ${this.renderWebsiteButtonsHtml(comp, false) || '<span style="font-size:11.5px; color:var(--text-muted);">Kayıtlı kurumsal web sayfası henüz eklenmedi</span>'}
           </div>
         </div>
-        <div style="display:flex; gap:6px;">
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
           <button class="btn btn-secondary btn-sm" onclick="App.openOfficialKikDecisionsPortal()">KİK Kurul Kararı Sorgula</button>
           <button class="btn btn-secondary btn-sm" onclick="App.openOfficialEkapPortal()">EKAP İhale Sorgula</button>
         </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:#f8fafc; border:1px solid var(--border-color); padding:8px 12px; border-radius:6px; margin-bottom:12px;">
+        <span style="font-size:12px; font-weight:700; color:var(--corp-navy);">🌐 Firma İnternet Sayfası:</span>
+        <input type="url" id="detailCompWebsiteInput" value="${this.escapeHtml(comp.website || '')}" placeholder="https://www.firmaadi.com.tr" style="flex:1 1 240px; min-width:190px; padding:5px 9px; font-size:12px;">
+        <button class="btn btn-secondary btn-sm" onclick="App.updateCompetitorWebsite('${comp.id}')">Web Sitesini Kaydet</button>
       </div>
 
       ${comp.notes ? `<div style="background:#f0fdf4; border:1px solid #86efac; color:#14532d; padding:10px 12px; border-radius:6px; font-size:12.5px; margin-bottom:14px;"><strong>Resmi İhale Özeti:</strong> ${comp.notes}</div>` : ''}
@@ -2002,11 +2121,11 @@ Sınır Değer Katsayısı (N): 1,20
   },
 
   openOfficialEkapPortal() {
-    window.open('https://ekap.kik.gov.tr/EKAP/Ortak/IhaleArama/index.html', '_blank', 'noopener');
+    this.openExternalUrl('https://ekap.kik.gov.tr/EKAP/Ortak/IhaleArama/index.html');
   },
 
   openOfficialKikDecisionsPortal() {
-    window.open('https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx', '_blank', 'noopener');
+    this.openExternalUrl('https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararSorgu.aspx');
   },
 
   runSmartParser() {
@@ -2600,7 +2719,7 @@ Sınır Değer Katsayısı (N): 1,20
               ${this.escapeHtml(a.title)}
             </td>
             <td>
-              <a href="${this.escapeHtml(a.url)}" target="_blank" rel="noopener" class="btn btn-secondary btn-sm" style="font-size:11px; padding:3px 8px; text-decoration:none;">
+              <a href="${this.escapeHtml(a.url)}" target="_blank" rel="noopener" onclick="App.openExternalUrl('${this.escapeHtml(a.url)}'); return false;" class="btn btn-secondary btn-sm" style="font-size:11px; padding:3px 8px; text-decoration:none;">
                 Resmi Sayfa
               </a>
             </td>

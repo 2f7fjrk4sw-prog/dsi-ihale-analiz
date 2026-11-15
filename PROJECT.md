@@ -29,7 +29,7 @@ Bir **DSİ (Devlet Su İşleri) müteahhitlik firmasının** İhale Hazırlık v
 
 ## 3. Teknik Mimari ve Dosya Haritası (Tech Stack & File Map)
 
-- **Masaüstü Çatısı (Desktop Shell):** .NET 10 Native Windows Desktop (`WinExe` / `net10.0-windows`) — yerel gömülü HTTP/API sunucusu (`HttpListener` + `SHA-256` bütünlük mühürleyici) ve adanmış Edge App Masaüstü Pencere Yöneticisi (`DSIIhaleZekasi.exe`).
+- **Masaüstü Çatısı (Desktop Shell):** .NET 10 Native Windows Desktop (`WinExe` / `net10.0-windows`) — yerel gömülü HTTP/API sunucusu (`HttpListener` + `SHA-256` bütünlük mühürleyici, `/api/open-url`, `/api/browser-provider`) ve birincil internet sağlayıcısı olarak **Google Chrome (`chrome.exe`)** uygulama penceresi / bağlantı yönlendiricisi (`--webview` parametresiyle WebView2 seçeneği destekli).
 - **Kurulum Sihirbazı (Setup Installer):** Tek dosyalı (Single-File) Windows Kurulum Sihirbazı (`DSIIhaleZekasi_Kurulum_Setup.exe`) — gömülü `payload.zip` arşiviyle `%LOCALAPPDATA%\Programs\DSI_Ihale_Zekasi` dizinine kurulum yapar, Masaüstü ve Başlat Menüsü kısayollarını (`DSİ İhale Zekası.lnk`) otomatik oluşturur.
 - **Önyüz (Frontend UI):** Modern HTML5 / CSS3 / Vanilla ES2024 JavaScript + Yüksek Çözünürlüklü HTML5 Canvas Strateji Eğrisi Grafiği (`src/ui/index.html`, `src/ui/styles.css`, `src/ui/app.js`).
 - **Analitik ve Algoritma Motoru:** `src/ui/kik-engine.js` — Kamu İhale Genel Tebliği Madde 45.1.1 deterministik Sınır Değer motoru (`KikBoundaryEngine`), 3 katmanlı Rakip Davranış Öngörü motoru (`CompetitorPredictionEngine`), 10.000 iterasyonlu Monte Carlo Simülatörü (`MonteCarloTenderSimulator`) ve Akıllı EKAP Metin Ayrıştırıcı (`EkapSmartParser`).
@@ -41,7 +41,7 @@ dsi-ihale-analiz/
 ├── PROJECT.md                              # AI & Geliştirici Mimari ve Matematik Referans Belgesi
 ├── DSIIhaleZekasi_Kurulum_Setup.exe        # Tek Tıkla Kurulabilir Windows Setup Sihirbazı
 ├── data/
-│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale ve Rakip Veritabanı (v2.5.0)
+│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale, Rakip ve Kurumsal Web Sitesi Veritabanı (v2.5.1)
 │   └── verified_db.json.sha256             # SHA-256 Veri Bütünlük Mührü
 ├── src/
 │   ├── ui/

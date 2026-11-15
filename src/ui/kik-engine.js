@@ -1462,17 +1462,18 @@ function createInitialVerifiedDatabase() {
   return {
   "metadata": {
     "appName": "DSİ Yapım İhaleleri Teklif Analiz ve Sınır Değer Hesaplama Sistemi",
-    "version": "2.5.0",
+    "version": "2.5.1",
     "strictVerifiedOnly": true,
     "officialSourcesOnly": true,
     "officialCompetitorCount": 122,
     "officialTenderCount": 111,
     "officialBranchCount": 85,
     "includeSampleData": true,
-    "lastUpdated": "2026-11-15T13:55:00.0000000Z",
-    "lastOfficialSync": "2026-11-15 16:55:00",
+    "lastUpdated": "2026-11-15T14:20:55.595Z",
+    "lastOfficialSync": "2026-11-15 17:14:14",
     "dsiDiscoveredCount": 15,
-    "dsiDiscoveredCompetitorCount": 15
+    "dsiDiscoveredCompetitorCount": 14,
+    "officialVerifiedWebsiteCount": 67
   },
   "competitors": [
     {
@@ -1534,6 +1535,14 @@ function createInitialVerifiedDatabase() {
         "DSI-20-201",
         "DSI-01-12",
         "DSI-12-122"
+      ],
+      "website": "https://www.metealtyapi.com.tr",
+      "websiteOwner": "Mete Altyapı İnşaat Ticaret A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Mete Altyapı İnşaat Ticaret A.Ş.",
+          "url": "https://www.metealtyapi.com.tr"
+        }
       ]
     },
     {
@@ -1592,7 +1601,9 @@ function createInitialVerifiedDatabase() {
       "webSearchQuery": "\"Sorgun Barajı Sulaması\" ihale yüklenici İKN yaklaşık maliyet TL",
       "webSearchSource": "DSİ 6. Bölge Sayfası (bolge06.dsi.gov.tr/Haber/Detay/18574) & Yatırımlar/EKAP İKN: 2024/256093",
       "relatedIkn": "2024/256093",
-      "contractAmountTL": 2633000000
+      "contractAmountTL": 2633000000,
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-03",
@@ -1631,7 +1642,9 @@ function createInitialVerifiedDatabase() {
         "DSI-06-64",
         "DSI-11-112",
         "DSI-08-81"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-04",
@@ -1664,6 +1677,14 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-07-71"
+      ],
+      "website": "http://www.onturklerinsaat.com.tr",
+      "websiteOwner": "Öntürkler İnşaat Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Öntürkler İnşaat Ltd. Şti.",
+          "url": "http://www.onturklerinsaat.com.tr"
+        }
       ]
     },
     {
@@ -1710,6 +1731,18 @@ function createInitialVerifiedDatabase() {
         "DSI-15-151",
         "DSI-25-251",
         "DSI-19-191"
+      ],
+      "website": "https://www.sistemel.com",
+      "websiteOwner": "Sistem Elektromekanik Tesisler San. ve Tic. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Sistem Elektromekanik Tesisler San. ve Tic. A.Ş.",
+          "url": "https://www.sistemel.com"
+        },
+        {
+          "name": "Körfez Haritacılık Planlama Ltd. Şti.",
+          "url": "https://korfezharita.com"
+        }
       ]
     },
     {
@@ -1744,7 +1777,9 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-GM-BARAJ"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-07",
@@ -1779,6 +1814,14 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-GM-BARAJ"
+      ],
+      "website": "https://burkayapi.com",
+      "websiteOwner": "Burka Yapı Enerji San. ve Tic. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Burka Yapı Enerji San. ve Tic. A.Ş.",
+          "url": "https://burkayapi.com"
+        }
       ]
     },
     {
@@ -1813,6 +1856,14 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-08-81"
+      ],
+      "website": "https://yapiyol.com.tr",
+      "websiteOwner": "Yapıyol Altyapı İnşaat San. ve Tic. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Yapıyol Altyapı İnşaat San. ve Tic. A.Ş.",
+          "url": "https://yapiyol.com.tr"
+        }
       ]
     },
     {
@@ -1847,7 +1898,9 @@ function createInitialVerifiedDatabase() {
       "primaryBranches": [
         "DSI-18-182",
         "DSI-09-93"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-10",
@@ -1894,6 +1947,14 @@ function createInitialVerifiedDatabase() {
         "DSI-11-113",
         "DSI-12-122",
         "DSI-04-43"
+      ],
+      "website": "https://ozbekinsaat.com",
+      "websiteOwner": "Özbek İnşaat Taahhüt San. ve Tic. Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Özbek İnşaat Taahhüt San. ve Tic. Ltd. Şti.",
+          "url": "https://ozbekinsaat.com"
+        }
       ]
     },
     {
@@ -1941,6 +2002,14 @@ function createInitialVerifiedDatabase() {
       "primaryBranches": [
         "DSI-20-204",
         "DSI-09-91"
+      ],
+      "website": "https://www.harbiyeinsaat.com.tr",
+      "websiteOwner": "Harbiye İnşaat Madencilik A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Harbiye İnşaat Madencilik A.Ş.",
+          "url": "https://www.harbiyeinsaat.com.tr"
+        }
       ]
     },
     {
@@ -1975,7 +2044,9 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-04-43"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-13",
@@ -2009,7 +2080,9 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-04-43"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-14",
@@ -2055,7 +2128,9 @@ function createInitialVerifiedDatabase() {
       "primaryBranches": [
         "DSI-19-191",
         "DSI-05-52"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-15",
@@ -2088,6 +2163,18 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-06-64"
+      ],
+      "website": "https://bulakyapi.com.tr",
+      "websiteOwner": "Bulak Yapı İnşaat Proje Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Bulak Yapı İnşaat Proje Ltd. Şti.",
+          "url": "https://bulakyapi.com.tr"
+        },
+        {
+          "name": "Grup Lider İnşaat A.Ş.",
+          "url": "https://gruplider.com.tr"
+        }
       ]
     },
     {
@@ -2121,7 +2208,9 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-06-62"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-17",
@@ -2154,7 +2243,9 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-01-15"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-18",
@@ -2200,6 +2291,14 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-01-15"
+      ],
+      "website": "https://www.salmainsaat.com.tr",
+      "websiteOwner": "Salma İnşaat Taahhüt Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Salma İnşaat Taahhüt Ltd. Şti.",
+          "url": "https://www.salmainsaat.com.tr"
+        }
       ]
     },
     {
@@ -2234,6 +2333,14 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-12-122"
+      ],
+      "website": "https://www.hlsinsaat.com",
+      "websiteOwner": "HLS İnşaat Taahhüt Sanayi ve Ticaret A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "HLS İnşaat Taahhüt Sanayi ve Ticaret A.Ş.",
+          "url": "https://www.hlsinsaat.com"
+        }
       ]
     },
     {
@@ -2268,7 +2375,9 @@ function createInitialVerifiedDatabase() {
       ],
       "primaryBranches": [
         "DSI-21-211"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-21",
@@ -2327,6 +2436,14 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-20-204"
+      ],
+      "website": "https://www.spgwater.com",
+      "websiteOwner": "SPG Danışmanlık Yatırım (SPG Water)",
+      "partnerWebsites": [
+        {
+          "name": "SPG Danışmanlık Yatırım (SPG Water)",
+          "url": "https://www.spgwater.com"
+        }
       ]
     },
     {
@@ -2386,6 +2503,14 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-08-81"
+      ],
+      "website": "https://www.mavialtyapi.com.tr",
+      "websiteOwner": "Mavi Altyapı A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Mavi Altyapı A.Ş.",
+          "url": "https://www.mavialtyapi.com.tr"
+        }
       ]
     },
     {
@@ -2445,6 +2570,14 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-08-81"
+      ],
+      "website": "https://dilayapi.com",
+      "websiteOwner": "Dila Yapı Madencilik İnşaat Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Dila Yapı Madencilik İnşaat Ltd. Şti.",
+          "url": "https://dilayapi.com"
+        }
       ]
     },
     {
@@ -2504,7 +2637,9 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-21-212"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-25",
@@ -2563,7 +2698,9 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-21-212"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-26",
@@ -2622,7 +2759,9 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-21-212"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-27",
@@ -2682,7 +2821,9 @@ function createInitialVerifiedDatabase() {
       "notes": "KİK Karar No: 2026/UY.I-892 uyarınca DSİ 12. Bölge / 123. Şube (Yozgat) Aydıncık Kösrelik Göleti İkmali 2. Kısım ihalesinde 245.219.462,25 TL teklif sahibi; ayrıca DSİ Kapıkaya Barajı ve Tesisleri İnşaatı resmi iş deneyim belgesi sahibi.",
       "primaryBranches": [
         "DSI-12-123"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-28",
@@ -2741,7 +2882,9 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-12-123"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-29",
@@ -2800,7 +2943,9 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-12-123"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-30",
@@ -2871,7 +3016,9 @@ function createInitialVerifiedDatabase() {
       "primaryBranches": [
         "DSI-12-123",
         "DSI-03-33"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-31",
@@ -2930,6 +3077,14 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-12-123"
+      ],
+      "website": "https://www.hitittaahhut.com",
+      "websiteOwner": "Hitit Taahhüt İnşaat Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Hitit Taahhüt İnşaat Ltd. Şti.",
+          "url": "https://www.hitittaahhut.com"
+        }
       ]
     },
     {
@@ -2989,7 +3144,9 @@ function createInitialVerifiedDatabase() {
       "verified": true,
       "primaryBranches": [
         "DSI-08-81"
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-33",
@@ -3024,6 +3181,14 @@ function createInitialVerifiedDatabase() {
           "source": "Kamu İhale Kurulu Kararı No: 2025/UY.II-874 & EKAP İKN: 2024/1548525 (ekap.kik.gov.tr)",
           "note": "DSİ 1. Bölge (11. Şube Bursa) Bursa Demirtaş Barajı Sulaması Yenilemesi Yapımı ihalesinde 518.450.000,00 TL teklifle ekonomik açıdan en avantajlı 1. teklif sahibi oldu.",
           "verified": true
+        }
+      ],
+      "website": "https://ozhelvaciyapi.com.tr",
+      "websiteOwner": "İsmail Özhelvacı İnşaat Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "İsmail Özhelvacı İnşaat Ltd. Şti.",
+          "url": "https://ozhelvaciyapi.com.tr"
         }
       ]
     },
@@ -3073,6 +3238,14 @@ function createInitialVerifiedDatabase() {
           "note": "DSİ 18. Bölge / 183. Şube (Afyonkarahisar) Çobanlar Seyitler Sulaması Yenileme İnşaatı işini tamamlayarak iş deneyim belgesi aldı.",
           "verified": true
         }
+      ],
+      "website": "https://nenagrup.com",
+      "websiteOwner": "Nena Grup / Nena Serkar İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Nena Grup / Nena Serkar İnşaat A.Ş.",
+          "url": "https://nenagrup.com"
+        }
       ]
     },
     {
@@ -3106,6 +3279,14 @@ function createInitialVerifiedDatabase() {
           "source": "Kamu İhale Kurulu Kararı No: 2025/UY.II-874 (ekap.kik.gov.tr)",
           "note": "DSİ 1. Bölge (11. Şube Bursa) Bursa Demirtaş Barajı Sulaması Yenilemesi Yapımı ihalesinde (İKN: 2024/1548525) 534.200.000,00 TL ile ekonomik açıdan en avantajlı 2. teklif sahibi olarak yer aldı.",
           "verified": true
+        }
+      ],
+      "website": "https://gursesli.com.tr",
+      "websiteOwner": "Gürsesli İnşaat Sanayi ve Ticaret A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Gürsesli İnşaat Sanayi ve Ticaret A.Ş.",
+          "url": "https://gursesli.com.tr"
         }
       ]
     },
@@ -3144,6 +3325,14 @@ function createInitialVerifiedDatabase() {
           "note": "DSİ 1. Bölge (11. Şube Bursa) Bursa Demirtaş Barajı Sulaması Yenilemesi ihalesinde (İKN: 2024/1548525) 588.121.223,00 TL resmi teklif sundu.",
           "verified": true
         }
+      ],
+      "website": "https://ayzmuhendislik.com.tr",
+      "websiteOwner": "AYZ Mühendislik İnşaat Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "AYZ Mühendislik İnşaat Ltd. Şti.",
+          "url": "https://ayzmuhendislik.com.tr"
+        }
       ]
     },
     {
@@ -3179,7 +3368,9 @@ function createInitialVerifiedDatabase() {
           "note": "DSİ 10. Bölge (101. Şube Diyarbakır) Sulama Tesisleri Koruyucu Güvenlik Tedbirleri Yapım İşi ihalesini 33.120.000,00 TL bedelle kazandı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-38",
@@ -3213,7 +3404,9 @@ function createInitialVerifiedDatabase() {
           "note": "DSİ 10. Bölge (101. Şube Diyarbakır) Sulama Tesisleri Koruyucu Güvenlik Tedbirleri ihalesinde sınır değerin (34.331.022,17 TL) hemen üzerinde 34.890.000,00 TL ile ekonomik açıdan en avantajlı 2. teklifi sundu.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-39",
@@ -3249,7 +3442,9 @@ function createInitialVerifiedDatabase() {
           "note": "DSİ 18. Bölge (182. Şube Burdur) Burdur Çavdır Kozağacı Köyü Taşkın Kontrol İnşaatı ihalesinde (YM: 29.844.510,00 TL) 21.427.698,00 TL (%28,20 indirim) ile sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-40",
@@ -3285,7 +3480,9 @@ function createInitialVerifiedDatabase() {
           "note": "DSİ 21. Bölge (212. Şube Denizli) Pamukkale Küçükdere Mahallesi Küçükderesi Islahı ihalesinde (YM: 21.999.656,09 TL) 16.140.700,00 TL (%26,63 indirim) ile sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-41",
@@ -3321,6 +3518,14 @@ function createInitialVerifiedDatabase() {
           "source": "DSİ 22. Bölge / 224. Şube (Rize) Resmi İhale Tutanağı İKN: 2024/1911692",
           "note": "Rize-Merkez Salarha Deresi ve Yan Kollar 3. Kısım Taşkın Koruma İnşaatı ihalesinde (SD: 124.507.493,99 TL) 124.921.820,80 TL (%33,16 indirim) ile sınır değerin hemen üzerinde makul teklif sahibi oldu.",
           "verified": true
+        }
+      ],
+      "website": "https://parsan.com.tr",
+      "websiteOwner": "Par-San Yapı A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Par-San Yapı A.Ş.",
+          "url": "https://parsan.com.tr"
         }
       ]
     },
@@ -3358,7 +3563,9 @@ function createInitialVerifiedDatabase() {
           "note": "Rize-Güneysu Potamya Deresi Yan Dereleri 4. Kısım Taşkın Koruma İnşaatı ihalesinde (SD: 123.410.424,99 TL) 123.725.308,40 TL (%32,42 indirim) ile sınır değerin hemen üzerinde makul teklif sahibi oldu.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-43",
@@ -3394,7 +3601,9 @@ function createInitialVerifiedDatabase() {
           "note": "Rize Salarha Deresi 3. Kısım (122.518.943,05 TL) ve Güneysu Potamya Deresi 4. Kısım (119.814.121,13 TL) ihalelerinde yüksek indirimli teklif sundu.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-44",
@@ -3430,7 +3639,9 @@ function createInitialVerifiedDatabase() {
           "note": "Rize 224. Şube taşkın koruma ihalelerinde 123.139.253,00 TL ve 120.500.476,15 TL ile sınır değere çok yakın teklifler sundu.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-45",
@@ -3466,7 +3677,9 @@ function createInitialVerifiedDatabase() {
           "note": "DSİ 4. Bölge Konya İli İşletmedeki Taşkın Kontrol Tesislerinde Yetersiz Geçiş Yapılarının Yenilenmesi 2. Kısım ihalesinde 42.699.178,00 TL ile makul teklif sahibi oldu.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-46",
@@ -3502,7 +3715,9 @@ function createInitialVerifiedDatabase() {
           "note": "Konya İli Taşkın Kontrol Tesisleri Geçiş Yapılarının Yenilenmesi 2. Kısım ihalesinde 42.819.600,00 TL teklif sundu.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-47",
@@ -3538,7 +3753,9 @@ function createInitialVerifiedDatabase() {
           "note": "Hakkari Merkez Bağlar Mahallesi Taşkın Koruma Yapım İşi ihalesinde (SD: 18.847.092,44 TL) 18.896.886,00 TL (%30,94 indirim) ile sınır değerin hemen üzerinde kalarak işi kazandı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-48",
@@ -3574,7 +3791,9 @@ function createInitialVerifiedDatabase() {
           "note": "Bitlis-Ahlat Tunus Mahallesi Abdurrahmangazi Deresi Taşkın Koruma Yapım İşi ihalesinde (SD: 13.706.058,71 TL) 13.841.150,00 TL (%29,43 indirim) ile makul teklif sahibi oldu.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-49",
@@ -3609,7 +3828,9 @@ function createInitialVerifiedDatabase() {
           "note": "DSİ 15. Bölge (151. Şube Viranşehir) Fırat 2. Kısım Arazi Toplulaştırma ve TİGH Projesi ihalesinde (YM: 249.942.790,41 TL) 159.475.100,00 TL (%36,20 indirim) ile sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-50",
@@ -3645,6 +3866,14 @@ function createInitialVerifiedDatabase() {
           "source": "DSİ 19. Bölge Müdürlüğü (191. Şube Sivas) Resmi Sözleşme Kaydı (23.09.2026)",
           "note": "DSİ 19. Bölge Müdürlüğü (Sivas) Hizmet Binaları ve Tesisleri Yapımı İşi ihalesinde 1.190.058.053,00 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://ahesholding.com.tr",
+      "websiteOwner": "Ahes Holding / Ahes İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Ahes Holding / Ahes İnşaat A.Ş.",
+          "url": "https://ahesholding.com.tr"
         }
       ]
     },
@@ -3684,6 +3913,14 @@ function createInitialVerifiedDatabase() {
           "source": "DSİ 21. Bölge / 211. Şube Müdürlüğü (Aydın) Resmi Sözleşme Kaydı (25.08.2026)",
           "note": "Aydın Kuşadası-Söke Sarıçay İçme Suyu Barajı Enerji Nakil Hattı Deplasesi ve Tesisleri İşi ihalesinde 367.842.188,00 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.ozaltin.com.tr",
+      "websiteOwner": "Özaltın Holding / Özaltın İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Özaltın Holding / Özaltın İnşaat A.Ş.",
+          "url": "https://www.ozaltin.com.tr"
         }
       ]
     },
@@ -3731,7 +3968,9 @@ function createInitialVerifiedDatabase() {
           "note": "Kütahya Emet Günlüce Göleti yapım işinde 134.036.738,46 TL sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-53",
@@ -3776,6 +4015,18 @@ function createInitialVerifiedDatabase() {
           "source": "DSİ 6. Bölge Sayfası + İKN: 2024/256093",
           "note": "Mersin Sorgun Barajı Sulaması İkmali ihalesinde 2.633.000.000 TL sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://ozbekinsaat.com",
+      "websiteOwner": "Özbek İnşaat Taahhüt San. ve Tic. Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Özbek İnşaat Taahhüt San. ve Tic. Ltd. Şti.",
+          "url": "https://ozbekinsaat.com"
+        },
+        {
+          "name": "İntes Grup İnşaat ve Ticaret A.Ş.",
+          "url": "https://www.intesgrup.com.tr"
         }
       ]
     },
@@ -3839,6 +4090,14 @@ function createInitialVerifiedDatabase() {
           "note": "İzmir Bergama Bölümçam Göleti İnşaatı (İKN: 2023/959666) ihalesinde 90.747.747 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://adakaleinsaat.com.tr",
+      "websiteOwner": "Adakale Madencilik İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Adakale Madencilik İnşaat A.Ş.",
+          "url": "https://adakaleinsaat.com.tr"
+        }
       ]
     },
     {
@@ -3885,6 +4144,14 @@ function createInitialVerifiedDatabase() {
           "note": "Hatay Tahtaköprü Barajı Sulaması 1. Kısım şantiyesinde aktif yapım çalışmaları sürüyor.",
           "verified": true
         }
+      ],
+      "website": "https://www.ziverholding.com.tr",
+      "websiteOwner": "Ziver Holding / Ziver İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Ziver Holding / Ziver İnşaat A.Ş.",
+          "url": "https://www.ziverholding.com.tr"
+        }
       ]
     },
     {
@@ -3929,6 +4196,14 @@ function createInitialVerifiedDatabase() {
           "source": "DSİ 17. Bölge Sayfası + İKN: 2023/1581506",
           "note": "Hakkari Yüksekova Dilimli Barajı Sulaması 1. Kısım ihalesinde 534.941.798 TL sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.serfeninsaat.com.tr",
+      "websiteOwner": "Serfen İnşaat San. ve Tic. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Serfen İnşaat San. ve Tic. A.Ş.",
+          "url": "https://www.serfeninsaat.com.tr"
         }
       ]
     },
@@ -3975,6 +4250,14 @@ function createInitialVerifiedDatabase() {
           "note": "Burdur Gölhisar Sulaması Modernizasyonu şantiyesinde aktif saha yüklenicisi.",
           "verified": true
         }
+      ],
+      "website": "https://www.egecanas.com",
+      "websiteOwner": "Egecan Akaryakıt Tem. Nak. İnş. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Egecan Akaryakıt Tem. Nak. İnş. A.Ş.",
+          "url": "https://www.egecanas.com"
+        }
       ]
     },
     {
@@ -4020,7 +4303,9 @@ function createInitialVerifiedDatabase() {
           "note": "Gaziantep Nizip AT ve TİGH Tamamlama yapım işinin sözleşmeli yüklenicisi.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-59",
@@ -4065,6 +4350,14 @@ function createInitialVerifiedDatabase() {
           "source": "DSİ 21. Bölge Sayfası (Haber/Detay/18832) + İKN: 2022/865658",
           "note": "Aydın Nazilli Kozdere Göleti şantiyesinde aktif yapım çalışmalarını sürdürmektedir.",
           "verified": true
+        }
+      ],
+      "website": "https://www.hestas.com.tr",
+      "websiteOwner": "Hestaş / Hesta Enerji Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Hestaş / Hesta Enerji Ltd. Şti.",
+          "url": "https://www.hestas.com.tr"
         }
       ]
     },
@@ -4112,7 +4405,9 @@ function createInitialVerifiedDatabase() {
           "note": "Kars Barajı Sulaması İletim Hattı İkmali sahasında saha incelemeleri devam ediyor.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-61",
@@ -4157,7 +4452,9 @@ function createInitialVerifiedDatabase() {
           "note": "Çanakkale Biga Taşoluk Sulaması 2. Kısım İkmali yapım işini %24,70 indirimle kazandı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-62",
@@ -4226,6 +4523,14 @@ function createInitialVerifiedDatabase() {
           "note": "Düzce Efteni Gölü Islahı 2. Kısım İnşaatı (İKN: 2023/1448601) ihalesinde 1.152.000.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://www.uluova.com.tr",
+      "websiteOwner": "Uluova İnşaat ve Makina Sanayi Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Uluova İnşaat ve Makina Sanayi Ltd. Şti.",
+          "url": "https://www.uluova.com.tr"
+        }
       ]
     },
     {
@@ -4270,6 +4575,18 @@ function createInitialVerifiedDatabase() {
           "source": "DSİ 25. Bölge Sayfası (Haber/Detay/18350) + İKN: 2022/1027126",
           "note": "Manyas Ovası Sol Sahil Sulaması şantiyesinde aktif yapım yüklenicisi.",
           "verified": true
+        }
+      ],
+      "website": "https://ozarasgrup.com",
+      "websiteOwner": "Özaras Grup İnşaat Taahhüt A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Özaras Grup İnşaat Taahhüt A.Ş.",
+          "url": "https://ozarasgrup.com"
+        },
+        {
+          "name": "İnelsan İnşaat Elektrik Ltd. Şti.",
+          "url": "https://www.inelsan.net"
         }
       ]
     },
@@ -4316,6 +4633,18 @@ function createInitialVerifiedDatabase() {
           "source": "DSİ 25. Bölge Sayfası (Haber/Detay/18350) + İKN: 2021/245903",
           "note": "Manyas Ovası Sol Sahil Sulaması İletim Tüneli yüklenicisi.",
           "verified": true
+        }
+      ],
+      "website": "http://arksuas.com.tr",
+      "websiteOwner": "Ark Su İnşaat Proje Mühendislik A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Ark Su İnşaat Proje Mühendislik A.Ş.",
+          "url": "http://arksuas.com.tr"
+        },
+        {
+          "name": "Derinsu Proje İnşaat San. ve Tic. A.Ş.",
+          "url": "https://derinsuas.com.tr"
         }
       ]
     },
@@ -4377,7 +4706,9 @@ function createInitialVerifiedDatabase() {
           "source": "Kamu İhale Kurulu Kararı No: 2024/UY.I-603 (25.04.2024 - ekap.kik.gov.tr) & İKN: 2023/894949",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-66",
@@ -4411,7 +4742,9 @@ function createInitialVerifiedDatabase() {
           "note": "Bursa Karacabey Gölecik Barajı İkmali İnşaatı (İKN: 2024/1393925) ihalesinde 2.202.030.830 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-67",
@@ -4445,7 +4778,9 @@ function createInitialVerifiedDatabase() {
           "note": "Bursa İli İnegöl İlçesi Karadere Islahı İnşaatı (İKN: 2025/2441061) ihalesinde 255.934.885,16 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-68",
@@ -4478,6 +4813,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber / eihalebul — EKAP İKN: 2025/1308203",
           "note": "Bursa İli İnegöl İlçesi Bedre Deresi Islahı İnşaatı (İKN: 2025/1308203) ihalesinde 386.265.985,12 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://ergunleryolyapi.com.tr",
+      "websiteOwner": "B. Ergünler Yol Yapı İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "B. Ergünler Yol Yapı İnşaat A.Ş.",
+          "url": "https://ergunleryolyapi.com.tr"
         }
       ]
     },
@@ -4513,6 +4856,14 @@ function createInitialVerifiedDatabase() {
           "note": "Bursa Keles Başak Avdan Göleti İnşaatı (İKN: 2023/1269532) ihalesinde 125.824.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://kanikinsaat.com.tr",
+      "websiteOwner": "Kanık İnşaat San. ve Tic. Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Kanık İnşaat San. ve Tic. Ltd. Şti.",
+          "url": "https://kanikinsaat.com.tr"
+        }
       ]
     },
     {
@@ -4547,7 +4898,9 @@ function createInitialVerifiedDatabase() {
           "note": "Bursa İnegöl Hocaköy Barajı Tamamlama İnşaatı (İKN: 2021/250604) ihalesinde 164.248.025 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-71",
@@ -4580,6 +4933,14 @@ function createInitialVerifiedDatabase() {
           "source": "ihalehaberi.net / TaahhütHaber — EKAP İKN: 2026/845639 (Sözleşme: 10.09.2026)",
           "note": "İzmir Bergama Kınık Dikili AT ve TİGH İnşaatı (İKN: 2026/845639) ihalesinde 438.639.736,26 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://derinsuas.com.tr",
+      "websiteOwner": "Derinsu Proje İnşaat San. ve Tic. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Derinsu Proje İnşaat San. ve Tic. A.Ş.",
+          "url": "https://derinsuas.com.tr"
         }
       ]
     },
@@ -4615,6 +4976,14 @@ function createInitialVerifiedDatabase() {
           "note": "Manisa Akhisar Gürdük Göleti Tamamlama İnşaatı (İKN: 2024/1219113) ihalesinde 682.661.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://bordotaahhut.com.tr",
+      "websiteOwner": "Bordo Taahhüt Enerji / İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Bordo Taahhüt Enerji / İnşaat A.Ş.",
+          "url": "https://bordotaahhut.com.tr"
+        }
       ]
     },
     {
@@ -4649,7 +5018,9 @@ function createInitialVerifiedDatabase() {
           "note": "Uşak Banaz Baltalı Göleti İletim Hattı İnşaatı (İKN: 2023/1508531) ihalesinde 158.650.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-74",
@@ -4682,6 +5053,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2023/1343500 (ilk ihale bazlı YM/Sözleşme)",
           "note": "Uşak Banaz Baybuyan Küçükler Derivasyon Tesisleri İnşaatı (İKN: 2023/1343500) ihalesinde 148.682.627 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.emfyapi.com.tr",
+      "websiteOwner": "EMF Yapı San. Tic. Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "EMF Yapı San. Tic. Ltd. Şti.",
+          "url": "https://www.emfyapi.com.tr"
         }
       ]
     },
@@ -4717,7 +5096,9 @@ function createInitialVerifiedDatabase() {
           "note": "İzmir Kınık Karadere Barajı İnşaatı (İKN: 2022/905600) ihalesinde 513.345.638 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-76",
@@ -4750,6 +5131,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2023/1117603 (Sözleşme: 15.03.2024)",
           "note": "Kütahya Simav Kızılcık Göleti İnşaatı (İKN: 2023/1117603) ihalesinde 405.502.240 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.sistemel.com",
+      "websiteOwner": "Sistem Elektromekanik Tesisler San. ve Tic. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Sistem Elektromekanik Tesisler San. ve Tic. A.Ş.",
+          "url": "https://www.sistemel.com"
         }
       ]
     },
@@ -4784,6 +5173,18 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2024/1451314 (Pazarlık 21/b, İhale: 05.11.2024, Sözleşme: 20.11.2024)",
           "note": "Sakarya Ballıkaya Barajı Köy Ulaşım Yolları 3. Kısım İnşaatı (İKN: 2024/1451314) ihalesinde 295.745.000 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.emfyapi.com.tr",
+      "websiteOwner": "EMF Yapı San. Tic. Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "EMF Yapı San. Tic. Ltd. Şti.",
+          "url": "https://www.emfyapi.com.tr"
+        },
+        {
+          "name": "Kayaoğlu İnşaat San. ve Tic. A.Ş.",
+          "url": "https://www.kayaogluinsaat.com.tr"
         }
       ]
     },
@@ -4831,7 +5232,9 @@ function createInitialVerifiedDatabase() {
           "note": "Bingöl 2. Kısım AT ve TİGH Yapım İnşaatı (İKN: 2025/1998653) ihalesinde 252.439.290 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-79",
@@ -4864,6 +5267,18 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2022/1498948",
           "note": "Yukarı Sakarya İlyaspaşa Sulaması İnşaatı (İKN: 2022/1498948) ihalesinde 598.952.650 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://gursesli.com.tr",
+      "websiteOwner": "Gürsesli İnşaat Sanayi ve Ticaret A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Gürsesli İnşaat Sanayi ve Ticaret A.Ş.",
+          "url": "https://gursesli.com.tr"
+        },
+        {
+          "name": "Güleker İnşaat Taah. Ltd. Şti.",
+          "url": "https://www.guleker.com.tr"
         }
       ]
     },
@@ -4898,6 +5313,18 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber / Diyosis — EKAP İKN: 2025/660496 (İhale: 04.07.2025; ilk ihale bazlı YM/Sözleşme)",
           "note": "Çankırı Devrez Kızlaryolu Barajı Sulaması İnşaatı (İKN: 2025/660496) ihalesinde 4.866.000.000 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.inelsan.net",
+      "websiteOwner": "İnelsan İnşaat Elektrik Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "İnelsan İnşaat Elektrik Ltd. Şti.",
+          "url": "https://www.inelsan.net"
+        },
+        {
+          "name": "Dido-Ray Yapı San. Tic. A.Ş.",
+          "url": "https://didoray.com"
         }
       ]
     },
@@ -4945,6 +5372,14 @@ function createInitialVerifiedDatabase() {
           "note": "Şanlıurfa-Merkez Sırrın Deresi ve Yan Kolları 1. Kısım İnşaatı (İKN: 2023/839470) ihalesinde 768.834.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://www.vestan.com.tr",
+      "websiteOwner": "Vestan İnşaat Tic. ve San. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Vestan İnşaat Tic. ve San. A.Ş.",
+          "url": "https://www.vestan.com.tr"
+        }
       ]
     },
     {
@@ -4978,6 +5413,18 @@ function createInitialVerifiedDatabase() {
           "source": "eihalebul — EKAP İKN: 2025/2416528 (İhale: 06.02.2026; ilk ihale bazlı YM/Sözleşme)",
           "note": "Çankırı Şabanözü Sanı Çayı Islahı İnşaatı (İKN: 2025/2416528) ihalesinde 307.637.850 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://yuksel.net",
+      "websiteOwner": "Yüksel İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Yüksel İnşaat A.Ş.",
+          "url": "https://yuksel.net"
+        },
+        {
+          "name": "Simge-Yol İnşaat San. Tic. Ltd. Şti.",
+          "url": "https://www.simgeyol.com.tr"
         }
       ]
     },
@@ -5013,6 +5460,14 @@ function createInitialVerifiedDatabase() {
           "note": "Samsun Bafra Ovası Sulaması 2. Kısım İkmali İnşaatı (İKN: 2024/472693) ihalesinde 1.398.205.896 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://berakgroup.com",
+      "websiteOwner": "Berak İnşaat Taahhüt A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Berak İnşaat Taahhüt A.Ş.",
+          "url": "https://berakgroup.com"
+        }
       ]
     },
     {
@@ -5046,6 +5501,18 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber / ihalehaberi — EKAP İKN: 2025/1078693",
           "note": "Samsun Tekkeköy Ortaköprü Deresi Taşkın Koruma İnşaatı (İKN: 2025/1078693) ihalesinde 897.330.349 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://burkayapi.com",
+      "websiteOwner": "Burka Yapı Enerji San. ve Tic. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Burka Yapı Enerji San. ve Tic. A.Ş.",
+          "url": "https://burkayapi.com"
+        },
+        {
+          "name": "Asmet Yapı / Asmet İnşaat A.Ş.",
+          "url": "https://asmetyapi.com.tr"
         }
       ]
     },
@@ -5081,6 +5548,14 @@ function createInitialVerifiedDatabase() {
           "note": "Ordu Fatsa Ilıca Deresi Islahı İnşaatı (İKN: 2026/1006926) ihalesinde 276.497.250 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://parsu.com.tr",
+      "websiteOwner": "Par-SU Yapı A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Par-SU Yapı A.Ş.",
+          "url": "https://parsu.com.tr"
+        }
       ]
     },
     {
@@ -5114,6 +5589,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2024/1205350",
           "note": "Samsun Bafra Kızılırmak Islahı 3. Kısım İnşaatı (İKN: 2024/1205350) ihalesinde 402.372.600 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://burkayapi.com",
+      "websiteOwner": "Burka Yapı Enerji San. ve Tic. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Burka Yapı Enerji San. ve Tic. A.Ş.",
+          "url": "https://burkayapi.com"
         }
       ]
     },
@@ -5149,6 +5632,18 @@ function createInitialVerifiedDatabase() {
           "note": "Elazığ Uluova Sulaması Pompa İstasyonu İnşaatı (İKN: 2023/1355230) ihalesinde 1.675.990.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://www.harbiyeinsaat.com.tr",
+      "websiteOwner": "Harbiye İnşaat Madencilik A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Harbiye İnşaat Madencilik A.Ş.",
+          "url": "https://www.harbiyeinsaat.com.tr"
+        },
+        {
+          "name": "Vestan İnşaat Tic. ve San. A.Ş.",
+          "url": "https://www.vestan.com.tr"
+        }
       ]
     },
     {
@@ -5182,6 +5677,14 @@ function createInitialVerifiedDatabase() {
           "source": "eihalebul / TaahhütHaber — EKAP İKN: 2025/2167561 (Sözleşme: 16.07.2026)",
           "note": "Elazığ-Merkez Yurtbaşı Beldesi Taşkın Kontrol İnşaatı (İKN: 2025/2167561) ihalesinde 187.188.189 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.harbiyeinsaat.com.tr",
+      "websiteOwner": "Harbiye İnşaat Madencilik A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Harbiye İnşaat Madencilik A.Ş.",
+          "url": "https://www.harbiyeinsaat.com.tr"
         }
       ]
     },
@@ -5217,7 +5720,9 @@ function createInitialVerifiedDatabase() {
           "note": "Bingöl-Merkez Göltepesi 15 Temmuz Şehitler Göleti Rezervuar İyileştirme Yapım İnşaatı (İKN: 2025/1016755) ihalesinde 259.269.909,9 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-90",
@@ -5250,6 +5755,18 @@ function createInitialVerifiedDatabase() {
           "source": "Yatırımlar / TaahhütHaber — EKAP İKN: 2023/336724",
           "note": "Diyarbakır Kale Barajı Sulaması Ana İletim Hattı Tüneli İnşaatı (İKN: 2023/336724) ihalesinde 1.834.012.295 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.inelsan.net",
+      "websiteOwner": "İnelsan İnşaat Elektrik Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "İnelsan İnşaat Elektrik Ltd. Şti.",
+          "url": "https://www.inelsan.net"
+        },
+        {
+          "name": "Dido-Ray Yapı San. Tic. A.Ş.",
+          "url": "https://didoray.com"
         }
       ]
     },
@@ -5285,6 +5802,18 @@ function createInitialVerifiedDatabase() {
           "note": "Kralkızı-Dicle Cazibe Sulaması Ana Kanalı Su Kontrol Yapıları Yapımı İnşaatı (İKN: 2026/114873) ihalesinde 225.294.550 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://www.femainsaat.com.tr",
+      "websiteOwner": "Fema İnşaat Ticaret A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Fema İnşaat Ticaret A.Ş.",
+          "url": "https://www.femainsaat.com.tr"
+        },
+        {
+          "name": "UNTD İnşaat A.Ş.",
+          "url": "https://www.untdinsaat.com.tr"
+        }
       ]
     },
     {
@@ -5318,6 +5847,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2023/480987",
           "note": "Batman Çayı Islahı 3. Kısım İnşaatı (İKN: 2023/480987) ihalesinde 121.405.597 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.egecanas.com",
+      "websiteOwner": "Egecan Akaryakıt Tem. Nak. İnş. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Egecan Akaryakıt Tem. Nak. İnş. A.Ş.",
+          "url": "https://www.egecanas.com"
         }
       ]
     },
@@ -5353,6 +5890,22 @@ function createInitialVerifiedDatabase() {
           "note": "Diyarbakır Kale Barajı İkmali İnşaatı (İKN: 2022/1046282) ihalesinde 260.753.747 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://adakaleinsaat.com.tr",
+      "websiteOwner": "Adakale Madencilik İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Adakale Madencilik İnşaat A.Ş.",
+          "url": "https://adakaleinsaat.com.tr"
+        },
+        {
+          "name": "Farsel İnşaat ve Ticaret A.Ş.",
+          "url": "https://farselinsaat.com"
+        },
+        {
+          "name": "Baykara Grup İnşaat",
+          "url": "https://www.baykara.com"
+        }
       ]
     },
     {
@@ -5386,6 +5939,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2025/2490699 (ilk ihale bazlı YM/Sözleşme)",
           "note": "Edirne Çömlekköy Barajı Sulaması İnşaatı (İKN: 2025/2490699) ihalesinde 1.780.061.062 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.asilinsaat.com.tr",
+      "websiteOwner": "Asil İnşaat San. ve Tic. A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Asil İnşaat San. ve Tic. A.Ş.",
+          "url": "https://www.asilinsaat.com.tr"
         }
       ]
     },
@@ -5421,6 +5982,14 @@ function createInitialVerifiedDatabase() {
           "note": "Kırklareli Lüleburgaz Deresi 2. Kısım Islahı İnşaatı (İKN: 2025/1352148) ihalesinde 1.659.042.910 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://parsprojeyapi.com",
+      "websiteOwner": "Pars Proje İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Pars Proje İnşaat A.Ş.",
+          "url": "https://parsprojeyapi.com"
+        }
       ]
     },
     {
@@ -5455,7 +6024,9 @@ function createInitialVerifiedDatabase() {
           "note": "Antalya Manavgat Çardak Taşkın Koruma İnşaatı (İKN: 2023/506376) ihalesinde 169.921.548 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-97",
@@ -5488,6 +6059,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2023/664339 (Açık İhale, Sözleşme > YM +%2,32 teyitli)",
           "note": "Antalya Kumluca Yapraklı Deresi Islahı İnşaatı (İKN: 2023/664339) ihalesinde 153.232.500 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://gruplider.com.tr",
+      "websiteOwner": "Grup Lider İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Grup Lider İnşaat A.Ş.",
+          "url": "https://gruplider.com.tr"
         }
       ]
     },
@@ -5523,6 +6102,14 @@ function createInitialVerifiedDatabase() {
           "note": "DSİ 13. Bölge Müdürlüğü (Antalya) Hizmet Binası Yapımı İşi (İKN: 2023/1503987) ihalesinde 340.000.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://cereninsaatvan.com.tr",
+      "websiteOwner": "Ceren İnşaat Taahhüt Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Ceren İnşaat Taahhüt Ltd. Şti.",
+          "url": "https://cereninsaatvan.com.tr"
+        }
       ]
     },
     {
@@ -5557,7 +6144,9 @@ function createInitialVerifiedDatabase() {
           "note": "İstanbul Beykoz Riva Deresi Mahmuz Yapımı İnşaatı (İKN: 2023/1083354) ihalesinde 197.465.497,74 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-100",
@@ -5590,6 +6179,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber / Diyosis — EKAP İKN: 2024/1529207 (İhale: 19.12.2024; tek yüklenici teyitli)",
           "note": "İstanbul Beykoz Çırçır Deresi Islahı İnşaatı (İKN: 2024/1529207) ihalesinde 37.692.424,35 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.alteamuhendislik.com.tr",
+      "websiteOwner": "Altea İnşaat / Mühendislik",
+      "partnerWebsites": [
+        {
+          "name": "Altea İnşaat / Mühendislik",
+          "url": "https://www.alteamuhendislik.com.tr"
         }
       ]
     },
@@ -5625,7 +6222,9 @@ function createInitialVerifiedDatabase() {
           "note": "İstanbul Arnavutköy Türkköşe Deresi Islahı Sanat Yapısı İnşaatı (İKN: 2025/2198370) ihalesinde 19.709.997,4 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-102",
@@ -5659,7 +6258,9 @@ function createInitialVerifiedDatabase() {
           "note": "İstanbul Büyükçekmece Barajı Onarımı İnşaatı (İKN: 2020/677523) ihalesinde 3.566.813,67 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-103",
@@ -5692,6 +6293,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber / Diyosis — EKAP İKN: 2023/1344884 (Sözleşme: 15.03.2024)",
           "note": "Mardin Depolaması 2. Kademe ve Pompa İstasyonu İnşaatı (DSİ 15. Bölge) (İKN: 2023/1344884) ihalesinde 3.959.934.495 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://ozerka.com.tr",
+      "websiteOwner": "Öz Er-Ka İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Öz Er-Ka İnşaat A.Ş.",
+          "url": "https://ozerka.com.tr"
         }
       ]
     },
@@ -5727,6 +6336,14 @@ function createInitialVerifiedDatabase() {
           "note": "Şanlıurfa Harran Ovaları Sulaması Sulamadan Dönen Suların Değerlendirilmesi İnşaatı (İKN: 2025/928140) ihalesinde 726.000.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://www.gunesholding.com.tr",
+      "websiteOwner": "Güneş Holding (Mehmet Güneş İnşaat A.Ş.)",
+      "partnerWebsites": [
+        {
+          "name": "Güneş Holding (Mehmet Güneş İnşaat A.Ş.)",
+          "url": "https://www.gunesholding.com.tr"
+        }
       ]
     },
     {
@@ -5760,6 +6377,18 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber / KİK — EKAP İKN: 2023/893118",
           "note": "Şanlıurfa-Merkez Karakoyun Deresi ve Yan Kolları 1. Kısım İnşaatı (İKN: 2023/893118) ihalesinde 892.047.000 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://ozbekinsaat.com",
+      "websiteOwner": "Özbek İnşaat Taahhüt San. ve Tic. Ltd. Şti.",
+      "partnerWebsites": [
+        {
+          "name": "Özbek İnşaat Taahhüt San. ve Tic. Ltd. Şti.",
+          "url": "https://ozbekinsaat.com"
+        },
+        {
+          "name": "İntes Grup İnşaat ve Ticaret A.Ş.",
+          "url": "https://www.intesgrup.com.tr"
         }
       ]
     },
@@ -5795,6 +6424,14 @@ function createInitialVerifiedDatabase() {
           "note": "Yığınlı Tüneli Bağlantı Yolu ile Baraj Kapsamındaki Köy Yollarının İyileştirilmesi İnşaatı (Siirt) (İKN: 2024/366099) ihalesinde 1.154.992.500 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://www.maktasinsaat.com",
+      "websiteOwner": "Maktaş İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Maktaş İnşaat A.Ş.",
+          "url": "https://www.maktasinsaat.com"
+        }
       ]
     },
     {
@@ -5829,7 +6466,9 @@ function createInitialVerifiedDatabase() {
           "note": "Batman Hasankeyf Taşkın Koruma İnşaatı (DSİ Ilısu Projesi 16. Bölge) (İKN: 2021/163401) ihalesinde 226.646.157,99 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-108",
@@ -5863,7 +6502,9 @@ function createInitialVerifiedDatabase() {
           "note": "Sivas 14 Bozkurt Arazi Toplulaştırma ve TİGH Yapım İnşaatı (İKN: 2024/695484) ihalesinde 194.347.992 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-109",
@@ -5896,6 +6537,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2023/376735",
           "note": "Sivas Divriği Kevendüzü Sulaması İkmali İnşaatı (İKN: 2023/376735) ihalesinde 199.752.964 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://baytimurinsaat.com",
+      "websiteOwner": "Baytimur İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Baytimur İnşaat A.Ş.",
+          "url": "https://baytimurinsaat.com"
         }
       ]
     },
@@ -5931,7 +6580,9 @@ function createInitialVerifiedDatabase() {
           "note": "Zonguldak Ereğli Çaylıoğlu Kızlar Çayı Islahı İnşaatı (İKN: 2025/1533483) ihalesinde 269.522.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-111",
@@ -5965,7 +6616,9 @@ function createInitialVerifiedDatabase() {
           "note": "Kastamonu İnebolu Kızılkara Mahallesi Karadağ Deresi Yapım İşi (İKN: 2026/1415726) ihalesinde 86.575.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-112",
@@ -5998,6 +6651,22 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2023/326847 (Açık İhale, Sözleşme > YM +%0,11 ve 3 üyeli ortaklık teyitli)",
           "note": "DSİ 23. Bölge Müdürlüğü (Kastamonu) Hizmet Binaları ve Tesisleri İnşaatı (İKN: 2023/326847) ihalesinde 547.537.013 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://belbeton.com.tr",
+      "websiteOwner": "Belbeton Beton Elemanları A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Belbeton Beton Elemanları A.Ş.",
+          "url": "https://belbeton.com.tr"
+        },
+        {
+          "name": "Barutçuoğlu Grup / İnşaat",
+          "url": "https://barutcuoglugrup.com"
+        },
+        {
+          "name": "Bilsezer İnşaat Ltd. Şti.",
+          "url": "https://www.bilsezer.com"
         }
       ]
     },
@@ -6033,7 +6702,9 @@ function createInitialVerifiedDatabase() {
           "note": "Ardahan Ovası AT ve TİGH Projesi İnşaatı (İKN: 2022/1496807) ihalesinde 75.575.001 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-114",
@@ -6067,7 +6738,9 @@ function createInitialVerifiedDatabase() {
           "note": "Ardahan Göle Durançam Göleti İkmali İnşaatı (İKN: 2024/1745030) ihalesinde 206.023.800 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-115",
@@ -6100,6 +6773,14 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2023/943468 (İhale: 12.10.2023)",
           "note": "Kars Arpaçay Koçköy Barajı ve Sulaması İkmali 2. Kısım İnşaatı (İKN: 2023/943468) ihalesinde 319.385.000 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://asmetyapi.com.tr",
+      "websiteOwner": "Asmet Yapı / Asmet İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Asmet Yapı / Asmet İnşaat A.Ş.",
+          "url": "https://asmetyapi.com.tr"
         }
       ]
     },
@@ -6135,7 +6816,9 @@ function createInitialVerifiedDatabase() {
           "note": "Kars Kağızman Çayarası Göleti İnşaatı (İKN: 2023/1196034) ihalesinde 187.558.662 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-117",
@@ -6169,7 +6852,9 @@ function createInitialVerifiedDatabase() {
           "note": "Artvin Merkez Köyler Taşkın Koruma İnşaatı (İKN: 2023/418034) ihalesinde 131.106.750 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-118",
@@ -6202,6 +6887,18 @@ function createInitialVerifiedDatabase() {
           "source": "TaahhütHaber — EKAP İKN: 2023/1314188",
           "note": "Artvin Ardanuç Bulanık Deresi Sulama İnşaatı (İKN: 2023/1314188) ihalesinde 776.730.596,35 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.harbiyeinsaat.com.tr",
+      "websiteOwner": "Harbiye İnşaat Madencilik A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Harbiye İnşaat Madencilik A.Ş.",
+          "url": "https://www.harbiyeinsaat.com.tr"
+        },
+        {
+          "name": "Binbay Yapı İnşaat A.Ş.",
+          "url": "https://www.binbayyapi.com.tr"
         }
       ]
     },
@@ -6237,7 +6934,9 @@ function createInitialVerifiedDatabase() {
           "note": "Artvin Kemalpaşa Karaosmaniye Deresi Üst Havzası Taşkın ve Rüsubat Kontrolü 2. Kısım İnşaatı (İKN: 2023/957531) ihalesinde 228.029.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
-      ]
+      ],
+      "website": "",
+      "partnerWebsites": []
     },
     {
       "id": "COMP-120",
@@ -6270,6 +6969,14 @@ function createInitialVerifiedDatabase() {
           "source": "eihalebul / TaahhütHaber / Herpoz — EKAP İKN: 2026/1019891 (Pazarlık 21/b, Sözleşme: 22.06.2026)",
           "note": "İstanbul Melen Barajı Tamamlama İnşaatı (DSİ Barajlar ve HES Dairesi) (İKN: 2026/1019891) ihalesinde 14.496.000.000 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://www.limak.com.tr",
+      "websiteOwner": "Limak Holding / Limak İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Limak Holding / Limak İnşaat A.Ş.",
+          "url": "https://www.limak.com.tr"
         }
       ]
     },
@@ -6305,6 +7012,14 @@ function createInitialVerifiedDatabase() {
           "note": "Malatya Yoncalı Sulaması İnşaatı (DSİ Sulama Dairesi) (İKN: 2023/1290507) ihalesinde 3.283.123.000 TL bedelle sözleşme imzaladı.",
           "verified": true
         }
+      ],
+      "website": "https://maksima.com.tr",
+      "websiteOwner": "Maksima Elektrik Enerji İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Maksima Elektrik Enerji İnşaat A.Ş.",
+          "url": "https://maksima.com.tr"
+        }
       ]
     },
     {
@@ -6338,6 +7053,26 @@ function createInitialVerifiedDatabase() {
           "source": "KİK Kararları & TaahhütHaber — EKAP İKN: 2020/571125 (20. md Belli İstekliler; kesinleşen sözleşme)",
           "note": "Adıyaman Kahta Büyükçay Barajı Yapımı İşi (DSİ Barajlar ve HES Dairesi) (İKN: 2020/571125) ihalesinde 486.760.800 TL bedelle sözleşme imzaladı.",
           "verified": true
+        }
+      ],
+      "website": "https://maksima.com.tr",
+      "websiteOwner": "Maksima Elektrik Enerji İnşaat A.Ş.",
+      "partnerWebsites": [
+        {
+          "name": "Maksima Elektrik Enerji İnşaat A.Ş.",
+          "url": "https://maksima.com.tr"
+        },
+        {
+          "name": "Seza İnşaat A.Ş.",
+          "url": "https://www.sezainsaat.com"
+        },
+        {
+          "name": "Mustafa Ekşi İnşaat Ltd. Şti.",
+          "url": "https://www.mustafaeksi.com.tr"
+        },
+        {
+          "name": "Açılım İnşaat Ltd. Şti.",
+          "url": "https://www.acilim.com.tr"
         }
       ]
     }
@@ -6780,7 +7515,7 @@ function createInitialVerifiedDatabase() {
           "isValid": true
         }
       ],
-      "lastVerifiedAt": "2026-11-15 16:26:15"
+      "lastVerifiedAt": "2026-11-15 17:14:14"
     },
     {
       "id": "TND-2025-462536",
@@ -6817,7 +7552,7 @@ function createInitialVerifiedDatabase() {
       ],
       "subeId": "DSI-08-81",
       "subeName": "DSİ 81. Şube Müdürlüğü (Erzurum)",
-      "lastVerifiedAt": "2026-11-15 16:26:15"
+      "lastVerifiedAt": "2026-11-15 17:14:14"
     },
     {
       "id": "TND-2025-1969352",
@@ -6869,7 +7604,7 @@ function createInitialVerifiedDatabase() {
       ],
       "subeId": "DSI-12-123",
       "subeName": "DSİ 123. Şube Müdürlüğü (Yozgat)",
-      "lastVerifiedAt": "2026-11-15 16:26:15"
+      "lastVerifiedAt": "2026-11-15 17:14:14"
     },
     {
       "id": "TND-2025-1354433",
@@ -6911,7 +7646,7 @@ function createInitialVerifiedDatabase() {
       ],
       "subeId": "DSI-21-212",
       "subeName": "DSİ 212. Şube Müdürlüğü (Denizli)",
-      "lastVerifiedAt": "2026-11-15 16:26:15"
+      "lastVerifiedAt": "2026-11-15 17:14:14"
     },
     {
       "id": "TND-2025-2255946",
@@ -6948,7 +7683,7 @@ function createInitialVerifiedDatabase() {
       ],
       "subeId": "DSI-08-81",
       "subeName": "DSİ 81. Şube Müdürlüğü (Erzurum)",
-      "lastVerifiedAt": "2026-11-15 16:26:15"
+      "lastVerifiedAt": "2026-11-15 17:14:14"
     },
     {
       "id": "TND-2025-1751337",
@@ -6985,7 +7720,7 @@ function createInitialVerifiedDatabase() {
       ],
       "subeId": "DSI-20-204",
       "subeName": "DSİ 204. Şube Müdürlüğü (Kilis)",
-      "lastVerifiedAt": "2026-11-15 16:26:15"
+      "lastVerifiedAt": "2026-11-15 17:14:14"
     },
     {
       "id": "TND-2025-1888777",
@@ -7056,7 +7791,7 @@ function createInitialVerifiedDatabase() {
         }
       ],
       "officialSourceUrl": "https://ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx?KararId=259e48ebe687189c4c4a6f60dc23bdaf115a74e6f5c64dfb28ac0e48090b211a",
-      "lastVerifiedAt": "2026-11-15 16:26:15",
+      "lastVerifiedAt": "2026-11-15 17:14:14",
       "subeId": "DSI-01-15",
       "subeName": "DSİ 15. Şube Müdürlüğü (Kocaeli)"
     },
