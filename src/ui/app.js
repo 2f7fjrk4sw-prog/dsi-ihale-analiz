@@ -252,6 +252,16 @@ const App = {
     this.previewManualTenderMath();
   },
 
+  escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  },
+
   formatTL(num) {
     if (num === null || num === undefined || isNaN(num)) return '0 TL';
     return Math.round(Number(num)).toLocaleString('tr-TR') + ' TL';
@@ -275,7 +285,7 @@ const App = {
     const branches = (typeof DSI_BRANCHES !== 'undefined' ? DSI_BRANCHES : [])
       .filter(b => b.regionId === regionId);
     branchSel.innerHTML = `<option value="ALL">Tüm Şubeler (Bölge Genelinde)</option>` +
-      branches.map(b => `<option value="${b.id}">${b.code}. Şube — ${b.city} (${b.name.split('Şube')[0].trim()})</option>`).join('');
+      branches.map(b => `<option value="${b.id}">${b.code} — ${b.city} (${b.name.split('Şube')[0].trim()})</option>`).join('');
     branchSel.value = 'ALL';
   },
 
@@ -293,7 +303,7 @@ const App = {
       ? DSI_BRANCHES
       : DSI_BRANCHES.filter(b => b.regionId === regFilter);
     sel.innerHTML = `<option value="ALL">Tüm DSİ Şubeleri (Tümü)</option>` +
-      list.map(b => `<option value="${b.id}">${b.code}. Şube (${b.city})</option>`).join('');
+      list.map(b => `<option value="${b.id}">${b.code} (${b.city})</option>`).join('');
     if (this.competitorBranchFilter && list.some(b => b.id === this.competitorBranchFilter)) {
       sel.value = this.competitorBranchFilter;
     } else {
@@ -957,7 +967,7 @@ const App = {
           .join(' ');
         const branchBadges = (prof.branchBreakdown || [])
           .slice(0, 2)
-          .map(bb => `<span class="badge badge-blue" style="font-size:10px; padding:1px 5px; background:#f0f9ff; color:#0369a1; border-color:#bae6fd;">${bb.subeCode}. Şube</span>`)
+          .map(bb => `<span class="badge badge-blue" style="font-size:10px; padding:1px 5px; background:#f0f9ff; color:#0369a1; border-color:#bae6fd;">${bb.subeCode}</span>`)
           .join(' ');
 
         return `
@@ -1003,7 +1013,7 @@ const App = {
     const brSel = document.getElementById('dsiDiscBranchFilter');
     if (brSel && typeof DSI_BRANCHES !== 'undefined') {
       brSel.innerHTML = `<option value="ALL">Tüm DSİ Şubeleri</option>` +
-        DSI_BRANCHES.map(b => `<option value="${b.id}">${b.code}. Şube (${b.city})</option>`).join('');
+        DSI_BRANCHES.map(b => `<option value="${b.id}">${b.code} (${b.city})</option>`).join('');
     }
   },
 
