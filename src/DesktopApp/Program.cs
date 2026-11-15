@@ -109,7 +109,7 @@ namespace DSIIhaleZekasi
                 try
                 {
                     string existingJson = File.ReadAllText(appDataDbFile, Encoding.UTF8);
-                    if (existingJson.Contains("\"version\": \"2.1.0\"") || existingJson.Contains("\"version\": \"2.2.0\""))
+                    if (existingJson.Contains("\"version\": \"2.3.0\""))
                     {
                         forceUpgradeDb = false;
                     }
@@ -135,7 +135,7 @@ namespace DSIIhaleZekasi
                 try
                 {
                     string localJson = File.ReadAllText(localDb, Encoding.UTF8);
-                    if (!localJson.Contains("\"officialSourcesOnly\": true"))
+                    if (!localJson.Contains("\"officialSourcesOnly\": true") || !localJson.Contains("\"version\": \"2.3.0\""))
                     {
                         ExtractEmbeddedResource("data/verified_db.json", localDb, overwrite: true);
                     }

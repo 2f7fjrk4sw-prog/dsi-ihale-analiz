@@ -238,3 +238,12 @@ Copy-Item "dist/installer/DSIIhaleZekasi_Kurulum_Setup.exe" "DSIIhaleZekasi_Kuru
 - `POST /api/sync/run`: Tüm resmi kaynakları anında tarar ve `verified_db.json` + `SHA-256` mührünü günceller.
 - `POST /api/sync/config`: Otomatik tarama durumunu (`autoSyncEnabled`) ve periyodunu (`intervalMinutes`) günceller.
 - `POST /api/sync/fetch-url`: Kullanıcının girdiği tekil `.kik.gov.tr` veya `.dsi.gov.tr` URL'sini anında indirip ayrıştırarak veritabanına ekler.
+
+---
+
+## 12. DSİ Şube Müdürlükleri Kırılımı ve Doğrulanmış Veritabanı Genişlemesi (`v2.3.0` — 51 Resmi Müteahhit, 35 Resmi DSİ İhalesi, 84 DSİ Şube Müdürlüğü)
+
+- **Şube Düzeyinde Rakip Analizi (`DSI_BRANCHES` & `inferDsiBranch`):** Tüm ihaleler ve müteahhit kayıtları artık yalnızca DSİ Bölge Müdürlüğü düzeyinde değil, bağlı **84 DSİ Şube Müdürlüğü** (`DSI-01-11` Bursa .. `DSI-26-261` Artvin ve `DSI-GM-BARAJ`) düzeyinde de sınıflandırılmaktadır.
+- **Şube Deneyimi ve Teklif Öngörü Ağırlığı:** `CompetitorPredictionEngine`, aynı DSİ Şube Müdürlüğü'nde iş/teklif geçmişi bulunan firmalara **`%100` Şube Deneyimli** etiketi, ek katılım eğilimi ve **`1.35x`** tarihsel benzerlik ağırlığı uygular.
+- **Yeni Doğrulanmış Kayıtlar (`v2.3.0`):** `dsi.gov.tr` (DSİ 1., 6., 10., 18., 20., 21., 22. Bölgeler ve Şubeler), EKAP Sonuç İlanları (`2024/1911692`, `2024/1911693`, `2024/1792851`, `2024/1878585`, `2024/1878583`, `2024/1541999`, `2024/1633720`, `2025/1043449`) ve KİK Kurul Kararları (`2025/UY.II-874` / `2024/1548525`, `2024/UY.I-603` / `2023/894949`) ile doğrulanan **12 ek DSİ Bölge/Şube ihalesi** ve **19 yeni yüklenici firma (`COMP-33` .. `COMP-51`)** sisteme işlenmiştir.
+- **Canlı DSİ Web Radarı Genişlemesi:** `OfficialDataSyncService`, DSİ Merkez ve Bölge Müdürlükleri ağında 17 hedef adresi (`bolge01`..`bolge22` + `dsi.gov.tr`) ve şube eşleme (`MapIdareAndTitleToDsiBranch`) kurallarıyla otomatik izlemektedir.

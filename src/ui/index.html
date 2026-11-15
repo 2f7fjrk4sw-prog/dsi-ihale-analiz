@@ -67,7 +67,7 @@
         </button>
         <button class="nav-btn" data-tab="tab-regional" onclick="App.switchTab('tab-regional', this)">
           <span class="nav-num">4</span>
-          <span>Bölgelere Göre Rakip Analizi</span>
+          <span>Bölge ve Şube Bazlı Rakip Analizi</span>
         </button>
         <button class="nav-btn" data-tab="tab-datacenter" onclick="App.switchTab('tab-datacenter', this)">
           <span class="nav-num">5</span>
@@ -228,12 +228,16 @@
             <div class="form-row-2">
               <div class="form-group">
                 <label>DSİ Bölge Müdürlüğü</label>
-                <select id="simRegion" onchange="App.onSimParamsChanged()"></select>
+                <select id="simRegion" onchange="App.onSimRegionChanged()"></select>
               </div>
               <div class="form-group">
-                <label>Benzer İş Grubu</label>
-                <select id="simWorkGroup" onchange="App.onSimWorkGroupChanged()"></select>
+                <label>DSİ Şube Müdürlüğü</label>
+                <select id="simBranch" onchange="App.onSimParamsChanged()"></select>
               </div>
+            </div>
+            <div class="form-group">
+              <label>Benzer İş Grubu</label>
+              <select id="simWorkGroup" onchange="App.onSimWorkGroupChanged()"></select>
             </div>
 
             <div class="form-row-2">
@@ -476,11 +480,19 @@
           <div class="card">
             <div class="card-header" style="flex-wrap:wrap; gap:10px;">
               <div class="card-title">Kayıtlı Rakip Firmalar (İncelemek İçin Seçiniz)</div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <label style="font-size:11.5px; font-weight:700; color:var(--corp-navy); margin:0;">Bölge Filtresi:</label>
-                <select id="competitorRegionFilterSelect" style="width:210px; padding:5px 8px; font-size:12px;" onchange="App.onCompetitorRegionFilterChanged(this.value)">
-                  <option value="ALL">Tüm DSİ Bölgeleri</option>
-                </select>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <label style="font-size:11.5px; font-weight:700; color:var(--corp-navy); margin:0;">Bölge:</label>
+                  <select id="competitorRegionFilterSelect" style="width:185px; padding:5px 8px; font-size:12px;" onchange="App.onCompetitorRegionFilterChanged(this.value)">
+                    <option value="ALL">Tüm DSİ Bölgeleri</option>
+                  </select>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <label style="font-size:11.5px; font-weight:700; color:var(--corp-navy); margin:0;">Şube:</label>
+                  <select id="competitorBranchFilterSelect" style="width:195px; padding:5px 8px; font-size:12px;" onchange="App.onCompetitorBranchFilterChanged(this.value)">
+                    <option value="ALL">Tüm DSİ Şubeleri</option>
+                  </select>
+                </div>
               </div>
             </div>
             <div id="competitorListContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
@@ -510,7 +522,7 @@
         </div>
 
         <div class="info-guide-banner">
-          <strong>Bölgesel Rekabet ve Mobilizasyon Analizi:</strong> DSİ yapım ihalelerinde müteahhitlerin teklif davranışları (tenkisat oranları), şantiyelerinin ve makine parklarının bulunduğu <strong>DSİ Bölge Müdürlüğü'ne</strong> göre önemli farklılık gösterir. Aşağıda resmi KİK ve EKAP kayıtlarına göre rakiplerin hangi bölgelerde faaliyet gösterdiği, her bölgenin ortalama sınır değer indirimi ve bölge bazlı teklif tavsiyeleri yer almaktadır.
+          <strong>Bölge ve Şube Bazlı Rekabet Analizi:</strong> DSİ yapım ihalelerinde müteahhitlerin teklif davranışları (tenkisat oranları), şantiyelerinin bulunduğu <strong>DSİ Bölge Müdürlüğü</strong> ve ihaleyi yürüten <strong>DSİ Şube Müdürlüğü'ne</strong> göre önemli farklılık gösterir. Aşağıda resmi KİK, EKAP ve DSİ kayıtlarına göre rakiplerin hangi bölge ve şubelerde iş yaptığı, ortalama sınır değer indirimleri ve şube bazlı teklif tavsiyeleri yer almaktadır.
         </div>
 
         <!-- BÖLGESEL ÖZET KARTLARI (4 KPI) -->
@@ -557,6 +569,32 @@
 
           <!-- SEÇİLİ BÖLGE STRATEJİK ÖZET VE TAVSİYE KUTUSU -->
           <div id="regionalStrategicAdviceBox" style="background:#eff6ff; border:2px solid #2563eb; border-radius:6px; padding:16px; margin-bottom:16px;"></div>
+
+          <!-- SEÇİLİ BÖLGE ALTINDAKİ DSİ ŞUBE MÜDÜRLÜKLERİ KIRILIMI -->
+          <div style="margin-bottom:18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+              <div style="font-size:14px; font-weight:800; color:var(--corp-navy);" id="regionalBranchTableTitle">
+                Bölgeye Bağlı DSİ Şube Müdürlükleri Kırılımı
+              </div>
+              <div id="regionalBranchFilterBadge" style="display:flex; align-items:center; gap:8px;"></div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>DSİ Şube Müdürlüğü</th>
+                    <th>İl / Merkez</th>
+                    <th>Resmi İhale</th>
+                    <th>Rakip / Hakim Firma</th>
+                    <th>Ort. Sınır Değer İndirimi (%)</th>
+                    <th>Önerilen Teklif İndirim Bandı</th>
+                    <th>İşlem</th>
+                  </tr>
+                </thead>
+                <tbody id="regionalBranchesTableBody"></tbody>
+              </table>
+            </div>
+          </div>
 
           <div class="panel-grid-2">
             <!-- SOL: SEÇİLİ BÖLGEDE İŞ YAPAN RAKİP FİRMALAR -->

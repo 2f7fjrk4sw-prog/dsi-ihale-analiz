@@ -81,16 +81,18 @@ namespace DSIIhaleZekasi
 
         private void SeedDefaultOfficialEndpoints()
         {
-            // EKAP Vatandaş Kurul Karar Göster (HTTPS 200 OK - Doğrudan Kamuya Açık Resmi KİK Kararları)
+            // EKAP Vatandaş Kurul Karar Göster (HTTPS 200 OK - Doğrudan Kamuya Açık Resmi KİK Kararları - Bölge ve Şube Müdürlükleri)
             string[] seedKararIds =
             {
-                "36dbe294c85e3f82560977f6360b181e20969943eaef4682c1dda24d0286162f", // 2026/UY.I-949 - İKN 2025/1751337 - DSİ 20. Bölge Kilis-Musabeyli İçmesuyu Arıtma Tesisi
-                "82671fad68878417a98e2b44deec27a94fffad7bb7017720b07f9fc3d1467315", // 2026/UY.I-873 - İKN 2025/2255946 - DSİ 8. Bölge Erzurum Aziziye Pulur Çayı 1. Kısım Taşkın Kontrol
-                "253dff5cdaacf36c4c7bc71f9fb3cab1cbab46faa4f12ff2cb6ec98cc21a34fe", // 2026/UY.II-325 - İKN 2025/1354433 - DSİ 21. Bölge Denizli-Sarayköy ve Muğla Akaryakıt İstasyonu
-                "5eb22c2069ae89dcb8e9b05b455f90fcc3eb6d11b489e1a06862affec29c6593", // 2026/UY.I-892 - İKN 2025/1969352 - DSİ 12. Bölge Yozgat Aydıncık Kösrelik Göleti İkmali 2. Kısım
-                "259e48ebe687189c4c4a6f60dc23bdaf115a74e6f5c64dfb28ac0e48090b211a", // 2026/UY.II-643 - İKN 2025/2110590 - DSİ 1. Bölge Kocaeli Kandıra Arıklar Göleti Sulaması 2. Kısım
-                "883c4801a6359c8780e391b35cf0141f1964f524b08bbcbf3eb85677ec820913", // 2026/UY.II-1764 - İKN 2025/1888777 - DSİ 11. Bölge Tekirdağ İnecik 1-2 ve Dedecik Barajları İsale Hattı
-                "04cd70ce8b3fe8fa29c90b950ca490ef60c14c283caeab3fe663c1965f960666"  // 2025/UY.I-2762 - İKN 2025/635261 - DSİ 12. Bölge Nevşehir Bayramhacılı Pompaj Sulaması
+                "36dbe294c85e3f82560977f6360b181e20969943eaef4682c1dda24d0286162f", // 2026/UY.I-949 - İKN 2025/1751337 - DSİ 20. Bölge / 204. Şube Kilis-Musabeyli İçmesuyu Arıtma Tesisi
+                "82671fad68878417a98e2b44deec27a94fffad7bb7017720b07f9fc3d1467315", // 2026/UY.I-873 - İKN 2025/2255946 - DSİ 8. Bölge / 81. Şube Erzurum Aziziye Pulur Çayı 1. Kısım Taşkın Kontrol
+                "253dff5cdaacf36c4c7bc71f9fb3cab1cbab46faa4f12ff2cb6ec98cc21a34fe", // 2026/UY.II-325 - İKN 2025/1354433 - DSİ 21. Bölge / 212. Şube Denizli-Sarayköy ve Muğla Akaryakıt İstasyonu
+                "5eb22c2069ae89dcb8e9b05b455f90fcc3eb6d11b489e1a06862affec29c6593", // 2026/UY.I-892 - İKN 2025/1969352 - DSİ 12. Bölge / 123. Şube Yozgat Aydıncık Kösrelik Göleti İkmali 2. Kısım
+                "259e48ebe687189c4c4a6f60dc23bdaf115a74e6f5c64dfb28ac0e48090b211a", // 2026/UY.II-643 - İKN 2025/2110590 - DSİ 1. Bölge / 15. Şube Kocaeli Kandıra Arıklar Göleti Sulaması 2. Kısım
+                "883c4801a6359c8780e391b35cf0141f1964f524b08bbcbf3eb85677ec820913", // 2026/UY.II-1764 - İKN 2025/1888777 - DSİ 11. Bölge / 113. Şube Tekirdağ İnecik 1-2 ve Dedecik Barajları İsale Hattı
+                "04cd70ce8b3fe8fa29c90b950ca490ef60c14c283caeab3fe663c1965f960666", // 2025/UY.I-2762 - İKN 2025/635261 - DSİ 12. Bölge / 122. Şube Nevşehir Bayramhacılı Pompaj Sulaması
+                "f3a2818a4c24696278deb56d0468cf3a321ad4c59e6653d97e1e8a2d10575ef0", // 2025/UY.II-874 - İKN 2024/1548525 - DSİ 1. Bölge / 11. Şube Bursa Demirtaş Barajı Sulaması Yenilemesi
+                "493e40ce6d3807a95c012e4eab4d23c4cd6668b1290d2c1ee1a1bd91c513d92c&KararMetni=b22c23a24e2ca2ca3da80c180335771bfd7e346af1ae3926fcd15685db2b8a1e" // 2024/UY.I-603 - İKN 2023/894949 - DSİ 10. Bölge / 101. Şube Diyarbakır
             };
 
             foreach (string kid in seedKararIds)
@@ -783,15 +785,22 @@ namespace DSIIhaleZekasi
             var dsiTargets = new (string RegionId, string Name, string BaseUrl)[]
             {
                 ("DSI-GM", "DSİ Genel Müdürlüğü (dsi.gov.tr)", "https://dsi.gov.tr"),
-                ("DSI-01", "DSİ 1. Bölge Müdürlüğü (Bursa)", "https://bolge01.dsi.gov.tr"),
-                ("DSI-03", "DSİ 3. Bölge Müdürlüğü (Eskişehir)", "https://bolge03.dsi.gov.tr"),
-                ("DSI-04", "DSİ 4. Bölge Müdürlüğü (Konya)", "https://bolge04.dsi.gov.tr"),
-                ("DSI-05", "DSİ 5. Bölge Müdürlüğü (Ankara)", "https://bolge05.dsi.gov.tr"),
-                ("DSI-06", "DSİ 6. Bölge Müdürlüğü (Adana)", "https://bolge06.dsi.gov.tr"),
-                ("DSI-11", "DSİ 11. Bölge Müdürlüğü (Edirne)", "https://bolge11.dsi.gov.tr"),
-                ("DSI-12", "DSİ 12. Bölge Müdürlüğü (Kayseri)", "https://bolge12.dsi.gov.tr"),
-                ("DSI-20", "DSİ 20. Bölge Müdürlüğü (Kahramanmaraş)", "https://bolge20.dsi.gov.tr"),
-                ("DSI-21", "DSİ 21. Bölge Müdürlüğü (Aydın)", "https://bolge21.dsi.gov.tr")
+                ("DSI-01", "DSİ 1. Bölge & Şube Müdürlükleri (Bursa/Kocaeli/Yalova)", "https://bolge01.dsi.gov.tr"),
+                ("DSI-03", "DSİ 3. Bölge & Şube Müdürlükleri (Eskişehir/Sakarya)", "https://bolge03.dsi.gov.tr"),
+                ("DSI-04", "DSİ 4. Bölge & Şube Müdürlükleri (Konya/Aksaray)", "https://bolge04.dsi.gov.tr"),
+                ("DSI-05", "DSİ 5. Bölge & Şube Müdürlükleri (Ankara/Çankırı)", "https://bolge05.dsi.gov.tr"),
+                ("DSI-06", "DSİ 6. Bölge & Şube Müdürlükleri (Adana/Mersin/Osmaniye)", "https://bolge06.dsi.gov.tr"),
+                ("DSI-08", "DSİ 8. Bölge & Şube Müdürlükleri (Erzurum)", "https://bolge08.dsi.gov.tr"),
+                ("DSI-10", "DSİ 10. Bölge & Şube Müdürlükleri (Diyarbakır/Mardin)", "https://bolge10.dsi.gov.tr"),
+                ("DSI-11", "DSİ 11. Bölge & Şube Müdürlükleri (Edirne/Tekirdağ/Kırklareli)", "https://bolge11.dsi.gov.tr"),
+                ("DSI-12", "DSİ 12. Bölge & Şube Müdürlükleri (Kayseri/Nevşehir/Yozgat)", "https://bolge12.dsi.gov.tr"),
+                ("DSI-15", "DSİ 15. Bölge & Şube Müdürlükleri (Şanlıurfa)", "https://bolge15.dsi.gov.tr"),
+                ("DSI-17", "DSİ 17. Bölge & Şube Müdürlükleri (Van/Bitlis/Hakkari)", "https://bolge17.dsi.gov.tr"),
+                ("DSI-18", "DSİ 18. Bölge & Şube Müdürlükleri (Isparta/Burdur/Afyon)", "https://bolge18.dsi.gov.tr"),
+                ("DSI-19", "DSİ 19. Bölge & 191. Şube Müdürlüğü (Sivas)", "https://bolge19.dsi.gov.tr"),
+                ("DSI-20", "DSİ 20. Bölge & Şube Müdürlükleri (Kahramanmaraş/Kilis)", "https://bolge20.dsi.gov.tr"),
+                ("DSI-21", "DSİ 21. Bölge & Şube Müdürlükleri (Aydın/Denizli/Muğla)", "https://bolge21.dsi.gov.tr"),
+                ("DSI-22", "DSİ 22. Bölge & 224. Şube Müdürlüğü (Trabzon/Rize)", "https://bolge22.dsi.gov.tr")
             };
 
             int reachableRegions = 0;
@@ -932,6 +941,7 @@ namespace DSIIhaleZekasi
 
                 if (existingTender == null)
                 {
+                    var (subeId, subeName) = MapIdareAndTitleToDsiBranch(rec.AuthorityName, rec.Title, rec.RegionId);
                     var newTenderObj = new JsonObject
                     {
                         ["id"] = "TND-" + rec.Ikn.Replace("/", "-"),
@@ -939,6 +949,8 @@ namespace DSIIhaleZekasi
                         ["kikDecisionNo"] = rec.KikDecisionNo,
                         ["title"] = rec.Title,
                         ["regionId"] = rec.RegionId,
+                        ["subeId"] = subeId,
+                        ["subeName"] = subeName,
                         ["workGroup"] = rec.WorkGroup,
                         ["date"] = rec.DateIso,
                         ["approxCost"] = Math.Round(rec.ApproxCost, 2),
@@ -962,11 +974,17 @@ namespace DSIIhaleZekasi
                     newTendersCount++;
 
                     AddLog("Veritabanı Güncelleme", "SUCCESS",
-                        $"Yeni resmi DSİ ihalesi eklendi: İKN {rec.Ikn} — {rec.Title} ({rec.RegionId}, YM: {rec.ApproxCost:N2} TL)",
+                        $"Yeni resmi DSİ ihalesi eklendi: İKN {rec.Ikn} — {rec.Title} ({rec.RegionId} / {subeName}, YM: {rec.ApproxCost:N2} TL)",
                         rec.Ikn);
                 }
                 else
                 {
+                    if (existingTender["subeId"] == null)
+                    {
+                        var (subeId, subeName) = MapIdareAndTitleToDsiBranch(rec.AuthorityName, rec.Title, rec.RegionId);
+                        existingTender["subeId"] = subeId;
+                        existingTender["subeName"] = subeName;
+                    }
                     existingTender["officialSourceUrl"] = rec.OfficialSourceUrl;
                     existingTender["lastVerifiedAt"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                     updatedTendersCount++;
@@ -976,7 +994,7 @@ namespace DSIIhaleZekasi
             if (newTendersCount > 0 || newCompetitorsCount > 0 || updatedTendersCount > 0)
             {
                 var meta = root["metadata"]?.AsObject() ?? new JsonObject();
-                meta["version"] = "2.2.0";
+                meta["version"] = "2.3.0";
                 meta["officialSourcesOnly"] = true;
                 meta["officialCompetitorCount"] = competitorsArr.Count;
                 meta["officialTenderCount"] = tendersArr.Count;
@@ -1237,6 +1255,46 @@ namespace DSIIhaleZekasi
             if (combined.Contains("ARTVİN") || combined.Contains("ÇORUH")) return "DSI-26";
 
             return "DSI-GM";
+        }
+
+        private static (string SubeId, string SubeName) MapIdareAndTitleToDsiBranch(string idare, string title, string regionId)
+        {
+            string combined = (idare + " " + title).ToUpper(new CultureInfo("tr-TR"));
+
+            if (combined.Contains("YALOVA")) return ("DSI-01-12", "DSİ 12. Şube Müdürlüğü (Yalova)");
+            if (combined.Contains("KOCAELİ") || combined.Contains("KANDIRA")) return ("DSI-01-15", "DSİ 15. Şube Müdürlüğü (Kocaeli)");
+            if (combined.Contains("BURSA") || combined.Contains("DEMİRTAŞ")) return ("DSI-01-11", "DSİ 11. Şube Müdürlüğü (Bursa)");
+            if (combined.Contains("AKSARAY") || combined.Contains("ULUIRMAK") || combined.Contains("MAMASIN")) return ("DSI-04-43", "DSİ 43. Şube Müdürlüğü (Aksaray)");
+            if (combined.Contains("KONYA")) return ("DSI-04-41", "DSİ 41. Şube Müdürlüğü (Konya)");
+            if (combined.Contains("ÇANKIRI") || combined.Contains("KIZLARYOLU") || combined.Contains("KOYUNBABA")) return ("DSI-05-52", "DSİ 52. Şube Müdürlüğü (Çankırı)");
+            if (combined.Contains("MERSİN") || combined.Contains("TARSUS") || combined.Contains("KARAEVLİ")) return ("DSI-06-62", "DSİ 62. Şube Müdürlüğü (Mersin)");
+            if (combined.Contains("OSMANİYE") || combined.Contains("KARAÇAY")) return ("DSI-06-64", "DSİ 64. Şube Müdürlüğü (Osmaniye)");
+            if (combined.Contains("SAMSUN") || combined.Contains("19 MAYIS")) return ("DSI-07-71", "DSİ 71. Şube Müdürlüğü (Samsun)");
+            if (combined.Contains("ERZURUM") || combined.Contains("PASİNLER") || combined.Contains("AZİZİYE") || combined.Contains("KÖPRÜKÖY")) return ("DSI-08-81", "DSİ 81. Şube Müdürlüğü (Erzurum)");
+            if (combined.Contains("TUNCELİ") || combined.Contains("PERTEK")) return ("DSI-09-93", "DSİ 93. Şube Müdürlüğü (Tunceli)");
+            if (combined.Contains("DİYARBAKIR")) return ("DSI-10-101", "DSİ 101. Şube Müdürlüğü (Diyarbakır)");
+            if (combined.Contains("KIRKLARELİ") || combined.Contains("KOFÇAZ")) return ("DSI-11-112", "DSİ 112. Şube Müdürlüğü (Kırklareli)");
+            if (combined.Contains("TEKİRDAĞ") || combined.Contains("İNECİK")) return ("DSI-11-113", "DSİ 113. Şube Müdürlüğü (Tekirdağ)");
+            if (combined.Contains("NEVŞEHİR") || combined.Contains("BAYRAMHACILI") || combined.Contains("SARIHIDIR")) return ("DSI-12-122", "DSİ 122. Şube Müdürlüğü (Nevşehir)");
+            if (combined.Contains("YOZGAT") || combined.Contains("AYDINCIK")) return ("DSI-12-123", "DSİ 123. Şube Müdürlüğü (Yozgat)");
+            if (combined.Contains("ŞANLIURFA") || combined.Contains("VİRANŞEHİR") || combined.Contains("FIRAT")) return ("DSI-15-151", "DSİ 151. Şube Müdürlüğü (Şanlıurfa / Viranşehir)");
+            if (combined.Contains("BİTLİS") || combined.Contains("AHLAT")) return ("DSI-17-173", "DSİ 173. Şube Müdürlüğü (Bitlis)");
+            if (combined.Contains("HAKKARİ")) return ("DSI-17-174", "DSİ 174. Şube Müdürlüğü (Hakkari)");
+            if (combined.Contains("BURDUR") || combined.Contains("ÇAVDIR")) return ("DSI-18-182", "DSİ 182. Şube Müdürlüğü (Burdur)");
+            if (combined.Contains("SİVAS")) return ("DSI-19-191", "DSİ 191. Şube Müdürlüğü (Sivas)");
+            if (combined.Contains("KİLİS") || combined.Contains("MUSABEYLİ")) return ("DSI-20-204", "DSİ 204. Şube Müdürlüğü (Kilis)");
+            if (combined.Contains("KAHRAMANMARAŞ") || combined.Contains("ONİKİŞUBAT")) return ("DSI-20-201", "DSİ 201. Şube Müdürlüğü (Kahramanmaraş)");
+            if (combined.Contains("DENİZLİ") || combined.Contains("SARAYKÖY") || combined.Contains("PAMUKKALE")) return ("DSI-21-212", "DSİ 212. Şube Müdürlüğü (Denizli)");
+            if (combined.Contains("AYDIN") || combined.Contains("KUŞADASI") || combined.Contains("SÖKE")) return ("DSI-21-211", "DSİ 211. Şube Müdürlüğü (Aydın)");
+            if (combined.Contains("RİZE") || combined.Contains("SALARHA") || combined.Contains("GÜNEYSU")) return ("DSI-22-224", "DSİ 224. Şube Müdürlüğü (Rize)");
+            if (combined.Contains("BALIKESİR") || combined.Contains("KEPSUT"))
+            {
+                return regionId == "DSI-GM"
+                    ? ("DSI-GM-BARAJ", "DSİ Genel Müdürlüğü Barajlar ve HES Dairesi Başkanlığı")
+                    : ("DSI-25-251", "DSİ 251. Şube Müdürlüğü (Balıkesir)");
+            }
+
+            return (regionId + "-MERKEZ", $"{regionId} Merkez Şube Müdürlüğü");
         }
 
         private static string DetermineDsiWorkGroup(string title)

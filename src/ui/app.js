@@ -7,7 +7,9 @@ const App = {
   db: null,
   selectedCompetitorId: null,
   competitorRegionFilter: 'ALL',
+  competitorBranchFilter: 'ALL',
   selectedRegionalAnalysisId: 'DSI-20',
+  selectedRegionalBranchFilter: 'ALL',
   forcedParticipation: {},
   lastSimResult: null,
   lastObservedSyncTimestamp: '',
@@ -44,13 +46,13 @@ const App = {
         const data = await resp.json();
         if (data && Array.isArray(data.competitors) && Array.isArray(data.tenders)) {
           if (data.metadata && data.metadata.officialSourcesOnly === true &&
-              (data.metadata.version === '2.1.0' || data.metadata.version === '2.2.0')) {
+              data.metadata.version === '2.3.0') {
             this.db = data;
             localStorage.setItem('dsi_ihale_official_kik_db_v2_1', JSON.stringify(this.db));
             await this.updateDatabaseHash();
             return;
           } else {
-            // Eski sürüm veritabanını %100 resmi KİK/EKAP veritabanına yükselt
+            // Eski sürüm veritabanını v2.3.0 DSİ Bölge & Şube resmi veritabanına yükselt
             this.db = createInitialVerifiedDatabase();
             await this.saveDatabase();
             return;
@@ -64,7 +66,7 @@ const App = {
       try {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.metadata && parsed.metadata.officialSourcesOnly === true &&
-            (parsed.metadata.version === '2.1.0' || parsed.metadata.version === '2.2.0')) {
+            parsed.metadata.version === '2.3.0') {
           this.db = parsed;
         } else {
           this.db = createInitialVerifiedDatabase();
@@ -95,7 +97,7 @@ const App = {
 
   async saveDatabase() {
     this.db.metadata = this.db.metadata || {};
-    this.db.metadata.version = this.db.metadata.version || '2.2.0';
+    this.db.metadata.version = '2.3.0';
     this.db.metadata.officialSourcesOnly = true;
     this.db.metadata.lastUpdated = new Date().toISOString();
 
@@ -212,6 +214,9 @@ const App = {
       compFilterSel.value = 'ALL';
     }
 
+    this.populateSimBranches();
+    this.populateCompetitorBranchFilter();
+
     const groupSelects = ['simWorkGroup', 'tFormWorkGroup'];
     groupSelects.forEach(selId => {
       const sel = document.getElementById(selId);
@@ -261,9 +266,49 @@ const App = {
     return `YM +%${Math.abs(val).toFixed(2)} Üzeri`;
   },
 
+  populateSimBranches() {
+    const branchSel = document.getElementById('simBranch');
+    if (!branchSel) return;
+    const regionId = document.getElementById('simRegion')?.value || 'DSI-11';
+    const branches = (typeof DSI_BRANCHES !== 'undefined' ? DSI_BRANCHES : [])
+      .filter(b => b.regionId === regionId);
+    branchSel.innerHTML = `<option value="ALL">Tüm Şubeler (Bölge Genelinde)</option>` +
+      branches.map(b => `<option value="${b.id}">${b.code}. Şube — ${b.city} (${b.name.split('Şube')[0].trim()})</option>`).join('');
+    branchSel.value = 'ALL';
+  },
+
+  onSimRegionChanged() {
+    this.populateSimBranches();
+    this.onSimParamsChanged();
+    this.runMonteCarloSimulation();
+  },
+
+  populateCompetitorBranchFilter() {
+    const sel = document.getElementById('competitorBranchFilterSelect');
+    if (!sel || typeof DSI_BRANCHES === 'undefined') return;
+    const regFilter = this.competitorRegionFilter || 'ALL';
+    const list = regFilter === 'ALL'
+      ? DSI_BRANCHES
+      : DSI_BRANCHES.filter(b => b.regionId === regFilter);
+    sel.innerHTML = `<option value="ALL">Tüm DSİ Şubeleri (Tümü)</option>` +
+      list.map(b => `<option value="${b.id}">${b.code}. Şube (${b.city})</option>`).join('');
+    if (this.competitorBranchFilter && list.some(b => b.id === this.competitorBranchFilter)) {
+      sel.value = this.competitorBranchFilter;
+    } else {
+      sel.value = 'ALL';
+      this.competitorBranchFilter = 'ALL';
+    }
+  },
+
   getRegionName(regionId) {
     const r = DSI_REGIONS.find(x => x.id === regionId);
     return r ? r.name : regionId;
+  },
+
+  getBranchName(subeId) {
+    if (!subeId || subeId === 'ALL' || typeof DSI_BRANCHES === 'undefined') return '';
+    const b = DSI_BRANCHES.find(x => x.id === subeId);
+    return b ? b.name : subeId;
   },
 
   getCompetitorName(compId) {
@@ -346,7 +391,7 @@ const App = {
             </td>
             <td>
               <div style="font-weight:600; color:var(--text-primary);">${t.title}</div>
-              <div style="font-size:11.5px; color:var(--text-muted);">${this.getRegionName(t.regionId)} • İş Grubu: ${t.workGroup}</div>
+              <div style="font-size:11.5px; color:var(--text-muted);">${this.getRegionName(t.regionId)}${t.subeName ? ` • <strong style="color:#1e40af;">${t.subeName}</strong>` : ''} • İş Grubu: ${t.workGroup}</div>
               <div style="font-size:11px; color:#1e40af; margin-top:2px;">Resmi Kaynak: ${t.verificationSource || 'EKAP / KİK Resmi Kaydı'}</div>
             </td>
             <td style="font-weight:600;">${this.formatTL(t.approxCost)}</td>
@@ -446,6 +491,7 @@ const App = {
     return {
       title: document.getElementById('simTitle')?.value || 'Hedef DSİ İhalesi',
       regionId: document.getElementById('simRegion')?.value || 'DSI-05',
+      subeId: document.getElementById('simBranch')?.value || 'ALL',
       workGroup: document.getElementById('simWorkGroup')?.value || 'A/III',
       approxCost: Number(document.getElementById('simApproxCost')?.value || 250000000),
       nCoeff: Number(document.getElementById('simNCoeff')?.value || 1.20),
@@ -468,10 +514,13 @@ const App = {
 
     container.innerHTML = profiles.map(p => {
       const currentMode = this.forcedParticipation[p.competitorId] || 'AUTO';
+      const branchTag = p.hasTargetBranchExperience
+        ? `<span class="badge badge-verified" style="font-size:10px; padding:1px 5px; margin-left:4px;">Şube Deneyimli</span>`
+        : '';
       return `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#f8fafc; border:1px solid var(--border-color); border-radius:6px; margin-bottom:6px;">
           <div>
-            <div style="font-size:12.5px; font-weight:700; color:var(--corp-navy);">${p.shortName}</div>
+            <div style="font-size:12.5px; font-weight:700; color:var(--corp-navy);">${p.shortName}${branchTag}</div>
             <div style="font-size:11.5px; color:var(--text-secondary);">
               Katılım İhtimali: <strong style="color:#1d4ed8;">%${p.participationPct.toFixed(0)}</strong> •
               Tahmini İndirim: <strong>%${p.expectedDiscountPct.toFixed(1)}</strong>
@@ -558,7 +607,7 @@ const App = {
       return `
         <tr>
           <td>
-            <div style="font-weight:700; color:var(--corp-navy);">${r.shortName}</div>
+            <div style="font-weight:700; color:var(--corp-navy);">${r.shortName}${r.hasTargetBranchExperience ? ` <span class="badge badge-verified" style="font-size:10px; padding:1px 5px;">Şube Deneyimli</span>` : ''}</div>
             <div style="font-size:11.5px; color:var(--text-muted);">${r.activeSignals.length} Kayıtlı Durum Bilgisi</div>
           </td>
           <td><span class="badge ${badgeClass}">${r.archetype}</span></td>
@@ -778,6 +827,13 @@ const App = {
 
   onCompetitorRegionFilterChanged(regionId) {
     this.competitorRegionFilter = regionId || 'ALL';
+    this.competitorBranchFilter = 'ALL';
+    this.populateCompetitorBranchFilter();
+    this.renderCompetitorsTab();
+  },
+
+  onCompetitorBranchFilterChanged(branchId) {
+    this.competitorBranchFilter = branchId || 'ALL';
     this.renderCompetitorsTab();
   },
 
@@ -792,9 +848,13 @@ const App = {
       prof: CompetitorPredictionEngine.analyzeCompetitor(c, tenders)
     }));
 
-    const filtered = (this.competitorRegionFilter && this.competitorRegionFilter !== 'ALL')
+    let filtered = (this.competitorRegionFilter && this.competitorRegionFilter !== 'ALL')
       ? enriched.filter(x => (x.prof.allActiveRegions || []).includes(this.competitorRegionFilter))
       : enriched;
+
+    if (this.competitorBranchFilter && this.competitorBranchFilter !== 'ALL') {
+      filtered = filtered.filter(x => (x.prof.allActiveBranches || []).includes(this.competitorBranchFilter));
+    }
 
     if (filtered.length > 0 && !filtered.some(x => x.comp.id === this.selectedCompetitorId)) {
       this.selectedCompetitorId = filtered[0].comp.id;
@@ -803,12 +863,15 @@ const App = {
     }
 
     if (filtered.length === 0) {
+      const filterDesc = this.competitorBranchFilter !== 'ALL'
+        ? this.getBranchName(this.competitorBranchFilter)
+        : this.getRegionName(this.competitorRegionFilter);
       listContainer.innerHTML = `
         <div style="padding:18px; text-align:center; color:var(--text-muted); border:1px dashed var(--border-color); border-radius:6px;">
-          Seçilen DSİ Bölge Müdürlüğü (${this.getRegionName(this.competitorRegionFilter)}) için kayıtlı rakip firma bulunmamaktadır.
+          Seçilen birim (${filterDesc}) için kayıtlı rakip firma bulunmamaktadır.
           <div style="margin-top:8px;">
             <button class="btn btn-secondary btn-sm" onclick="document.getElementById('competitorRegionFilterSelect').value='ALL'; App.onCompetitorRegionFilterChanged('ALL');">
-              Tüm Bölgelerdeki Rakipleri Göster
+              Tüm Bölge ve Şubelerdeki Rakipleri Göster
             </button>
           </div>
         </div>
@@ -818,6 +881,10 @@ const App = {
         const isSelected = c.id === this.selectedCompetitorId;
         const regionBadges = (prof.regionalBreakdown || [])
           .map(rb => `<span class="badge ${rb.winCount > 0 ? 'badge-verified' : 'badge-blue'}" style="font-size:10.5px; padding:2px 6px;">${rb.regionId} (${rb.city || rb.regionName.split('(')[0].trim()})</span>`)
+          .join(' ');
+        const branchBadges = (prof.branchBreakdown || [])
+          .slice(0, 3)
+          .map(bb => `<span class="badge badge-blue" style="font-size:10px; padding:1px 5px; background:#f0f9ff; color:#0369a1; border-color:#bae6fd;">${bb.subeCode}. Şube (${bb.city})</span>`)
           .join(' ');
 
         return `
@@ -833,8 +900,9 @@ const App = {
               Merkez: ${c.hqCity} • Vergi No: ${c.taxId} • İş Grupları: ${(c.workGroups || []).join(', ')}
             </div>
             <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
-              <span style="font-size:11px; color:var(--text-muted); font-weight:600;">İş Yaptığı Bölgeler:</span>
+              <span style="font-size:11px; color:var(--text-muted); font-weight:600;">Bölge / Şube:</span>
               ${regionBadges || '<span style="font-size:11px; color:var(--text-muted);">Belirtilmedi</span>'}
+              ${branchBadges}
             </div>
             <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted); margin-top:6px;">
               <span>Katıldığı İhale: <strong style="color:#15803d;">${prof.verifiedTenderCount}</strong> (Kazandığı: ${prof.winCount})</span>
@@ -923,6 +991,23 @@ const App = {
           </tr>
         `).join('');
 
+    const branchBreakdownHtml = (prof.branchBreakdown || []).length === 0
+      ? `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Kayıtlı DSİ şube faaliyeti bulunmamaktadır.</td></tr>`
+      : (prof.branchBreakdown || []).map(bb => `
+          <tr>
+            <td>
+              <strong style="color:var(--corp-navy);">${bb.subeName}</strong>
+              <div style="font-size:11px; color:var(--text-muted);">${bb.regionId} • Merkez: ${bb.city}</div>
+            </td>
+            <td><span class="badge ${bb.winCount > 0 ? 'badge-verified' : 'badge-blue'}">${bb.branchStatus}</span></td>
+            <td><strong>${bb.tenderCount}</strong> İhale (<strong>${bb.winCount}</strong> Kazanılan)</td>
+            <td><strong style="color:#b45309;">${this.formatDiscountText(bb.avgDiscountPct)}</strong></td>
+            <td>
+              <button class="btn btn-secondary btn-sm" style="padding:2px 7px; font-size:11px;" onclick="App.openRegionFromCompetitor('${bb.regionId}', '${bb.subeId}')">Şubeyi İncele</button>
+            </td>
+          </tr>
+        `).join('');
+
     const historyHtml = prof.history.length === 0
       ? `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Bu firmanın kayıtlı ihale teklifi bulunmamaktadır.</td></tr>`
       : prof.history.map(h => `
@@ -933,7 +1018,7 @@ const App = {
             </td>
             <td>
               <div style="font-weight:600;">${h.title}</div>
-              <div style="font-size:11px; color:#1e40af; font-weight:600;">${this.getRegionName(h.regionId)}</div>
+              <div style="font-size:11px; color:#1e40af; font-weight:600;">${this.getRegionName(h.regionId)}${h.subeName ? ` • ${h.subeName}` : ''}</div>
             </td>
             <td style="font-weight:600;">${this.formatTL(h.bidAmount)}</td>
             <td><strong style="color:#b45309;">%${h.discountPct.toFixed(2)}</strong></td>
@@ -998,6 +1083,26 @@ const App = {
               </tr>
             </thead>
             <tbody>${regionalBreakdownHtml}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13.5px; font-weight:700; margin-bottom:8px; color:var(--corp-navy);">
+          Firmanın İş Yaptığı DSİ Şube Müdürlükleri Kırılımı
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>DSİ Şube Müdürlüğü</th>
+                <th>Şubedeki Konumu</th>
+                <th>İhale / Kazanma</th>
+                <th>Şube Ort. İndirimi</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody>${branchBreakdownHtml}</tbody>
           </table>
         </div>
       </div>
@@ -1067,31 +1172,44 @@ const App = {
     `;
   },
 
-  openRegionFromCompetitor(regionId) {
+  openRegionFromCompetitor(regionId, subeId) {
     this.selectedRegionalAnalysisId = regionId;
+    this.selectedRegionalBranchFilter = subeId || 'ALL';
     const btn = document.querySelector('[data-tab="tab-regional"]');
     this.switchTab('tab-regional', btn);
     this.renderRegionalAnalysisTab();
   },
 
   // =========================================================================
-  // 5.B. BÖLÜM 4: DSİ BÖLGE MÜDÜRLÜKLERİNE GÖRE RAKİP VE REKABET ANALİZİ
+  // 5.B. BÖLÜM 4: DSİ BÖLGE VE ŞUBE MÜDÜRLÜKLERİNE GÖRE RAKİP ANALİZİ
   // =========================================================================
   selectRegionalAnalysisRegion(regionId) {
     if (!regionId) return;
     this.selectedRegionalAnalysisId = regionId;
+    this.selectedRegionalBranchFilter = 'ALL';
     this.renderRegionalAnalysisTab();
   },
 
-  openSimulatorForSelectedRegion(regionIdOverride) {
+  selectRegionalBranchFilter(subeId) {
+    this.selectedRegionalBranchFilter = (this.selectedRegionalBranchFilter === subeId || !subeId) ? 'ALL' : subeId;
+    this.renderRegionalAnalysisTab();
+  },
+
+  openSimulatorForSelectedRegion(regionIdOverride, subeIdOverride) {
     const regId = regionIdOverride || this.selectedRegionalAnalysisId || 'DSI-20';
     const simRegSel = document.getElementById('simRegion');
     if (simRegSel) {
       simRegSel.value = regId;
+      this.populateSimBranches();
+    }
+    const simBranchSel = document.getElementById('simBranch');
+    if (simBranchSel && subeIdOverride && subeIdOverride !== 'ALL') {
+      simBranchSel.value = subeIdOverride;
     }
     const simTitle = document.getElementById('simTitle');
     if (simTitle) {
-      simTitle.value = `${this.getRegionName(regId)} Yeni Yapım İhalesi`;
+      const bName = (subeIdOverride && subeIdOverride !== 'ALL') ? this.getBranchName(subeIdOverride) : this.getRegionName(regId);
+      simTitle.value = `${bName} Yeni Yapım İhalesi`;
     }
     const btn = document.querySelector('[data-tab="tab-simulator"]');
     this.switchTab('tab-simulator', btn);
@@ -1107,7 +1225,7 @@ const App = {
     // 1. Üst KPI Kartlarını Güncelle
     const elActiveCount = document.getElementById('regKpiActiveCount');
     if (elActiveCount) {
-      elActiveCount.textContent = `${regSummary.activeRegionCount} DSİ Bölgesi`;
+      elActiveCount.textContent = `${regSummary.activeRegionCount} Bölge / ${regSummary.activeBranchCount || 0} Şube`;
     }
     const elActiveSub = document.getElementById('regKpiActiveSub');
     if (elActiveSub) {
@@ -1197,17 +1315,95 @@ const App = {
         `;
       }
 
+      const branchReports = selectedReg.branchReports || [];
+      const activeBranchFilter = (this.selectedRegionalBranchFilter && this.selectedRegionalBranchFilter !== 'ALL' &&
+        branchReports.some(br => br.subeId === this.selectedRegionalBranchFilter))
+        ? this.selectedRegionalBranchFilter
+        : 'ALL';
+
+      const branchTitle = document.getElementById('regionalBranchTableTitle');
+      if (branchTitle) {
+        const activeBranchesCnt = branchReports.filter(b => b.isActive).length;
+        branchTitle.textContent = `${selectedReg.regionName} Bağlı DSİ Şube Müdürlükleri (${branchReports.length} Şube • ${activeBranchesCnt} Şubede Resmi Kayıt)`;
+      }
+
+      const branchFilterBadge = document.getElementById('regionalBranchFilterBadge');
+      if (branchFilterBadge) {
+        branchFilterBadge.innerHTML = activeBranchFilter !== 'ALL'
+          ? `<span class="badge badge-verified">Seçili Şube: ${this.getBranchName(activeBranchFilter)}</span>
+             <button class="btn btn-secondary btn-sm" onclick="App.selectRegionalBranchFilter('ALL')">Tüm Şubeleri Göster</button>`
+          : `<span style="font-size:11.5px; color:var(--text-muted);">Şubeye tıklayarak aşağıdaki rakip ve ihale listesini şube bazında süzebilirsiniz</span>`;
+      }
+
+      const branchTbody = document.getElementById('regionalBranchesTableBody');
+      if (branchTbody) {
+        if (branchReports.length === 0) {
+          branchTbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:12px;">Bu bölge için tanımlı şube müdürlüğü bulunmamaktadır.</td></tr>`;
+        } else {
+          const sortedBranches = [...branchReports].sort((a, b) => (b.tenderCount - a.tenderCount) || (b.competitorCount - a.competitorCount));
+          branchTbody.innerHTML = sortedBranches.map(br => {
+            const isSelBr = br.subeId === activeBranchFilter;
+            const compPills = br.competitors.length > 0
+              ? br.competitors.slice(0, 4).map(c =>
+                  `<span class="badge ${c.branchWinCount > 0 ? 'badge-verified' : 'badge-blue'}" style="margin:1px; font-size:10.5px;">${c.shortName}</span>`
+                ).join(' ') + (br.competitors.length > 4 ? ` <span style="font-size:11px; color:var(--text-muted);">+${br.competitors.length - 4}</span>` : '')
+              : `<span style="font-size:11.5px; color:var(--text-muted);">KİK / DSİ kaydı izleniyor</span>`;
+
+            return `
+              <tr style="${isSelBr ? 'background:#dbeafe;' : ''}">
+                <td>
+                  <strong style="color:var(--corp-navy);">${br.subeName}</strong>
+                  <div style="font-size:11px; color:var(--text-muted);">Şube Kodu: ${br.subeCode}</div>
+                </td>
+                <td>${br.city}</td>
+                <td><strong>${br.tenderCount}</strong> Resmi İhale</td>
+                <td style="max-width:260px;">${compPills}</td>
+                <td>
+                  ${br.tenderCount > 0
+                    ? `<strong style="color:#b45309;">%${br.avgSdDiscountPct.toFixed(2)}</strong>`
+                    : '<span style="color:var(--text-muted);">-</span>'}
+                </td>
+                <td>
+                  <strong style="color:#15803d;">%${br.recommendedDiscountBand[0].toFixed(2)} – %${br.recommendedDiscountBand[1].toFixed(2)}</strong>
+                </td>
+                <td>
+                  <div style="display:flex; gap:5px;">
+                    <button class="btn ${isSelBr ? 'btn-primary' : 'btn-secondary'} btn-sm" onclick="App.selectRegionalBranchFilter('${br.subeId}')">
+                      ${isSelBr ? 'Filtre Aktif' : 'Şubeyi Süz'}
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="App.openSimulatorForSelectedRegion('${selectedReg.regionId}', '${br.subeId}')">Teklif Hesapla</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      const activeBranchReport = activeBranchFilter !== 'ALL'
+        ? branchReports.find(br => br.subeId === activeBranchFilter)
+        : null;
+
+      const filteredRegComps = activeBranchReport
+        ? selectedReg.competitors.filter(c => activeBranchReport.competitors.some(bc => bc.competitorId === c.competitorId))
+        : selectedReg.competitors;
+
+      const filteredRegTenders = activeBranchFilter !== 'ALL'
+        ? selectedReg.tenders.filter(t => t.subeId === activeBranchFilter)
+        : selectedReg.tenders;
+
       const compTitle = document.getElementById('regionalCompTableTitle');
       if (compTitle) {
-        compTitle.textContent = `${selectedReg.regionName} Sorumluluk Alanında İş Yapan Rakip Firmalar (${selectedReg.competitors.length} Firma)`;
+        const unitLabel = activeBranchReport ? activeBranchReport.subeName : selectedReg.regionName;
+        compTitle.textContent = `${unitLabel} Alanında İş Yapan Rakip Firmalar (${filteredRegComps.length} Firma)`;
       }
 
       const compTbody = document.getElementById('regionalCompetitorsTableBody');
       if (compTbody) {
-        if (selectedReg.competitors.length === 0) {
-          compTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:16px;">Bu DSİ Bölge Müdürlüğü için henüz kayıtlı rakip firma bulunmamaktadır.</td></tr>`;
+        if (filteredRegComps.length === 0) {
+          compTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:16px;">Seçilen birim için henüz kayıtlı rakip firma bulunmamaktadır.</td></tr>`;
         } else {
-          compTbody.innerHTML = selectedReg.competitors.map(c => `
+          compTbody.innerHTML = filteredRegComps.map(c => `
             <tr>
               <td>
                 <div style="font-weight:700; color:var(--corp-navy);">${c.competitorName}</div>
@@ -1240,15 +1436,16 @@ const App = {
 
       const tenderTitle = document.getElementById('regionalTenderTableTitle');
       if (tenderTitle) {
-        tenderTitle.textContent = `${selectedReg.regionName} Resmi KİK / EKAP İhale Kayıtları (${selectedReg.tenders.length} İhale)`;
+        const unitLabel = activeBranchReport ? activeBranchReport.subeName : selectedReg.regionName;
+        tenderTitle.textContent = `${unitLabel} Resmi KİK / EKAP İhale Kayıtları (${filteredRegTenders.length} İhale)`;
       }
 
       const tenderTbody = document.getElementById('regionalTendersTableBody');
       if (tenderTbody) {
-        if (selectedReg.tenders.length === 0) {
-          tenderTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:16px;">Bu DSİ Bölge Müdürlüğü için kayıtlı resmi ihale bulunmamaktadır.</td></tr>`;
+        if (filteredRegTenders.length === 0) {
+          tenderTbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding:16px;">Seçilen birim için kayıtlı resmi ihale bulunmamaktadır.</td></tr>`;
         } else {
-          tenderTbody.innerHTML = selectedReg.tenders.map(t => {
+          tenderTbody.innerHTML = filteredRegTenders.map(t => {
             const sdDisc = ((t.approxCost - t.reportedBoundaryValue) / t.approxCost) * 100;
             const winBid = (t.bids || []).find(b => b.competitorId === t.winnerCompetitorId) || (t.bids || [])[0];
             const winDisc = winBid ? (((t.approxCost - winBid.amount) / t.approxCost) * 100).toFixed(2) : '-';
@@ -1263,7 +1460,7 @@ const App = {
                 </td>
                 <td>
                   <div style="font-weight:600;">${t.title}</div>
-                  <div style="font-size:11px; color:var(--text-muted);">İş Grubu: ${t.workGroup}</div>
+                  <div style="font-size:11px; color:var(--text-muted);">${t.subeName ? `<strong style="color:#1e40af;">${t.subeName}</strong> • ` : ''}İş Grubu: ${t.workGroup}</div>
                 </td>
                 <td style="font-weight:600;">${this.formatTL(t.approxCost)}</td>
                 <td>
@@ -1510,11 +1707,15 @@ const App = {
     const validAboveSD = bids.filter(b => b.amount >= sd).sort((a, b) => a.amount - b.amount);
     const winnerId = validAboveSD.length > 0 ? validAboveSD[0].competitorId : null;
 
+    const inferredBranch = typeof inferDsiBranch === 'function' ? inferDsiBranch(regionId, title) : null;
+
     const newTender = {
       id: 'T-' + ikn.replace(/[^0-9]/g, '') + '-' + String(Date.now()).slice(-3),
       ikn,
       title,
       regionId,
+      subeId: inferredBranch ? inferredBranch.id : null,
+      subeName: inferredBranch ? inferredBranch.name : null,
       workGroup,
       date,
       approxCost,

@@ -1,4 +1,4 @@
-# DSİ Yapım İhaleleri Teklif Analiz ve Sınır Değer Hesaplama Sistemi (`DSİ-İhaleZekası v2.2.0`)
+# DSİ Yapım İhaleleri Teklif Analiz ve Sınır Değer Hesaplama Sistemi (`DSİ-İhaleZekası v2.3.0`)
 
 **Devlet Su İşleri (DSİ)** yapım işi ihalelerine katılan müteahhitlik firmaları için geliştirilmiş; **4734 sayılı Kamu İhale Kanunu** ve **Kamu İhale Genel Tebliği (Madde 45.1.1)** hükümlerine birebir uyumlu, **%100 doğrulanmış resmi kamu verileriyle (`kik.gov.tr`, `ekap.kik.gov.tr`, `dsi.gov.tr`)** çalışan kurulabilir masaüstü ihale karar destek ve rakip davranış öngörü yazılımıdır.
 
@@ -10,7 +10,7 @@ DSİ altyapı ve su yapıları ihalelerinde (Baraj, Gölet, Sulama, Taşkın Kon
 
 Bu sistem:
 1. **Periyodik Resmi Veri Toplama Servisi (`OfficialDataSyncService`)** ile Kamu İhale Kurumu (`ekap.kik.gov.tr`) Kurul Kararları, EKAP "Bir Bakışta İhale" sonuç sayfaları ve 26 DSİ Bölge Müdürlüğü (`bolge01..26.dsi.gov.tr`) resmi duyurularını düzenli aralıklarla tarayarak veritabanını (`data/verified_db.json`) otomatik günceller.
-2. **Bölgesel Rakip ve Rekabet Analizi (`RegionalAnalysisEngine`)** ile rakip müteahhitleri faaliyet gösterdikleri **DSİ Bölge Müdürlüklerine** göre ayrıştırır; her bölgenin ortalama sınır değer indirimini, kazanan teklif ortalamasını ve bölgesel mobilizasyon avantajına sahip rakipleri raporlar.
+2. **Bölge ve Şube Bazlı Rakip ve Rekabet Analizi (`RegionalAnalysisEngine`)** ile rakip müteahhitleri faaliyet gösterdikleri **26 DSİ Bölge Müdürlüğü** ve bağlı **84 DSİ Şube Müdürlüğü (`DSI_BRANCHES`)** bazında ayrıştırır; her bölge ve şubenin ortalama sınır değer indirimini, kazanan teklif ortalamasını ve şube/bölge mobilizasyon avantajına sahip rakipleri raporlar.
 3. **3 Katmanlı Rakip Davranış Algoritması ve 10.000 İterasyonlu Monte Carlo Simülasyonu (`MonteCarloTenderSimulator`)** ile yeni girilecek bir DSİ ihalesinde rakiplerin katılım olasılıklarını, tahmini teklif aralıklarını ve beklenen Sınır Değeri hesaplayarak kullanıcıya **3 Kademeli Teklif Stratejisi** (*İhtiyatlı Teklif*, *Önerilen İdeal Teklif*, *Sınır Değere Yakın Riskli Teklif*) sunar.
 
 ---
@@ -19,10 +19,10 @@ Bu sistem:
 
 | Bölüm | Modül Adı | Açıklama |
 | :--- | :--- | :--- |
-| **1** | **Genel Özet ve İhale Arşivi** | Sistemde kayıtlı 23 resmi DSİ ihalesinin, 32 gerçek müteahhit firmanın, ortalama Sınır Değer indiriminin ve kazanan teklif marjlarının yönetici özeti. |
-| **2** | **Yeni İhale Teklif ve Sınır Değer Hesaplama** | Girilecek ihalenin DSİ Bölgesi, İş Grubu (`A/I`, `A/II`, `A/III`, `A/IV`, `A/V`, `B/III`), Yaklaşık Maliyet ($YM$) tahmini ve $\pm\%X$ sapma payına göre 10.000 iterasyonlu Monte Carlo simülasyonu ve kazanma/elenme eğrisi. |
-| **3** | **Rakip Firma (İstekli) Kayıtları** | Rakiplerin DSİ Bölge filtresine göre ayrıştırılması, geçmiş resmi ihale teklifleri, şantiye doluluk oranları, iş ortaklığı (JV) geçmişleri ve bölge bazlı performans karneleri. |
-| **4** | **Bölgelere Göre Rakip Analizi** | 26 DSİ Bölge Müdürlüğü bazında hangi rakiplerin hangi bölgelerde iş yaptığı, bölgesel sınır değer tenzilat ortalamaları, bölge rekabet derecesi ve bölgeye özel hedef kırım tavsiyeleri. |
+| **1** | **Genel Özet ve İhale Arşivi** | Sistemde kayıtlı 35 resmi DSİ ihalesinin, 51 gerçek müteahhit firmanın, ortalama Sınır Değer indiriminin ve kazanan teklif marjlarının yönetici özeti. |
+| **2** | **Yeni İhale Teklif ve Sınır Değer Hesaplama** | Girilecek ihalenin DSİ Bölge ve Şube Müdürlüğü, İş Grubu (`A/I`, `A/II`, `A/III`, `A/IV`, `A/V`, `B/III`), Yaklaşık Maliyet ($YM$) tahmini ve $\pm\%X$ sapma payına göre 10.000 iterasyonlu Monte Carlo simülasyonu ve kazanma/elenme eğrisi. |
+| **3** | **Rakip Firma (İstekli) Kayıtları** | Rakiplerin DSİ Bölge ve Şube filtresine göre ayrıştırılması, geçmiş resmi ihale teklifleri, şantiye doluluk oranları, şube kırılım karneleri ve iş ortaklığı (JV) geçmişleri. |
+| **4** | **Bölge ve Şube Bazlı Rakip Analizi** | 26 DSİ Bölge Müdürlüğü ve bağlı 84 DSİ Şube Müdürlüğü bazında hangi rakiplerin hangi şube ve bölgelerde iş yaptığı, şube/bölge sınır değer tenzilat ortalamaları ve hedef kırım tavsiyeleri. |
 | **5** | **İhale Tutanağı ve Veri Girişi** | 3 kanallı doğrulanmış veri girişi: **(1)** Otomatik KİK 45.1.1 matematik denetimli tutanak formu, **(2)** Akıllı EKAP Sonuç İlanı metin okuyucu (`EkapSmartParser`), **(3)** Excel/CSV toplu içe ve dışa aktarım. |
 | **6** | **Otomatik Resmi Veri Tarama (`OfficialDataSyncService`)** | `ekap.kik.gov.tr/EKAP/Vatandas/KurulKararGoster.aspx`, `BirBakistaIhale.aspx` ve `bolge01..26.dsi.gov.tr` resmi kaynaklarını periyodik (15 dk – 12 saat) veya tek tıkla canlı tarayıp yeni ihale ve rakipleri veritabanına işleyen arka plan servisi. |
 | **7** | **KİK Madde 45.1.1 Sınır Değer Hesap Cetveli** | Açıklanan Yaklaşık Maliyet ve sunulan tekliflere göre $T_{\text{ort},1}$, standart sapma ($\sigma$), $T_{\text{ort},2}$, $C$, $K$ ve $N$ katsayılarını (virgülden sonra 3 basamak yuvarlamalı) adım adım gösteren resmi mevzuat cetveli. |
@@ -53,7 +53,7 @@ Sistem içerisindeki `KikBoundaryEngine` motoru, Kamu İhale Genel Tebliği Madd
 
 ## 4. %100 Resmi Kamu Veri Kaynağı İlkesi (`officialSourcesOnly: true`)
 
-Sistemde hiçbir kurgusal firma veya tahmini ihale verisi yer almaz. `data/verified_db.json` içerisindeki **23 DSİ ihalesi** ve **32 yüklenici firma / iş ortaklığı**, doğrudan Kamu İhale Kurulu resmi kararları (`kik.gov.tr`) ve EKAP resmi sonuç kayıtlarından (`ekap.kik.gov.tr`) doğrulanmıştır:
+Sistemde hiçbir kurgusal firma veya tahmini ihale verisi yer almaz. `data/verified_db.json` (`v2.3.0`) içerisindeki **35 DSİ ihalesi** ve **51 yüklenici firma / iş ortaklığı**, doğrudan Kamu İhale Kurulu resmi kararları (`kik.gov.tr`), EKAP resmi sonuç kayıtları (`ekap.kik.gov.tr`), KİK Yapım İşleri Bültenleri ve DSİ Bölge/Şube Müdürlükleri resmi duyurularından (`dsi.gov.tr`) doğrulanmıştır:
 
 - **İKN `2025/1888777`** (*KİK Kararı `2026/UY.II-1764`*): DSİ 11. Bölge — *Tekirdağ İnecik 1-2 ve Dedecik Barajları İçmesuyu İsale Hattı* (`YM: 1.505.809.084,70 TL`)
 - **İKN `2025/2110590`** (*KİK Kararı `2026/UY.II-643`*): DSİ 1. Bölge — *Kocaeli Kandıra Arıklar Göleti Sulaması 2. Kısım* (`YM: 325.538.431,00 TL`)
@@ -82,7 +82,7 @@ dsi-ihale-analiz/
 ├── DSIIhaleZekasi_Kurulum_Setup.exe        # Tek Tıkla Kurulabilir Windows Kurulum Sihirbazı (Setup)
 ├── DSIIhaleZekasi.exe                      # Doğrudan Çalıştırılabilir Masaüstü Uygulaması
 ├── data/
-│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale ve Rakip Veritabanı (v2.2.0)
+│   ├── verified_db.json                    # KİK 45.1.1 Doğrulamalı Resmi İhale ve Rakip Veritabanı (v2.3.0)
 │   └── verified_db.json.sha256             # SHA-256 Veri Bütünlük Mührü
 └── src/
     ├── ui/
